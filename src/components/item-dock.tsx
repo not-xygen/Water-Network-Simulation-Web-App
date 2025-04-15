@@ -1,56 +1,60 @@
 import useGlobalStore from "@/store/globals";
-import { Circle, Hammer, PenTool, Square } from "lucide-react";
-import type React from "react";
+import { Circle, PenTool, MinusCircle, Square, Filter } from "lucide-react";
 import { useCallback } from "react";
 import { Button } from "./ui/button";
-import { Separator } from "./ui/separator";
 
 const tools = [
-	{ id: "pipe", name: "Pipe Tools", icon: <Hammer /> },
-	{ id: "junction", name: "Junction Tools", icon: <PenTool /> },
-	{ id: "circle", name: "Circle", icon: <Circle /> },
-	{ id: "square", name: "Square", icon: <Square /> },
+  { id: "pipe", name: "Pipe", icon: <MinusCircle size={16} /> },
+  { id: "junction", name: "Junction", icon: <PenTool size={16} /> },
+  { id: "circle", name: "Reservoir", icon: <Circle size={16} /> },
+  { id: "square", name: "Tank", icon: <Square size={16} /> },
+  { id: "filter", name: "Valve", icon: <Filter size={16} /> },
 ];
 
-export const ToolsDock: React.FC = () => {
-	const addNode = useGlobalStore((state) => state.addNode);
-	const offset = useGlobalStore((state) => state.offset);
+export const ToolsDock = () => {
+  const { addNode, offset, zoom } = useGlobalStore();
 
-	const handleAddNode = useCallback(
-		(type: string) => {
-			const zoom = useGlobalStore.getState().zoom; // Ambil zoom dari store
-			const viewportCenterX = window.innerWidth / 2; // Pusat viewport secara horizontal
-			const viewportCenterY = window.innerHeight / 2; // Pusat viewport secara vertikal
+  const handleAddNode = useCallback(
+    (type: string) => {
+      const centerScreenX = window.innerWidth / 2;
+      const centerScreenY = window.innerHeight / 2;
 
-			const newNode = {
-				id: `${type}-${Date.now()}`, // Unique ID
-				x: (viewportCenterX - offset.x) / (zoom / 100), // Hitung posisi absolut X
-				y: (viewportCenterY - offset.y) / (zoom / 100), // Hitung posisi absolut Y
-				type,
-			};
+      const adjustedX = centerScreenX - offset.x;
+      const adjustedY = centerScreenY - offset.y;
 
-			console.log("Adding node:", newNode);
-			addNode(newNode);
-		},
-		[addNode, offset],
-	);
+      const worldX = adjustedX / (zoom / 100);
+      const worldY = adjustedY / (zoom / 100);
 
-	return (
-		<div className="fixed flex flex-row p-2 space-x-2 transform -translate-x-1/2 bg-gray-100 shadow top-4 left-1/2 rounded-xl">
-			{tools.map((tool) => (
-				<Button
-					key={tool.id}
-					variant={"outline"}
-					size={"icon"}
-					onClick={() => handleAddNode(tool.id)}
-				>
-					{tool.icon}
-				</Button>
-			))}
-			<Separator className="h-10 w-[2px] bg-gray-600 rounded" />
-			<Button variant={"outline"} size={"icon"}>
-				<Square />
-			</Button>
-		</div>
-	);
+      const newNode = {
+        id: `${type}-${Date.now()}`,
+        x: worldX,
+        y: worldY,
+        type,
+      };
+
+      addNode(newNode);
+    },
+    [addNode, offset, zoom],
+  );
+
+  return (
+    <div className="fixed flex flex-col p-2 space-y-2 transform -translate-x-1/2 bg-white shadow top-4 left-1/2 rounded-xl">
+      <div className="text-sm font-medium text-center text-gray-700">
+        Network Components
+      </div>
+      <div className="flex flex-row space-x-2">
+        {tools.map((tool) => (
+          <Button
+            key={tool.id}
+            variant="outline"
+            size="sm"
+            className="flex flex-col items-center justify-center h-16 gap-1 px-3"
+            onClick={() => handleAddNode(tool.id)}>
+            <div className="p-1 bg-gray-100 rounded-full">{tool.icon}</div>
+            <span className="text-xs">{tool.name}</span>
+          </Button>
+        ))}
+      </div>
+    </div>
+  );
 };

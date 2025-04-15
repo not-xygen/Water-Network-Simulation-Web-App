@@ -10,10 +10,13 @@ export const PositionDock: React.FC = () => {
     setOffset(0, 0);
   };
 
+  const displayX = -offset.x;
+  const displayY = offset.y;
+
   return (
     <div className="fixed flex items-center justify-center p-2 space-x-2 bg-gray-100 rounded-lg shadow bottom-4 left-4">
       <div>
-        X: {offset.x.toFixed(0)}, Y: {offset.y.toFixed(0)}
+        X: {displayX.toFixed(0)}, Y: {displayY.toFixed(0)}
       </div>
       <Button
         className="p-2 border rounded"
