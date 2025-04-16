@@ -5,7 +5,9 @@ import { ZoomDock } from "./components/zoom-dock";
 
 function App() {
   return (
-    <div className="relative w-screen h-screen overflow-hidden">
+    <div
+      id="board-container"
+      className="relative w-screen h-screen overflow-hidden">
       <Whiteboard />
       <ToolsDock />
       <PositionDock />

@@ -24,9 +24,8 @@ export const Whiteboard = () => {
     null,
   );
 
-  console.log(edges);
-  console.log("MousePos:", mousePos);
-  console.log("Connecting:", connecting);
+  const NODE_WIDTH = 100;
+  const HANDLE_OFFSET = NODE_WIDTH / 2;
 
   const handleWheel = useCallback(
     (event: React.WheelEvent) => {
@@ -106,13 +105,13 @@ export const Whiteboard = () => {
       setConnecting({ sourceId: nodeId, sourcePosition: position });
       setMousePos({ x: startX, y: startY });
 
-      const handleMouseMove = (e: MouseEvent) => {
+      const handleMouseMove = (e: globalThis.MouseEvent) => {
         const moveX = e.clientX - (boardRect?.left ?? 0);
         const moveY = e.clientY - (boardRect?.top ?? 0);
         setMousePos({ x: moveX, y: moveY });
       };
 
-      const handleMouseUp = (e: MouseEvent) => {
+      const handleMouseUp = (e: globalThis.MouseEvent) => {
         const target = document.elementFromPoint(e.clientX, e.clientY);
         const parent = target?.closest("[data-node-id]") as HTMLElement | null;
         const targetId = parent?.getAttribute("data-node-id");
@@ -132,7 +131,10 @@ export const Whiteboard = () => {
         isConnectingRef.current = false;
         setConnecting(null);
         setMousePos(null);
-        window.removeEventListener("mousemove", handleMouseMove);
+        window.removeEventListener(
+          "mousemove",
+          handleMouseMove as EventListener,
+        );
         window.removeEventListener("mouseup", handleMouseUp);
       };
 
@@ -146,7 +148,8 @@ export const Whiteboard = () => {
     (
       event: React.MouseEvent,
       nodeId: string,
-      position: "left" | "right" | "top" | "bottom",
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars, no-unused-vars
+      _position: "left" | "right" | "top" | "bottom",
     ) => {
       event.stopPropagation();
       if (
@@ -180,6 +183,25 @@ export const Whiteboard = () => {
       return { x: screenX, y: screenY };
     },
     [zoom, offset],
+  );
+
+  const getHandlePosition = useCallback(
+    (nodeId: string, position: "left" | "right") => {
+      const node = nodes.find((n) => n.id === nodeId);
+      if (!node) return null;
+
+      const { x, y } = worldToScreen(node);
+
+      if (position === "left") {
+        return { x: x - HANDLE_OFFSET, y };
+      }
+      if (position === "right") {
+        return { x: x + HANDLE_OFFSET, y };
+      }
+
+      return { x, y };
+    },
+    [HANDLE_OFFSET, nodes, worldToScreen],
   );
 
   return (
@@ -216,24 +238,56 @@ export const Whiteboard = () => {
             y={y}
             isDragged={draggedNode === node.id}
             onMouseDown={handleNodeMouseDown}
+            onMouseUp={handleMouseUp}
             onStartConnect={handleStartConnection}
             onEndConnect={handleEndConnection}
           />
         );
       })}
 
+      {/* Connection lines */}
       {/* biome-ignore lint/a11y/noSvgWithoutTitle: <intended> */}
-      <svg className="absolute inset-0 z-[999] pointer-events-none">
+      <svg className="fixed top-0 left-0 z-10 w-screen h-screen pointer-events-none">
+        {edges.map((edge) => {
+          const sourcePos = getHandlePosition(edge.sourceId, "right");
+          const targetPos = getHandlePosition(edge.targetId, "left");
+
+          if (!sourcePos || !targetPos) return null;
+
+          return (
+            <line
+              key={edge.id}
+              x1={sourcePos.x}
+              y1={sourcePos.y}
+              x2={targetPos.x}
+              y2={targetPos.y}
+              stroke="#3b82f6"
+              strokeWidth={2}
+            />
+          );
+        })}
+      </svg>
+
+      {/* Connection in progress */}
+      {/* biome-ignore lint/a11y/noSvgWithoutTitle: <intended> */}
+      <svg className="fixed top-0 left-0 z-10 w-screen h-screen pointer-events-none">
         {connecting &&
           mousePos &&
           (() => {
             const sourceNode = nodes.find((n) => n.id === connecting.sourceId);
             if (!sourceNode) return null;
-            const sourceScreen = worldToScreen(sourceNode);
+
+            const sourcePos = getHandlePosition(
+              connecting.sourceId,
+              connecting.sourcePosition as "left" | "right",
+            );
+
+            if (!sourcePos) return null;
+
             return (
               <line
-                x1={sourceScreen.x}
-                y1={sourceScreen.y}
+                x1={sourcePos.x}
+                y1={sourcePos.y}
                 x2={mousePos.x}
                 y2={mousePos.y}
                 stroke="gray"

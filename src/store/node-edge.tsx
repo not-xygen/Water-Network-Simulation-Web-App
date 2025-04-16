@@ -36,8 +36,10 @@ const useNodeEdgeStore = create<NodeEdgeState>((set) => ({
         node.id === id
           ? {
               ...node,
-              x: node.position.x + deltaX,
-              y: node.position.y + deltaY,
+              position: {
+                x: node.position.x + deltaX,
+                y: node.position.y + deltaY,
+              },
             }
           : node,
       ),

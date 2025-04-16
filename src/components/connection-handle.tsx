@@ -1,4 +1,4 @@
-// components/Handle.tsx
+/* eslint-disable no-unused-vars */
 import type React from "react";
 
 type HandleProps = {

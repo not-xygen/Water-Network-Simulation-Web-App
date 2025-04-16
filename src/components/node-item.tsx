@@ -1,3 +1,4 @@
+/* eslint-disable no-unused-vars */
 import type React from "react";
 
 import { ConnectionHandle } from "./connection-handle";
@@ -11,8 +12,16 @@ type NodeItemProps = {
   isDragged: boolean;
   onMouseDown: (e: React.MouseEvent, id: string) => void;
   onMouseUp: (e: React.MouseEvent, id: string) => void;
-  onStartConnect: (e: React.MouseEvent, id: string, pos: string) => void;
-  onEndConnect: (e: React.MouseEvent, id: string, pos: string) => void;
+  onStartConnect: (
+    e: React.MouseEvent,
+    id: string,
+    position: "left" | "right" | "top" | "bottom",
+  ) => void;
+  onEndConnect: (
+    e: React.MouseEvent,
+    id: string,
+    position: "left" | "right" | "top" | "bottom",
+  ) => void;
 };
 
 export const NodeItem: React.FC<NodeItemProps> = ({
