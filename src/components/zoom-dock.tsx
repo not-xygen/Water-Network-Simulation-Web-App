@@ -9,7 +9,7 @@ export const ZoomDock: React.FC = () => {
   const zoomOut = useGlobalStore((state) => state.zoomOut);
 
   return (
-    <div className="fixed flex items-center p-2 space-x-2 bg-gray-100 rounded-lg shadow bottom-4 right-4">
+    <div className="fixed z-10 flex items-center p-2 space-x-2 bg-gray-100 rounded-lg shadow bottom-4 right-4">
       <Button
         className="p-2 rounded "
         onClick={zoomOut}

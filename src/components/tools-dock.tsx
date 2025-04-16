@@ -1,7 +1,13 @@
-import useGlobalStore from "@/store/globals";
-import { Circle, PenTool, MinusCircle, Square, Filter } from "lucide-react";
 import { useCallback } from "react";
+
+import { Circle, PenTool, MinusCircle, Square, Filter } from "lucide-react";
+
 import { Button } from "./ui/button";
+
+import { createNode } from "@/lib/node-factory";
+
+import useGlobalStore from "@/store/globals";
+import useNodeEdgeStore from "@/store/node-edge";
 
 const tools = [
   { id: "pipe", name: "Pipe", icon: <MinusCircle size={16} /> },
@@ -12,36 +18,18 @@ const tools = [
 ];
 
 export const ToolsDock = () => {
-  const { addNode, offset, zoom } = useGlobalStore();
+  const { offset, zoom } = useGlobalStore();
+  const { addNode } = useNodeEdgeStore();
 
   const handleAddNode = useCallback(
     (type: string) => {
-      const centerScreenX = window.innerWidth / 2;
-      const centerScreenY = window.innerHeight / 2;
-
-      const adjustedX = centerScreenX - offset.x;
-      const adjustedY = centerScreenY - offset.y;
-
-      const worldX = adjustedX / (zoom / 100);
-      const worldY = adjustedY / (zoom / 100);
-
-      const newNode = {
-        id: `${type}-${Date.now()}`,
-        x: worldX,
-        y: worldY,
-        type,
-      };
-
+      const newNode = createNode(type, offset, zoom, "Test");
       addNode(newNode);
     },
     [addNode, offset, zoom],
   );
-
   return (
-    <div className="fixed flex flex-col p-2 space-y-2 transform -translate-x-1/2 bg-white shadow top-4 left-1/2 rounded-xl">
-      <div className="text-sm font-medium text-center text-gray-700">
-        Network Components
-      </div>
+    <div className="fixed z-10 flex flex-col p-2 space-y-2 transform -translate-x-1/2 bg-white shadow top-4 left-1/2 rounded-xl">
       <div className="flex flex-row space-x-2">
         {tools.map((tool) => (
           <Button

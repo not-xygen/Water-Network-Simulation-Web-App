@@ -14,7 +14,7 @@ export const PositionDock: React.FC = () => {
   const displayY = offset.y;
 
   return (
-    <div className="fixed flex items-center justify-center p-2 space-x-2 bg-gray-100 rounded-lg shadow bottom-4 left-4">
+    <div className="fixed z-50 flex items-center justify-center p-2 space-x-2 bg-gray-100 rounded-lg shadow bottom-4 left-4">
       <div>
         X: {displayX.toFixed(0)}, Y: {displayY.toFixed(0)}
       </div>
