@@ -24,14 +24,11 @@ export const Whiteboard = () => {
     null,
   );
 
-  const NODE_WIDTH = 100;
-  const HANDLE_OFFSET = NODE_WIDTH / 2;
-
   const handleWheel = useCallback(
     (event: React.WheelEvent) => {
       event.preventDefault();
-      if (event.deltaY < 0) zoomIn();
-      else zoomOut();
+      if (event.deltaY > 0) zoomOut();
+      else zoomIn();
     },
     [zoomIn, zoomOut],
   );
@@ -186,22 +183,27 @@ export const Whiteboard = () => {
   );
 
   const getHandlePosition = useCallback(
-    (nodeId: string, position: "left" | "right") => {
+    (nodeId: string, position: "left" | "right" | "top" | "bottom") => {
       const node = nodes.find((n) => n.id === nodeId);
       if (!node) return null;
 
       const { x, y } = worldToScreen(node);
+      const visualOffset = (32 * zoom) / 100;
 
-      if (position === "left") {
-        return { x: x - HANDLE_OFFSET, y };
+      switch (position) {
+        case "left":
+          return { x: x - visualOffset, y };
+        case "right":
+          return { x: x + visualOffset, y };
+        case "top":
+          return { x, y: y - visualOffset };
+        case "bottom":
+          return { x, y: y + visualOffset };
+        default:
+          return { x, y };
       }
-      if (position === "right") {
-        return { x: x + HANDLE_OFFSET, y };
-      }
-
-      return { x, y };
     },
-    [HANDLE_OFFSET, nodes, worldToScreen],
+    [nodes, worldToScreen, zoom],
   );
 
   return (
@@ -236,6 +238,7 @@ export const Whiteboard = () => {
             node={node}
             x={x}
             y={y}
+            zoom={zoom}
             isDragged={draggedNode === node.id}
             onMouseDown={handleNodeMouseDown}
             onMouseUp={handleMouseUp}
@@ -262,7 +265,7 @@ export const Whiteboard = () => {
               x2={targetPos.x}
               y2={targetPos.y}
               stroke="#3b82f6"
-              strokeWidth={2}
+              strokeWidth={12 * (zoom / 100)}
             />
           );
         })}
@@ -291,7 +294,7 @@ export const Whiteboard = () => {
                 x2={mousePos.x}
                 y2={mousePos.y}
                 stroke="gray"
-                strokeWidth={2}
+                strokeWidth={12 * (zoom / 100)}
                 strokeDasharray="5,5"
               />
             );
