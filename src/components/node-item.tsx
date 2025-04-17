@@ -83,8 +83,9 @@ export const NodeItem: React.FC<NodeItemProps> = ({
       style={{
         left: `${x}px`,
         top: `${y}px`,
-        transform: `translate(-50%, -50%) scale(${zoom / 100})`,
-
+        transform: `translate(-50%, -50%) scale(${zoom / 100}) rotate(${
+          node.data.rotation ?? 0
+        }deg)`,
         transformOrigin: "center",
         boxShadow: isDragged ? "0 0 0 2px white, 0 0 0 4px #3b82f6" : undefined,
         zIndex: isDragged ? 100 : 50,

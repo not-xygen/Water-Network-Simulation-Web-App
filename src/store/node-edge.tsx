@@ -10,7 +10,10 @@ export type Edge = {
 export type Node = {
   id: string;
   type: string;
-  data: { label: string | JSX.Element };
+  data: {
+    label: string | JSX.Element;
+    rotation?: number; // 🌪️ ditambahkan
+  };
   position: { x: number; y: number };
 };
 
@@ -18,6 +21,7 @@ export type NodeEdgeState = {
   nodes: Node[];
   addNode: (node: Node) => void;
   updateNodePosition: (id: string, deltaX: number, deltaY: number) => void;
+  updateNodeRotation: (id: string, angle: number) => void;
   removeNode: (id: string) => void;
   edges: Edge[];
   addEdge: (edge: Edge) => void;
@@ -44,6 +48,18 @@ const useNodeEdgeStore = create<NodeEdgeState>((set) => ({
           : node,
       ),
     })),
+  updateNodeRotation: (id: string, angle: number) =>
+    set((state) => {
+      const index = state.nodes.findIndex((n) => n.id === id);
+      if (index === -1) return state;
+      const updatedNodes = [...state.nodes];
+      updatedNodes[index] = {
+        ...updatedNodes[index],
+        data: { ...updatedNodes[index].data, rotation: angle },
+      };
+      return { nodes: updatedNodes };
+    }),
+
   removeNode: (id) =>
     set((state) => ({
       nodes: state.nodes.filter((node) => node.id !== id),

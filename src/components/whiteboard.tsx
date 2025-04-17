@@ -4,12 +4,16 @@ import type { MouseEvent } from "react";
 
 import { NodeItem } from "./node-item";
 
-import type { Node } from "@/store/node-edge";
+import type { Edge, Node } from "@/store/node-edge";
 import useNodeEdgeStore from "@/store/node-edge";
+import { NodePropertyDrawer } from "./node-property-drawer";
+import { RotateCcw } from "lucide-react";
+import { EdgePropertyDrawer } from "./edge-property-drawer";
 
 export const Whiteboard = () => {
   const { zoom, offset, setOffset, zoomIn, zoomOut } = useGlobalStore();
-  const { nodes, updateNodePosition, edges, addEdge } = useNodeEdgeStore();
+  const { nodes, updateNodePosition, updateNodeRotation, edges, addEdge } =
+    useNodeEdgeStore();
 
   const isDraggingBoardRef = useRef(false);
   const lastMousePosRef = useRef<{ x: number; y: number } | null>(null);
@@ -22,6 +26,26 @@ export const Whiteboard = () => {
   const isConnectingRef = useRef(false);
   const [mousePos, setMousePos] = useState<{ x: number; y: number } | null>(
     null,
+  );
+
+  const [rotatingNodeId, setRotatingNodeId] = useState<string | null>(null);
+
+  const [selectedNode, setSelectedNode] = useState<Node | null>(null);
+  const [drawerNodeOpen, setDrawerNodeOpen] = useState(false);
+  const [selectedEdge, setSelectedEdge] = useState<Edge | null>(null);
+  const [drawerEdgeOpen, setDrawerEdgeOpen] = useState(false);
+
+  console.log(drawerEdgeOpen);
+
+  const worldToScreen = useCallback(
+    (node: Node) => {
+      const centerX = window.innerWidth / 2;
+      const centerY = window.innerHeight / 2;
+      const screenX = centerX + node.position.x * (zoom / 100) + offset.x;
+      const screenY = centerY + node.position.y * (zoom / 100) + offset.y;
+      return { x: screenX, y: screenY };
+    },
+    [zoom, offset],
   );
 
   const handleWheel = useCallback(
@@ -41,11 +65,18 @@ export const Whiteboard = () => {
     }
   }, []);
 
-  const handleMouseUp = useCallback(() => {
-    isDraggingBoardRef.current = false;
-    setDraggedNode(null);
-    lastMousePosRef.current = null;
-  }, []);
+  const handleMouseUp = useCallback(
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars, no-unused-vars
+    (_event: MouseEvent) => {
+      if (draggedNode) {
+        setDraggedNode(null);
+      }
+
+      isDraggingBoardRef.current = false;
+      lastMousePosRef.current = null;
+    },
+    [draggedNode],
+  );
 
   const handleMouseMove = useCallback(
     (event: MouseEvent) => {
@@ -77,10 +108,31 @@ export const Whiteboard = () => {
   const handleNodeMouseDown = useCallback(
     (event: MouseEvent, nodeId: string) => {
       event.stopPropagation();
-      setDraggedNode(nodeId);
       lastMousePosRef.current = { x: event.clientX, y: event.clientY };
+      setDraggedNode(nodeId);
+
+      const clickedNode = nodes.find((n) => n.id === nodeId);
+      if (!clickedNode) return;
+
+      const startX = event.clientX;
+      const startY = event.clientY;
+
+      const handleMouseUp = (e: globalThis.MouseEvent) => {
+        const dx = Math.abs(e.clientX - startX);
+        const dy = Math.abs(e.clientY - startY);
+        const distance = Math.sqrt(dx * dx + dy * dy);
+
+        if (distance < 5) {
+          setSelectedNode(clickedNode);
+          setDrawerNodeOpen(true);
+        }
+
+        window.removeEventListener("mouseup", handleMouseUp);
+      };
+
+      window.addEventListener("mouseup", handleMouseUp);
     },
-    [],
+    [nodes],
   );
 
   const handleStartConnection = useCallback(
@@ -171,17 +223,6 @@ export const Whiteboard = () => {
     [connecting, edges, addEdge],
   );
 
-  const worldToScreen = useCallback(
-    (node: Node) => {
-      const centerX = window.innerWidth / 2;
-      const centerY = window.innerHeight / 2;
-      const screenX = centerX + node.position.x * (zoom / 100) + offset.x;
-      const screenY = centerY + node.position.y * (zoom / 100) + offset.y;
-      return { x: screenX, y: screenY };
-    },
-    [zoom, offset],
-  );
-
   const getHandlePosition = useCallback(
     (nodeId: string, position: "left" | "right" | "top" | "bottom") => {
       const node = nodes.find((n) => n.id === nodeId);
@@ -189,22 +230,87 @@ export const Whiteboard = () => {
 
       const { x, y } = worldToScreen(node);
       const visualOffset = (32 * zoom) / 100;
+      const rotationDeg = node.data.rotation ?? 0;
+      const rotationRad = (rotationDeg * Math.PI) / 180;
+
+      // Basis offset
+      let dx = 0;
+      let dy = 0;
 
       switch (position) {
         case "left":
-          return { x: x - visualOffset, y };
+          dx = -visualOffset;
+          dy = 0;
+          break;
         case "right":
-          return { x: x + visualOffset, y };
+          dx = visualOffset;
+          dy = 0;
+          break;
         case "top":
-          return { x, y: y - visualOffset };
+          dx = 0;
+          dy = -visualOffset;
+          break;
         case "bottom":
-          return { x, y: y + visualOffset };
-        default:
-          return { x, y };
+          dx = 0;
+          dy = visualOffset;
+          break;
       }
+
+      const rotatedX = dx * Math.cos(rotationRad) - dy * Math.sin(rotationRad);
+      const rotatedY = dx * Math.sin(rotationRad) + dy * Math.cos(rotationRad);
+
+      return {
+        x: x + rotatedX,
+        y: y + rotatedY,
+      };
     },
     [nodes, worldToScreen, zoom],
   );
+
+  const handleStartRotate = (e: React.MouseEvent, nodeId: string) => {
+    e.stopPropagation();
+    e.preventDefault();
+
+    const node = nodes.find((n) => n.id === nodeId);
+    if (!node) return;
+
+    setRotatingNodeId(nodeId);
+
+    const centerX =
+      window.innerWidth / 2 + node.position.x * (zoom / 100) + offset.x;
+    const centerY =
+      window.innerHeight / 2 + node.position.y * (zoom / 100) + offset.y;
+
+    const dxStart = e.clientX - centerX;
+    const dyStart = e.clientY - centerY;
+    const initialCursorAngle = Math.atan2(dyStart, dxStart) * (180 / Math.PI);
+
+    const initialNodeAngle = node.data.rotation ?? 0;
+
+    const rotateMove = (moveEvent: globalThis.MouseEvent) => {
+      const dx = moveEvent.clientX - centerX;
+      const dy = moveEvent.clientY - centerY;
+
+      const currentCursorAngle = Math.atan2(dy, dx) * (180 / Math.PI);
+      const deltaAngle = currentCursorAngle - initialCursorAngle;
+      const rawAngle = initialNodeAngle + deltaAngle;
+
+      const finalAngle = moveEvent.shiftKey
+        ? Math.round(rawAngle / 45) * 45
+        : rawAngle;
+
+      updateNodeRotation(nodeId, finalAngle);
+    };
+
+    const rotateEnd = () => {
+      setRotatingNodeId(null);
+      window.removeEventListener("mousemove", rotateMove);
+      window.removeEventListener("mouseup", rotateEnd);
+    };
+
+    window.addEventListener("mousemove", rotateMove);
+    window.addEventListener("mouseup", rotateEnd);
+  };
 
   return (
     <div
@@ -232,25 +338,53 @@ export const Whiteboard = () => {
       {/* Nodes */}
       {nodes.map((node) => {
         const { x, y } = worldToScreen(node);
+        const isRotating = rotatingNodeId === node.id;
+
         return (
-          <NodeItem
-            key={node.id}
-            node={node}
-            x={x}
-            y={y}
-            zoom={zoom}
-            isDragged={draggedNode === node.id}
-            onMouseDown={handleNodeMouseDown}
-            onMouseUp={handleMouseUp}
-            onStartConnect={handleStartConnection}
-            onEndConnect={handleEndConnection}
-          />
+          <div key={node.id} className="absolute group">
+            {/* Rotate Handle */}
+            <div
+              className={`absolute z-50 rounded-full cursor-rotate transition-opacity opacity-0 group-hover:opacity-100 bg-blue-500 ${
+                isRotating ? "pointer-events-none opacity-100" : ""
+              }`}
+              onMouseDown={(e) => handleStartRotate(e, node.id)}
+              style={{
+                left: `${x}px`,
+                top: `${y}px`,
+                transform: `translate(-50%, -50%) rotate(${
+                  node.data.rotation ?? 0
+                }deg) translateY(-${(32 * zoom) / 100 + 32}px)`,
+                width: `${20 * (zoom / 100)}px`,
+                height: `${20 * (zoom / 100)}px`,
+              }}>
+              <RotateCcw
+                className="text-white"
+                style={{
+                  width: "100%",
+                  height: "100%",
+                }}
+              />
+            </div>
+
+            {/* Node Item */}
+            <NodeItem
+              node={node}
+              x={x}
+              y={y}
+              zoom={zoom}
+              isDragged={draggedNode === node.id}
+              onMouseDown={handleNodeMouseDown}
+              onMouseUp={handleMouseUp}
+              onStartConnect={handleStartConnection}
+              onEndConnect={handleEndConnection}
+            />
+          </div>
         );
       })}
 
       {/* Connection lines */}
       {/* biome-ignore lint/a11y/noSvgWithoutTitle: <intended> */}
-      <svg className="fixed top-0 left-0 z-10 w-screen h-screen pointer-events-none">
+      <svg className="fixed top-0 left-0 z-40 w-screen h-screen pointer-events-none">
         {edges.map((edge) => {
           const sourcePos = getHandlePosition(edge.sourceId, "right");
           const targetPos = getHandlePosition(edge.targetId, "left");
@@ -258,6 +392,7 @@ export const Whiteboard = () => {
           if (!sourcePos || !targetPos) return null;
 
           return (
+            // biome-ignore lint/a11y/useKeyWithClickEvents: SVG element cannot be focused anyway
             <line
               key={edge.id}
               x1={sourcePos.x}
@@ -266,6 +401,11 @@ export const Whiteboard = () => {
               y2={targetPos.y}
               stroke="#3b82f6"
               strokeWidth={12 * (zoom / 100)}
+              onClick={() => {
+                setSelectedEdge(edge);
+                setDrawerEdgeOpen(true);
+              }}
+              style={{ cursor: "pointer", pointerEvents: "stroke" }}
             />
           );
         })}
@@ -273,7 +413,7 @@ export const Whiteboard = () => {
 
       {/* Connection in progress */}
       {/* biome-ignore lint/a11y/noSvgWithoutTitle: <intended> */}
-      <svg className="fixed top-0 left-0 z-10 w-screen h-screen pointer-events-none">
+      <svg className="fixed top-0 left-0 z-40 w-screen h-screen pointer-events-none">
         {connecting &&
           mousePos &&
           (() => {
@@ -300,6 +440,20 @@ export const Whiteboard = () => {
             );
           })()}
       </svg>
+
+      {/* Node Property Drawer */}
+      <NodePropertyDrawer
+        open={drawerNodeOpen}
+        onOpenChange={setDrawerNodeOpen}
+        node={selectedNode}
+      />
+
+      {/* Edge Property Drawer */}
+      <EdgePropertyDrawer
+        open={drawerEdgeOpen}
+        onOpenChange={setDrawerEdgeOpen}
+        edge={selectedEdge}
+      />
     </div>
   );
 };
