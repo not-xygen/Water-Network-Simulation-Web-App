@@ -10,10 +10,12 @@ export const createNode = (
   return {
     id: `${type.charAt(0)}-${nanoid(12)}`,
     type,
-    data: { label, rotation: 0 },
+    data: { label },
     position: {
       x: -offset.x / (zoom / 100),
       y: -offset.y / (zoom / 100),
     },
+    rotation: 0,
+    selected: false,
   };
 };
