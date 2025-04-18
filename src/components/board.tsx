@@ -122,12 +122,7 @@ export const Board = () => {
     setDraggingEdgeHandle,
   });
 
-  const {
-    handleNodeMouseDown,
-    handleStartRotate,
-    handleNodeClick,
-    handleEdgeClick,
-  } = useNodeHandler({
+  const { handleNodeMouseDown, handleStartRotate } = useNodeHandler({
     nodes,
     zoom,
     offset,
@@ -223,7 +218,10 @@ export const Board = () => {
               strokeLinecap="round"
               strokeLinejoin="round"
               strokeWidth={14 * (zoom / 100)}
-              onClick={(e) => handleEdgeClick(e, edge)}
+              onClick={() => {
+                setSelectedEdge(edge);
+                setDrawerEdgeOpen(true);
+              }}
               style={{
                 cursor: "pointer",
                 pointerEvents: "stroke",
@@ -388,7 +386,6 @@ export const Board = () => {
               onMouseUp={handleMouseUp}
               onStartConnect={handleStartConnection}
               onEndConnect={handleEndConnection}
-              onClick={(e) => handleNodeClick(e, node)}
             />
           </div>
         );

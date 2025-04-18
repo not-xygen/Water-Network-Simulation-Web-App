@@ -11,14 +11,11 @@ export const useNodeHandler = ({
   setRotatingNodeId,
   updateNodeRotation,
   setSelectedNode,
-  setSelectedEdge,
   setDrawerNodeOpen,
-  setDrawerEdgeOpen,
   setDraggedNode,
   lastMousePosRef,
   selectedNodes,
   setSelectedNodes,
-  selectedEdges,
   setSelectedEdges,
 }: {
   nodes: Node[];
@@ -45,37 +42,59 @@ export const useNodeHandler = ({
 
       if (mode !== "drag") return;
 
-      lastMousePosRef.current = { x: event.clientX, y: event.clientY };
+      const startX = event.clientX;
+      const startY = event.clientY;
+      lastMousePosRef.current = { x: startX, y: startY };
       setDraggedNode(nodeId);
 
       const clickedNode = nodes.find((n) => n.id === nodeId);
       if (!clickedNode) return;
 
-      const startX = event.clientX;
-      const startY = event.clientY;
+      let didDrag = false;
 
-      const handleMouseUp = (e: globalThis.MouseEvent) => {
-        const dx = Math.abs(e.clientX - startX);
-        const dy = Math.abs(e.clientY - startY);
-        const distance = Math.sqrt(dx * dx + dy * dy);
+      const handleMouseMove = (moveEvent: MouseEvent) => {
+        const dx = Math.abs(moveEvent.clientX - startX);
+        const dy = Math.abs(moveEvent.clientY - startY);
+        if (dx > 2 || dy > 2) didDrag = true;
+      };
 
-        if (distance < 5) {
+      const handleMouseUp = (e: MouseEvent) => {
+        window.removeEventListener("mousemove", handleMouseMove);
+        window.removeEventListener("mouseup", handleMouseUp);
+
+        if (didDrag) return;
+
+        if (e.ctrlKey || e.metaKey) {
+          const already = selectedNodes.find((n) => n.id === clickedNode.id);
+          if (already) {
+            setSelectedNodes(
+              selectedNodes.filter((n) => n.id !== clickedNode.id),
+            );
+          } else {
+            setSelectedNodes([...selectedNodes, clickedNode]);
+          }
+          setSelectedEdges([]);
+        } else {
+          setSelectedNodes([clickedNode]);
+          setSelectedEdges([]);
           setSelectedNode(clickedNode);
           setDrawerNodeOpen(true);
         }
-
-        window.removeEventListener("mouseup", handleMouseUp);
       };
 
+      window.addEventListener("mousemove", handleMouseMove);
       window.addEventListener("mouseup", handleMouseUp);
     },
     [
       mode,
       lastMousePosRef,
       nodes,
-      setDraggedNode,
-      setDrawerNodeOpen,
+      selectedNodes,
+      setSelectedNodes,
+      setSelectedEdges,
       setSelectedNode,
+      setDrawerNodeOpen,
+      setDraggedNode,
     ],
   );
 
@@ -124,70 +143,8 @@ export const useNodeHandler = ({
     window.addEventListener("mouseup", rotateEnd);
   };
 
-  const handleNodeClick = useCallback(
-    (e: React.MouseEvent, node: Node) => {
-      e.stopPropagation();
-
-      if (e.ctrlKey) {
-        console.log("CTRL ditekan!");
-      }
-
-      if (e.ctrlKey || e.metaKey) {
-        const already = selectedNodes.find((n) => n.id === node.id);
-        if (already) {
-          setSelectedNodes(selectedNodes.filter((n) => n.id !== node.id));
-        } else {
-          setSelectedNodes([...selectedNodes, node]);
-        }
-        setSelectedEdges([]); // opsional: deselect edge
-      } else {
-        setSelectedNodes([node]);
-        setSelectedEdges([]);
-        setSelectedNode(node);
-        setDrawerNodeOpen(true);
-      }
-    },
-    [
-      selectedNodes,
-      setSelectedNodes,
-      setSelectedEdges,
-      setSelectedNode,
-      setDrawerNodeOpen,
-    ],
-  );
-
-  const handleEdgeClick = useCallback(
-    (e: React.MouseEvent, edge: Edge) => {
-      e.stopPropagation();
-
-      if (e.ctrlKey || e.metaKey) {
-        const already = selectedEdges.find((ed) => ed.id === edge.id);
-        if (already) {
-          setSelectedEdges(selectedEdges.filter((ed) => ed.id !== edge.id));
-        } else {
-          setSelectedEdges([...selectedEdges, edge]);
-        }
-        setSelectedNodes([]);
-      } else {
-        setSelectedEdges([edge]);
-        setSelectedNodes([]);
-        setSelectedEdge(edge);
-        setDrawerEdgeOpen(true);
-      }
-    },
-    [
-      selectedEdges,
-      setSelectedEdges,
-      setSelectedNodes,
-      setSelectedEdge,
-      setDrawerEdgeOpen,
-    ],
-  );
-
   return {
     handleNodeMouseDown,
     handleStartRotate,
-    handleNodeClick,
-    handleEdgeClick,
   };
 };

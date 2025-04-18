@@ -24,7 +24,6 @@ type NodeItemProps = {
     id: string,
     position: "left" | "right" | "top" | "bottom",
   ) => void;
-  onClick: (e: React.MouseEvent, node: Node) => void;
 };
 
 export const NodeItem = React.memo(function NodeItem({
