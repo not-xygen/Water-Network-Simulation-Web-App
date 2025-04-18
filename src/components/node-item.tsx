@@ -24,6 +24,7 @@ type NodeItemProps = {
     id: string,
     position: "left" | "right" | "top" | "bottom",
   ) => void;
+  onClick: (e: React.MouseEvent, node: Node) => void;
 };
 
 export const NodeItem = React.memo(function NodeItem({
@@ -40,21 +41,21 @@ export const NodeItem = React.memo(function NodeItem({
 }: NodeItemProps) {
   const renderJunctionShape = (subtype: string | undefined) => {
     switch (subtype) {
-      case "T":
+      case "Tee":
         return (
           <div className="relative flex items-center justify-center w-16 h-16">
             <div className="w-full h-4 bg-blue-600" />
             <div className="absolute top-0 w-4 -translate-x-1/2 bg-blue-600 h-1/2 left-1/2" />
           </div>
         );
-      case "4Way":
+      case "Cross":
         return (
           <div className="relative flex items-center justify-center w-16 h-16">
             <div className="absolute left-0 w-full h-4 -translate-y-1/2 bg-green-600 top-1/2" />
             <div className="absolute top-0 w-4 h-full -translate-x-1/2 bg-green-600 left-1/2" />
           </div>
         );
-      case "Inline":
+      case "Coupling":
         return <div className="w-16 h-4 bg-gray-600" />;
       default:
         return <span className="text-sm font-semibold">Node</span>;
@@ -63,9 +64,9 @@ export const NodeItem = React.memo(function NodeItem({
 
   const renderHandles = () => {
     const positions: ("left" | "right" | "top" | "bottom")[] =
-      node.type === "junction" && node.data.label === "4Way"
+      node.type === "fitting" && node.data.label === "Cross"
         ? ["left", "right", "top", "bottom"]
-        : node.type === "junction" && node.data.label === "T"
+        : node.type === "fitting" && node.data.label === "Tee"
         ? ["left", "right", "top"]
         : ["left", "right"];
 
@@ -104,7 +105,7 @@ export const NodeItem = React.memo(function NodeItem({
       onMouseDown={(e) => onMouseDown(e, node.id)}
       onMouseUp={(e) => onMouseUp(e, node.id)}>
       <div className="relative">
-        {node.type === "junction"
+        {node.type === "fitting"
           ? renderJunctionShape(node.data.label as string)
           : node.data.label}
         {renderHandles()}

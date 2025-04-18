@@ -1,5 +1,5 @@
 /* eslint-disable no-unused-vars */
-import type { Node } from "@/store/node-edge";
+import type { Edge, Node } from "@/store/node-edge";
 import type React from "react";
 import { useCallback } from "react";
 
@@ -11,9 +11,15 @@ export const useNodeHandler = ({
   setRotatingNodeId,
   updateNodeRotation,
   setSelectedNode,
+  setSelectedEdge,
   setDrawerNodeOpen,
+  setDrawerEdgeOpen,
   setDraggedNode,
   lastMousePosRef,
+  selectedNodes,
+  setSelectedNodes,
+  selectedEdges,
+  setSelectedEdges,
 }: {
   nodes: Node[];
   zoom: number;
@@ -22,9 +28,15 @@ export const useNodeHandler = ({
   setRotatingNodeId: (id: string | null) => void;
   updateNodeRotation: (id: string, angle: number) => void;
   setSelectedNode: React.Dispatch<React.SetStateAction<Node | null>>;
+  setSelectedEdge: React.Dispatch<React.SetStateAction<Edge | null>>;
   setDrawerNodeOpen: (open: boolean) => void;
+  setDrawerEdgeOpen: (open: boolean) => void;
   setDraggedNode: (id: string | null) => void;
   lastMousePosRef: React.MutableRefObject<{ x: number; y: number } | null>;
+  selectedNodes: Node[];
+  setSelectedNodes: (nodes: Node[]) => void;
+  selectedEdges: Edge[];
+  setSelectedEdges: (edges: Edge[]) => void;
 }) => {
   const handleNodeMouseDown = useCallback(
     (event: React.MouseEvent, nodeId: string) => {
@@ -112,8 +124,70 @@ export const useNodeHandler = ({
     window.addEventListener("mouseup", rotateEnd);
   };
 
+  const handleNodeClick = useCallback(
+    (e: React.MouseEvent, node: Node) => {
+      e.stopPropagation();
+
+      if (e.ctrlKey) {
+        console.log("CTRL ditekan!");
+      }
+
+      if (e.ctrlKey || e.metaKey) {
+        const already = selectedNodes.find((n) => n.id === node.id);
+        if (already) {
+          setSelectedNodes(selectedNodes.filter((n) => n.id !== node.id));
+        } else {
+          setSelectedNodes([...selectedNodes, node]);
+        }
+        setSelectedEdges([]); // opsional: deselect edge
+      } else {
+        setSelectedNodes([node]);
+        setSelectedEdges([]);
+        setSelectedNode(node);
+        setDrawerNodeOpen(true);
+      }
+    },
+    [
+      selectedNodes,
+      setSelectedNodes,
+      setSelectedEdges,
+      setSelectedNode,
+      setDrawerNodeOpen,
+    ],
+  );
+
+  const handleEdgeClick = useCallback(
+    (e: React.MouseEvent, edge: Edge) => {
+      e.stopPropagation();
+
+      if (e.ctrlKey || e.metaKey) {
+        const already = selectedEdges.find((ed) => ed.id === edge.id);
+        if (already) {
+          setSelectedEdges(selectedEdges.filter((ed) => ed.id !== edge.id));
+        } else {
+          setSelectedEdges([...selectedEdges, edge]);
+        }
+        setSelectedNodes([]);
+      } else {
+        setSelectedEdges([edge]);
+        setSelectedNodes([]);
+        setSelectedEdge(edge);
+        setDrawerEdgeOpen(true);
+      }
+    },
+    [
+      selectedEdges,
+      setSelectedEdges,
+      setSelectedNodes,
+      setSelectedEdge,
+      setDrawerEdgeOpen,
+    ],
+  );
+
   return {
     handleNodeMouseDown,
     handleStartRotate,
+    handleNodeClick,
+    handleEdgeClick,
   };
 };

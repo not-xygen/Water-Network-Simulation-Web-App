@@ -23,6 +23,8 @@ export const Board = () => {
     updateEdgeConnection,
     selectedNodes,
     setSelectedNodes,
+    selectedEdges,
+    setSelectedEdges,
   } = useNodeEdgeStore();
 
   const isDraggingBoardRef = useRef(false);
@@ -83,7 +85,7 @@ export const Board = () => {
     };
   }, []);
 
-  const { handleWheel, handleBoardMouseDown, handleMouseUp, handleMouseMove } =
+  const { handleBoardMouseDown, handleMouseUp, handleMouseMove } =
     useBoardHandler({
       zoom,
       offset,
@@ -120,7 +122,12 @@ export const Board = () => {
     setDraggingEdgeHandle,
   });
 
-  const { handleNodeMouseDown, handleStartRotate } = useNodeHandler({
+  const {
+    handleNodeMouseDown,
+    handleStartRotate,
+    handleNodeClick,
+    handleEdgeClick,
+  } = useNodeHandler({
     nodes,
     zoom,
     offset,
@@ -128,9 +135,15 @@ export const Board = () => {
     setRotatingNodeId,
     updateNodeRotation,
     setSelectedNode,
+    setSelectedEdge,
     setDrawerNodeOpen,
+    setDrawerEdgeOpen,
     setDraggedNode,
     lastMousePosRef,
+    selectedNodes,
+    setSelectedNodes,
+    selectedEdges,
+    setSelectedEdges,
   });
 
   const { worldToScreen, getHandlePosition } = useHandlePosition({
@@ -139,11 +152,29 @@ export const Board = () => {
     offset,
   });
 
+  useEffect(() => {
+    const board = document.getElementById("board-container");
+    if (!board) return;
+
+    const handleWheel = (e: WheelEvent) => {
+      e.preventDefault();
+      if (e.deltaY > 0) zoomOut();
+      else zoomIn();
+    };
+
+    board.addEventListener("wheel", handleWheel as EventListener, {
+      passive: false,
+    });
+
+    return () => {
+      board.removeEventListener("wheel", handleWheel);
+    };
+  }, [zoomIn, zoomOut]);
+
   return (
     <div
       id="board-container"
       className="w-screen h-screen overflow-hidden bg-gray-100"
-      onWheel={handleWheel}
       onMouseDown={handleBoardMouseDown}
       onMouseUp={handleMouseUp}
       onMouseLeave={handleMouseUp}
@@ -192,10 +223,7 @@ export const Board = () => {
               strokeLinecap="round"
               strokeLinejoin="round"
               strokeWidth={14 * (zoom / 100)}
-              onClick={() => {
-                setSelectedEdge(edge);
-                setDrawerEdgeOpen(true);
-              }}
+              onClick={(e) => handleEdgeClick(e, edge)}
               style={{
                 cursor: "pointer",
                 pointerEvents: "stroke",
@@ -360,6 +388,7 @@ export const Board = () => {
               onMouseUp={handleMouseUp}
               onStartConnect={handleStartConnection}
               onEndConnect={handleEndConnection}
+              onClick={(e) => handleNodeClick(e, node)}
             />
           </div>
         );

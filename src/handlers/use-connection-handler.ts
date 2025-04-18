@@ -1,6 +1,7 @@
 /* eslint-disable no-unused-vars */
 import { useCallback } from "react";
 import type { Edge } from "@/store/node-edge";
+import { nanoid } from "nanoid";
 
 export const useConnectionHandler = ({
   addEdge,
@@ -70,31 +71,7 @@ export const useConnectionHandler = ({
         setMousePos({ x: moveX, y: moveY });
       };
 
-      const handleMouseUp = (e: globalThis.MouseEvent) => {
-        const target = document.elementFromPoint(e.clientX, e.clientY);
-        const handle = target?.closest("[data-handle]") as HTMLElement | null;
-
-        const targetId = handle
-          ?.closest("[data-node-id]")
-          ?.getAttribute("data-node-id");
-        const pos = handle?.getAttribute("data-position") as
-          | "left"
-          | "right"
-          | "top"
-          | "bottom";
-
-        if (!connecting) return;
-
-        if (targetId && targetId !== connecting.sourceId) {
-          addEdge({
-            id: `edge-${connecting.sourceId}-${targetId}`,
-            sourceId: connecting.sourceId,
-            targetId,
-            sourcePosition: connecting.sourcePosition,
-            targetPosition: pos ?? "left",
-          });
-        }
-
+      const handleMouseUp = () => {
         isConnectingRef.current = false;
         setConnecting(null);
         setMousePos(null);
@@ -105,7 +82,7 @@ export const useConnectionHandler = ({
       window.addEventListener("mousemove", handleMouseMove);
       window.addEventListener("mouseup", handleMouseUp);
     },
-    [addEdge, connecting, isConnectingRef, setConnecting, setMousePos],
+    [isConnectingRef, setConnecting, setMousePos],
   );
 
   const handleEndConnection = useCallback(
@@ -124,21 +101,23 @@ export const useConnectionHandler = ({
 
       const edgeExists = edges.some(
         (e) =>
-          (e.sourceId === connecting.sourceId && e.targetId === nodeId) ||
-          (e.sourceId === nodeId && e.targetId === connecting.sourceId),
+          e.sourceId === connecting.sourceId &&
+          e.targetId === nodeId &&
+          e.sourcePosition === connecting.sourcePosition &&
+          e.targetPosition === position,
       );
 
       if (edgeExists) {
         console.warn("Edge sudah ada, tidak bisa membuat koneksi ganda.");
-        return;
+      } else {
+        addEdge({
+          id: `e-${nanoid(12)}`,
+          sourceId: connecting.sourceId,
+          targetId: nodeId,
+          sourcePosition: connecting.sourcePosition,
+          targetPosition: position,
+        });
       }
-      addEdge({
-        id: `edge-${connecting.sourceId}-${nodeId}`,
-        sourceId: connecting.sourceId,
-        targetId: nodeId,
-        sourcePosition: connecting.sourcePosition,
-        targetPosition: position,
-      });
 
       setConnecting(null);
       setMousePos(null);

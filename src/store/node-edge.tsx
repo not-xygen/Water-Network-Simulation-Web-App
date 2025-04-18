@@ -39,6 +39,8 @@ export type NodeEdgeState = {
   removeEdge: (id: string) => void;
   selectedNodes: Node[];
   setSelectedNodes: (nodes: Node[]) => void;
+  selectedEdges: Edge[];
+  setSelectedEdges: (edges: Edge[]) => void;
 };
 
 const useNodeEdgeStore = create<NodeEdgeState>((set) => ({
@@ -108,6 +110,11 @@ const useNodeEdgeStore = create<NodeEdgeState>((set) => ({
   setSelectedNodes: (nodes) =>
     set(() => ({
       selectedNodes: nodes,
+    })),
+  selectedEdges: [],
+  setSelectedEdges: (edges) =>
+    set(() => ({
+      selectedEdges: edges,
     })),
 }));
 
