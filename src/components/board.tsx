@@ -166,6 +166,152 @@ export const Board = () => {
         }}
       />
 
+      {/* biome-ignore lint/a11y/noSvgWithoutTitle: <intended> */}
+      <svg className="absolute top-0 left-0 w-full h-full pointer-events-none z-[45] bg-red">
+        {/* Connection lines */}
+        {edges.map((edge) => {
+          const sourcePos = getHandlePosition(
+            edge.sourceId,
+            edge.sourcePosition,
+          );
+          const targetPos = getHandlePosition(
+            edge.targetId,
+            edge.targetPosition,
+          );
+          if (!sourcePos || !targetPos) return null;
+
+          return (
+            // biome-ignore lint/a11y/useKeyWithClickEvents: <intended>
+            <line
+              key={edge.id}
+              x1={sourcePos.x}
+              y1={sourcePos.y}
+              x2={targetPos.x}
+              y2={targetPos.y}
+              stroke="#3b82f6"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              strokeWidth={14 * (zoom / 100)}
+              onClick={() => {
+                setSelectedEdge(edge);
+                setDrawerEdgeOpen(true);
+              }}
+              style={{
+                cursor: "pointer",
+                pointerEvents: "stroke",
+              }}
+            />
+          );
+        })}
+
+        {/* Connection progress while creating new */}
+        {connecting &&
+          mousePos &&
+          (() => {
+            const sourcePos = getHandlePosition(
+              connecting.sourceId,
+              connecting.sourcePosition,
+            );
+            if (!sourcePos) return null;
+
+            return (
+              <line
+                x1={sourcePos.x}
+                y1={sourcePos.y}
+                x2={mousePos.x}
+                y2={mousePos.y}
+                stroke="gray"
+                strokeWidth={12 * (zoom / 100)}
+                strokeDasharray="4 4"
+              />
+            );
+          })()}
+
+        {/* Connection progress while reconnecting */}
+        {draggingEdgeHandle &&
+          mousePos &&
+          (() => {
+            const edge = edges.find((e) => e.id === draggingEdgeHandle.edgeId);
+            if (!edge) return null;
+
+            const fromPosition =
+              draggingEdgeHandle.type === "source"
+                ? edge.targetPosition
+                : edge.sourcePosition;
+
+            const fixedNodeId =
+              draggingEdgeHandle.type === "source"
+                ? edge.targetId
+                : edge.sourceId;
+
+            const fixedPos = getHandlePosition(fixedNodeId, fromPosition);
+            if (!fixedPos) return null;
+
+            const x1 =
+              draggingEdgeHandle.type === "source" ? mousePos.x : fixedPos.x;
+            const y1 =
+              draggingEdgeHandle.type === "source" ? mousePos.y : fixedPos.y;
+            const x2 =
+              draggingEdgeHandle.type === "source" ? fixedPos.x : mousePos.x;
+            const y2 =
+              draggingEdgeHandle.type === "source" ? fixedPos.y : mousePos.y;
+
+            return (
+              <line
+                x1={x1}
+                y1={y1}
+                x2={x2}
+                y2={y2}
+                stroke="gray"
+                strokeWidth={12 * (zoom / 100)}
+                strokeDasharray="4 4"
+              />
+            );
+          })()}
+
+        {/* Reconnecting Edge */}
+        {draggingEdgeHandle &&
+          mousePos &&
+          (() => {
+            const edge = edges.find((e) => e.id === draggingEdgeHandle.edgeId);
+            if (!edge) return null;
+
+            const fromPosition =
+              draggingEdgeHandle.type === "source"
+                ? edge.targetPosition
+                : edge.sourcePosition;
+
+            const fixedNodeId =
+              draggingEdgeHandle.type === "source"
+                ? edge.targetId
+                : edge.sourceId;
+
+            const fixedPos = getHandlePosition(fixedNodeId, fromPosition);
+            if (!fixedPos) return null;
+
+            const x1 =
+              draggingEdgeHandle.type === "source" ? mousePos.x : fixedPos.x;
+            const y1 =
+              draggingEdgeHandle.type === "source" ? mousePos.y : fixedPos.y;
+            const x2 =
+              draggingEdgeHandle.type === "source" ? fixedPos.x : mousePos.x;
+            const y2 =
+              draggingEdgeHandle.type === "source" ? fixedPos.y : mousePos.y;
+
+            return (
+              <line
+                x1={x1}
+                y1={y1}
+                x2={x2}
+                y2={y2}
+                stroke="gray"
+                strokeWidth={12 * (zoom / 100)}
+                strokeDasharray="4 4"
+              />
+            );
+          })()}
+      </svg>
+
       {/* Nodes */}
       {nodes.map((node) => {
         const { x, y } = worldToScreen(node);
@@ -219,45 +365,6 @@ export const Board = () => {
         );
       })}
 
-      {/* Connection lines */}
-      {/* biome-ignore lint/a11y/noSvgWithoutTitle: <intended> */}
-      <svg className="absolute top-0 left-0 z-40 w-full h-full pointer-events-none">
-        {edges.map((edge) => {
-          const sourcePos = getHandlePosition(
-            edge.sourceId,
-            edge.sourcePosition,
-          );
-          const targetPos = getHandlePosition(
-            edge.targetId,
-            edge.targetPosition,
-          );
-          if (!sourcePos || !targetPos) return null;
-
-          return (
-            // biome-ignore lint/a11y/useKeyWithClickEvents: <intended>
-            <line
-              key={edge.id}
-              x1={sourcePos.x}
-              y1={sourcePos.y}
-              x2={targetPos.x}
-              y2={targetPos.y}
-              stroke="#3b82f6"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              strokeWidth={14 * (zoom / 100)}
-              onClick={() => {
-                setSelectedEdge(edge);
-                setDrawerEdgeOpen(true);
-              }}
-              style={{
-                cursor: "pointer",
-                pointerEvents: "stroke",
-              }}
-            />
-          );
-        })}
-      </svg>
-
       {/* Edge Reconnection Points */}
       {edges.map((edge) => {
         const sourcePos = getHandlePosition(edge.sourceId, edge.sourcePosition);
@@ -267,11 +374,13 @@ export const Board = () => {
         return (
           <div key={edge.id}>
             <div
-              className="absolute z-50 w-4 h-4 bg-white border border-blue-500 rounded-full cursor-crosshair"
+              className="absolute z-50 bg-white border border-blue-500 rounded-full cursor-crosshair"
               style={{
                 left: `${sourcePos.x}px`,
                 top: `${sourcePos.y}px`,
                 transform: "translate(-50%, -50%)",
+                width: `${16 * (zoom / 100)}px`,
+                height: `${16 * (zoom / 100)}px`,
               }}
               data-handle
               data-node-id={edge.sourceId}
@@ -286,6 +395,8 @@ export const Board = () => {
                 left: `${targetPos.x}px`,
                 top: `${targetPos.y}px`,
                 transform: "translate(-50%, -50%)",
+                width: `${16 * (zoom / 100)}px`,
+                height: `${16 * (zoom / 100)}px`,
               }}
               data-handle
               data-node-id={edge.targetId}
@@ -298,130 +409,10 @@ export const Board = () => {
         );
       })}
 
-      {/* Connection Progress */}
-      {draggingEdgeHandle &&
-        mousePos &&
-        (() => {
-          const edge = edges.find((e) => e.id === draggingEdgeHandle.edgeId);
-          if (!edge) return null;
-
-          const fromPosition =
-            draggingEdgeHandle.type === "source"
-              ? edge.targetPosition
-              : edge.sourcePosition;
-
-          const fixedNodeId =
-            draggingEdgeHandle.type === "source"
-              ? edge.targetId
-              : edge.sourceId;
-
-          const fixedPos = getHandlePosition(fixedNodeId, fromPosition);
-          if (!fixedPos) return null;
-
-          const x1 =
-            draggingEdgeHandle.type === "source" ? mousePos.x : fixedPos.x;
-          const y1 =
-            draggingEdgeHandle.type === "source" ? mousePos.y : fixedPos.y;
-          const x2 =
-            draggingEdgeHandle.type === "source" ? fixedPos.x : mousePos.x;
-          const y2 =
-            draggingEdgeHandle.type === "source" ? fixedPos.y : mousePos.y;
-
-          return (
-            // biome-ignore lint/a11y/noSvgWithoutTitle: <explanation>
-            <svg className="fixed top-0 left-0 z-50 w-screen h-screen pointer-events-none">
-              <line
-                x1={x1}
-                y1={y1}
-                x2={x2}
-                y2={y2}
-                stroke="gray"
-                strokeWidth={12 * (zoom / 100)}
-                strokeDasharray="4 4"
-              />
-            </svg>
-          );
-        })()}
-
-      {/* Connection in progress */}
-      {connecting &&
-        mousePos &&
-        (() => {
-          const sourceNode = nodes.find((n) => n.id === connecting.sourceId);
-          if (!sourceNode) return null;
-
-          const sourcePos = getHandlePosition(
-            connecting.sourceId,
-            connecting.sourcePosition as "left" | "right" | "top" | "bottom",
-          );
-
-          if (!sourcePos) return null;
-
-          return (
-            // biome-ignore lint/a11y/noSvgWithoutTitle: <intended>
-            <svg className="fixed top-0 left-0 z-40 w-screen h-screen pointer-events-none">
-              <line
-                x1={sourcePos.x}
-                y1={sourcePos.y}
-                x2={mousePos.x}
-                y2={mousePos.y}
-                stroke="gray"
-                strokeWidth={12 * (zoom / 100)}
-                strokeDasharray="5,5"
-              />
-            </svg>
-          );
-        })()}
-
-      {/* Reconnecting Edge */}
-      {draggingEdgeHandle &&
-        mousePos &&
-        (() => {
-          const edge = edges.find((e) => e.id === draggingEdgeHandle.edgeId);
-          if (!edge) return null;
-
-          const fromPosition =
-            draggingEdgeHandle.type === "source"
-              ? edge.targetPosition
-              : edge.sourcePosition;
-
-          const fixedNodeId =
-            draggingEdgeHandle.type === "source"
-              ? edge.targetId
-              : edge.sourceId;
-
-          const fixedPos = getHandlePosition(fixedNodeId, fromPosition);
-          if (!fixedPos) return null;
-
-          const x1 =
-            draggingEdgeHandle.type === "source" ? mousePos.x : fixedPos.x;
-          const y1 =
-            draggingEdgeHandle.type === "source" ? mousePos.y : fixedPos.y;
-          const x2 =
-            draggingEdgeHandle.type === "source" ? fixedPos.x : mousePos.x;
-          const y2 =
-            draggingEdgeHandle.type === "source" ? fixedPos.y : mousePos.y;
-
-          return (
-            // biome-ignore lint/a11y/noSvgWithoutTitle: <explanation>
-            <svg className="fixed top-0 left-0 z-50 w-screen h-screen pointer-events-none">
-              <line
-                x1={x1}
-                y1={y1}
-                x2={x2}
-                y2={y2}
-                stroke="gray"
-                strokeWidth={12 * (zoom / 100)}
-                strokeDasharray="4 4"
-              />
-            </svg>
-          );
-        })()}
-
       {/* Selection Box */}
       {selectionStart && selectionEnd && (
         <div
-          className="absolute z-50 border border-blue-500 bg-blue-500/10"
+          className="absolute z-40 border border-blue-500 bg-blue-500/10"
           style={{
             left: Math.min(selectionStart.x, selectionEnd.x),
             top: Math.min(selectionStart.y, selectionEnd.y),
@@ -446,7 +437,12 @@ export const Board = () => {
       {/* Edge Property Drawer */}
       <EdgePropertyDrawer
         open={drawerEdgeOpen}
-        onOpenChange={setDrawerEdgeOpen}
+        onOpenChange={(open) => {
+          setDrawerEdgeOpen(open);
+          if (!open) {
+            setSelectedEdge(null);
+          }
+        }}
         edge={selectedEdge}
       />
     </div>
