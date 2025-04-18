@@ -67,10 +67,7 @@ const useNodeEdgeStore = create<NodeEdgeState>((set) => ({
         node.id === id
           ? {
               ...node,
-              data: {
-                ...node.data,
-                rotation: angle,
-              },
+              rotation: angle,
             }
           : node,
       ),

@@ -175,10 +175,12 @@ export const Board = () => {
           <div key={node.id} className="absolute group">
             {/* Rotate Handle */}
             <div
-              className={`absolute z-50 rounded-full cursor-rotate transition-opacity opacity-0 group-hover:opacity-100 bg-blue-500 ${
+              className={`absolute z-[60] rounded-full cursor-rotate transition-opacity opacity-0 group-hover:opacity-100 bg-blue-500 ${
                 isRotating ? "pointer-events-none opacity-100" : ""
               }`}
-              onMouseDown={(e) => handleStartRotate(e, node.id)}
+              onMouseDown={(e) => {
+                handleStartRotate(e, node.id);
+              }}
               style={{
                 left: `${x}px`,
                 top: `${y}px`,
