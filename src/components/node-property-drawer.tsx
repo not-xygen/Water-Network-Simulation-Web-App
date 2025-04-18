@@ -52,8 +52,8 @@ export const NodePropertyDrawer = ({ open, onOpenChange, node }: Props) => {
           variant="destructive"
           className="w-full"
           onClick={() => {
-            removeNode(node.id); // Hapus node dari store
-            onOpenChange(false); // Tutup drawer
+            removeNode(node.id);
+            onOpenChange(false);
           }}>
           Hapus Node
         </Button>

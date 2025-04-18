@@ -127,7 +127,6 @@ export const useBoardHandler = ({
         setSelectedNodes(selected);
       }
 
-      // reset
       setSelectionStart(null);
       setSelectionEnd(null);
       isDraggingBoardRef.current = false;

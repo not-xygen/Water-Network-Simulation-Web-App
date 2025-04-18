@@ -112,32 +112,38 @@ export const useConnectionHandler = ({
     (
       event: React.MouseEvent,
       nodeId: string,
-      position: "left" | "right" | "top" | "bottom", // 🔁 ubah dari _position jadi position
+      position: "left" | "right" | "top" | "bottom",
     ) => {
       event.stopPropagation();
 
-      if (
-        connecting &&
-        connecting.sourceId !== nodeId &&
-        !edges.find(
-          (e) =>
-            (e.sourceId === connecting.sourceId && e.targetId === nodeId) ||
-            (e.sourceId === nodeId && e.targetId === connecting.sourceId),
-        )
-      ) {
-        addEdge({
-          id: `edge-${connecting.sourceId}-${nodeId}`,
-          sourceId: connecting.sourceId,
-          targetId: nodeId,
-          sourcePosition: connecting.sourcePosition,
-          targetPosition: position,
-        });
+      if (!connecting || connecting.sourceId === nodeId) {
+        setConnecting(null);
+        setMousePos(null);
+        return;
       }
+
+      const edgeExists = edges.some(
+        (e) =>
+          (e.sourceId === connecting.sourceId && e.targetId === nodeId) ||
+          (e.sourceId === nodeId && e.targetId === connecting.sourceId),
+      );
+
+      if (edgeExists) {
+        console.warn("Edge sudah ada, tidak bisa membuat koneksi ganda.");
+        return;
+      }
+      addEdge({
+        id: `edge-${connecting.sourceId}-${nodeId}`,
+        sourceId: connecting.sourceId,
+        targetId: nodeId,
+        sourcePosition: connecting.sourcePosition,
+        targetPosition: position,
+      });
 
       setConnecting(null);
       setMousePos(null);
     },
-    [connecting, edges, setConnecting, setMousePos, addEdge],
+    [connecting, edges, addEdge, setConnecting, setMousePos],
   );
 
   const handleStartEdgeReconnect = useCallback(

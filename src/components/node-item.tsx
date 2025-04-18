@@ -96,7 +96,7 @@ export const NodeItem = React.memo(function NodeItem({
         boxShadow: isDragged
           ? "0 0 0 2px white, 0 0 0 4px #3b82f6"
           : isSelected
-          ? "0 0 0 2px white, 0 0 0 4px #60a5fa" // ring biru jika selected
+          ? "0 0 0 2px white, 0 0 0 4px #60a5fa"
           : undefined,
 
         zIndex: isDragged ? 100 : 0,
