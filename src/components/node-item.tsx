@@ -1,7 +1,7 @@
 /* eslint-disable no-unused-vars */
-import type React from "react";
+import React from "react";
 
-import { ConnectionHandle } from "./connection-handle";
+import { EdgeConnectionPoint } from "./edge-connection-point";
 
 import type { Node } from "@/store/node-edge";
 
@@ -11,6 +11,7 @@ type NodeItemProps = {
   y: number;
   zoom: number;
   isDragged: boolean;
+  isSelected: boolean;
   onMouseDown: (e: React.MouseEvent, id: string) => void;
   onMouseUp: (e: React.MouseEvent, id: string) => void;
   onStartConnect: (
@@ -25,17 +26,18 @@ type NodeItemProps = {
   ) => void;
 };
 
-export const NodeItem: React.FC<NodeItemProps> = ({
+export const NodeItem = React.memo(function NodeItem({
   node,
   x,
   y,
   zoom,
   isDragged,
+  isSelected,
   onMouseDown,
   onMouseUp,
   onStartConnect,
   onEndConnect,
-}) => {
+}: NodeItemProps) {
   const renderJunctionShape = (subtype: string | undefined) => {
     switch (subtype) {
       case "T":
@@ -63,12 +65,16 @@ export const NodeItem: React.FC<NodeItemProps> = ({
     const positions: ("left" | "right" | "top" | "bottom")[] =
       node.type === "junction" && node.data.label === "4Way"
         ? ["left", "right", "top", "bottom"]
+        : node.type === "junction" && node.data.label === "T"
+        ? ["left", "right", "top"]
         : ["left", "right"];
 
     return positions.map((pos) => (
-      <ConnectionHandle
+      <EdgeConnectionPoint
         key={pos}
+        nodeId={node.id}
         position={pos}
+        data-position={pos}
         onMouseDown={(e) => onStartConnect(e, node.id, pos)}
         onMouseUp={(e) => onEndConnect(e, node.id, pos)}
         data-handle
@@ -84,11 +90,16 @@ export const NodeItem: React.FC<NodeItemProps> = ({
         left: `${x}px`,
         top: `${y}px`,
         transform: `translate(-50%, -50%) scale(${zoom / 100}) rotate(${
-          node.data.rotation ?? 0
+          node.rotation ?? 0
         }deg)`,
         transformOrigin: "center",
-        boxShadow: isDragged ? "0 0 0 2px white, 0 0 0 4px #3b82f6" : undefined,
-        zIndex: isDragged ? 100 : 50,
+        boxShadow: isDragged
+          ? "0 0 0 2px white, 0 0 0 4px #3b82f6"
+          : isSelected
+          ? "0 0 0 2px white, 0 0 0 4px #60a5fa" // ring biru jika selected
+          : undefined,
+
+        zIndex: isDragged ? 100 : 0,
       }}
       onMouseDown={(e) => onMouseDown(e, node.id)}
       onMouseUp={(e) => onMouseUp(e, node.id)}>
@@ -100,4 +111,4 @@ export const NodeItem: React.FC<NodeItemProps> = ({
       </div>
     </div>
   );
-};
+});

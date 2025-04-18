@@ -1,3 +1,4 @@
+import { nanoid } from "nanoid";
 import type { Node } from "@/store/node-edge";
 
 export const createNode = (
@@ -7,9 +8,9 @@ export const createNode = (
   label = "Node",
 ): Node => {
   return {
-    id: `${type}-${Date.now()}`,
+    id: `${type.charAt(0)}-${nanoid(12)}`,
     type,
-    data: { label },
+    data: { label, rotation: 0 },
     position: {
       x: -offset.x / (zoom / 100),
       y: -offset.y / (zoom / 100),

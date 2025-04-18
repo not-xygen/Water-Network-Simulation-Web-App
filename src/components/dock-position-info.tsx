@@ -3,7 +3,7 @@ import useGlobalStore from "@/store/globals";
 import { Button } from "./ui/button";
 import { RotateCcw } from "lucide-react";
 
-export const PositionDock: React.FC = () => {
+export const DockPositionInfo: React.FC = () => {
   const { offset, setOffset } = useGlobalStore();
 
   const resetPosition = () => {

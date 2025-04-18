@@ -5,6 +5,8 @@ export type Edge = {
   id: string;
   sourceId: string;
   targetId: string;
+  sourcePosition: "left" | "right" | "top" | "bottom";
+  targetPosition: "left" | "right" | "top" | "bottom";
 };
 
 export type Node = {
@@ -12,9 +14,10 @@ export type Node = {
   type: string;
   data: {
     label: string | JSX.Element;
-    rotation?: number; // 🌪️ ditambahkan
   };
   position: { x: number; y: number };
+  rotation?: number;
+  selected: boolean;
 };
 
 export type NodeEdgeState = {
@@ -25,7 +28,17 @@ export type NodeEdgeState = {
   removeNode: (id: string) => void;
   edges: Edge[];
   addEdge: (edge: Edge) => void;
+  updateEdgeConnection: (
+    edgeId: string,
+    args: {
+      from: "source" | "target";
+      newNodeId: string;
+      newPosition: "left" | "right" | "top" | "bottom";
+    },
+  ) => void;
   removeEdge: (id: string) => void;
+  selectedNodes: Node[];
+  setSelectedNodes: (nodes: Node[]) => void;
 };
 
 const useNodeEdgeStore = create<NodeEdgeState>((set) => ({
@@ -48,30 +61,56 @@ const useNodeEdgeStore = create<NodeEdgeState>((set) => ({
           : node,
       ),
     })),
-  updateNodeRotation: (id: string, angle: number) =>
-    set((state) => {
-      const index = state.nodes.findIndex((n) => n.id === id);
-      if (index === -1) return state;
-      const updatedNodes = [...state.nodes];
-      updatedNodes[index] = {
-        ...updatedNodes[index],
-        data: { ...updatedNodes[index].data, rotation: angle },
-      };
-      return { nodes: updatedNodes };
-    }),
-
+  updateNodeRotation: (id, angle) =>
+    set((state) => ({
+      nodes: state.nodes.map((node) =>
+        node.id === id
+          ? {
+              ...node,
+              data: {
+                ...node.data,
+                rotation: angle,
+              },
+            }
+          : node,
+      ),
+    })),
   removeNode: (id) =>
     set((state) => ({
       nodes: state.nodes.filter((node) => node.id !== id),
+      edges: state.edges.filter(
+        (edge) => edge.sourceId !== id && edge.targetId !== id,
+      ),
     })),
   edges: [],
   addEdge: (edge) =>
+    set((state) => {
+      const exists = state.edges.some(
+        (e) => e.sourceId === edge.sourceId && e.targetId === edge.targetId,
+      );
+      if (exists) return state;
+      return { edges: [...state.edges, edge] };
+    }),
+  updateEdgeConnection: (edgeId, { from, newNodeId, newPosition }) =>
     set((state) => ({
-      edges: [...state.edges, edge],
+      edges: state.edges.map((edge) => {
+        if (edge.id !== edgeId) return edge;
+        return {
+          ...edge,
+          ...(from === "source"
+            ? { sourceId: newNodeId, sourcePosition: newPosition }
+            : { targetId: newNodeId, targetPosition: newPosition }),
+        };
+      }),
     })),
   removeEdge: (id) =>
     set((state) => ({
       edges: state.edges.filter((e) => e.id !== id),
+    })),
+  selectedNodes: [],
+  setSelectedNodes: (nodes) =>
+    set(() => ({
+      selectedNodes: nodes,
     })),
 }));
 

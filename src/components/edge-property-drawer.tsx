@@ -40,6 +40,12 @@ export const EdgePropertyDrawer = ({ open, onOpenChange, edge }: Props) => {
           <div>
             <strong>Target:</strong> {edge.targetId}
           </div>
+          <div>
+            <strong>Source Position:</strong> {edge.sourcePosition}
+          </div>
+          <div>
+            <strong>Target Position:</strong> {edge.targetPosition}
+          </div>
         </div>
 
         <hr className="my-4 border-t" />

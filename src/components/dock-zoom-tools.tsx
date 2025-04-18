@@ -3,13 +3,13 @@ import useGlobalStore from "../store/globals";
 import { Minus, Plus } from "lucide-react";
 import { Button } from "./ui/button";
 
-export const ZoomDock: React.FC = () => {
+export const DockZoomTools: React.FC = () => {
   const zoom = useGlobalStore((state) => state.zoom);
   const zoomIn = useGlobalStore((state) => state.zoomIn);
   const zoomOut = useGlobalStore((state) => state.zoomOut);
 
   return (
-    <div className="fixed z-10 flex items-center p-2 space-x-2 bg-gray-100 rounded-lg shadow bottom-4 right-4">
+    <div className="fixed z-50 flex items-center p-2 space-x-2 bg-gray-100 rounded-lg shadow bottom-4 right-4">
       <Button
         className="p-2 rounded "
         onClick={zoomOut}

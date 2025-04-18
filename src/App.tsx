@@ -1,17 +1,17 @@
-import { Whiteboard } from "./components/whiteboard";
-import { ToolsDock } from "./components/tools-dock";
-import { PositionDock } from "./components/position-dock";
-import { ZoomDock } from "./components/zoom-dock";
+import { Board } from "./components/board";
+import { DockNodeTools } from "./components/dock-node-tools";
+import { DockPositionInfo } from "./components/dock-position-info";
+import { DockZoomTools } from "./components/dock-zoom-tools";
 
 function App() {
   return (
     <div
       id="board-container"
       className="relative w-screen h-screen overflow-hidden">
-      <Whiteboard />
-      <ToolsDock />
-      <PositionDock />
-      <ZoomDock />
+      <Board />
+      <DockNodeTools />
+      <DockPositionInfo />
+      <DockZoomTools />
     </div>
   );
 }

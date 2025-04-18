@@ -20,12 +20,12 @@ const tools = [
   { id: "filter", name: "Valve", icon: <Filter size={16} /> },
 ];
 
-export const ToolsDock = () => {
+export const DockNodeTools = () => {
   const { offset, zoom } = useGlobalStore();
   const { addNode } = useNodeEdgeStore();
 
   return (
-    <div className="fixed z-10 flex flex-col p-2 space-y-2 transform -translate-x-1/2 bg-white shadow top-4 left-1/2 rounded-xl">
+    <div className="fixed z-50 flex flex-col p-2 space-y-2 transform -translate-x-1/2 bg-white shadow top-4 left-1/2 rounded-xl">
       <div className="flex flex-row space-x-2">
         {tools.map((tool) =>
           tool.id === "junction" ? (
