@@ -332,7 +332,7 @@ export const Board = () => {
                 top: `${y}px`,
                 transform: `translate(-50%, -50%) rotate(${
                   node.rotation ?? 0
-                }deg) translateY(-${(32 * zoom) / 100 + 32}px)`,
+                }deg) translateY(-${60 * (zoom / 100)}px)`,
                 width: `${20 * (zoom / 100)}px`,
                 height: `${20 * (zoom / 100)}px`,
               }}>
