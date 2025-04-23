@@ -1,6 +1,18 @@
 import type { Node, Edge } from "@/store/node-edge";
+import useGlobalStore from "@/store/globals";
 import useNodeEdgeStore from "@/store/node-edge";
+
 import { Button } from "./ui/button";
+import { ChevronDown, RotateCcw, ZoomInIcon, ZoomOutIcon } from "lucide-react";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuGroup,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+  Separator,
+} from "@radix-ui/react-dropdown-menu";
 
 type SidebarRightProps = {
   node: Node | null;
@@ -13,18 +25,76 @@ export const SidebarRight = ({
   edge,
   onClearSelection,
 }: SidebarRightProps) => {
+  const { zoom, resetZoom, zoomIn, zoomOut, offset, setOffset } =
+    useGlobalStore();
+
+  const resetPosition = () => {
+    setOffset(0, 0);
+  };
+
   const { removeNode, removeEdge } = useNodeEdgeStore();
 
-  if (!node && !edge)
-    return (
-      <div className="p-4">Pilih node atau edge untuk melihat properti</div>
-    );
+  const displayX = -offset.x;
+  const displayY = offset.y;
 
   return (
-    <div className="w-full h-full p-4 space-y-4 overflow-y-auto border-l">
+    <div className="w-full h-full p-2 overflow-y-auto border-l">
+      <div className="flex items-center justify-between p-2 text-sm font-semibold text-gray-700">
+        <div className="flex flex-row items-center justify-between w-full space-x-2">
+          <div className="flex flex-row space-x-2">
+            <div>X: {displayX.toFixed(0)}</div>
+            <div>Y: {displayY.toFixed(0)}</div>
+          </div>
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button
+                className="flex flex-row justify-end w-1/3 gap-1 px-3 py-1 space-x-2 h-max"
+                variant={"outline"}>
+                {zoom} <ChevronDown className="p-0" />
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent
+              className="p-2 space-y-1 text-xs bg-white border rounded-lg shadow cursor-pointer w-max"
+              align="end">
+              <DropdownMenuGroup className="space-y-1">
+                <DropdownMenuItem
+                  className="flex flex-row items-center gap-2 p-1"
+                  onClick={zoomIn}>
+                  <ZoomInIcon className="w-4 h-4" />
+                  <span>Zoom In</span>
+                </DropdownMenuItem>
+                <DropdownMenuItem
+                  className="flex flex-row items-center gap-2 p-1"
+                  onClick={zoomOut}>
+                  <ZoomOutIcon className="w-4 h-4" />
+                  <span>Zoom Out</span>
+                </DropdownMenuItem>
+                <DropdownMenuItem
+                  className="flex flex-row items-center gap-2 p-1"
+                  onClick={resetZoom}>
+                  <RotateCcw className="w-4 h-4" />
+                  <span>Reset Zoom</span>
+                </DropdownMenuItem>
+              </DropdownMenuGroup>
+              <DropdownMenuSeparator className="h-1 bg-gray-200 rounded-md" />
+              <DropdownMenuGroup>
+                <DropdownMenuItem
+                  className="flex flex-row items-center gap-2 p-1"
+                  onClick={resetPosition}>
+                  <RotateCcw className="w-4 h-4" />
+                  <span>Reset Position</span>
+                </DropdownMenuItem>
+              </DropdownMenuGroup>
+            </DropdownMenuContent>
+          </DropdownMenu>
+        </div>
+      </div>
+
+      <Separator className="h-1 bg-gray-200 rounded-md" />
+
       {/* Node Property */}
-      {node && (
-        <div className="space-y-2 text-sm">
+      {node && !edge && (
+        <div className="p-2 space-y-2 text-sm">
           <h2 className="text-base font-semibold">Properti Node</h2>
           <div>
             <strong>ID:</strong> {node.id}
@@ -54,8 +124,8 @@ export const SidebarRight = ({
       )}
 
       {/* Edge Property */}
-      {edge && (
-        <div className="space-y-2 text-sm">
+      {!node && edge && (
+        <div className="p-2 space-y-2 text-sm">
           <h2 className="text-base font-semibold">Properti Edge</h2>
           <div>
             <strong>ID:</strong> {edge.id}

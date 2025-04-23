@@ -2,8 +2,6 @@ import { useEffect, useRef, useState } from "react";
 
 import { Board } from "@/components/board";
 import { DockNodeTools } from "@/components/dock-node-tools";
-import { DockPositionInfo } from "@/components/dock-position-info";
-import { DockZoomTools } from "@/components/dock-zoom-tools";
 import { SidebarLeft } from "@/components/sidebar-left";
 import { SidebarRight } from "@/components/sidebar-right";
 import {
@@ -85,8 +83,6 @@ function App() {
 
       {/* Docks */}
       <DockNodeTools />
-      <DockPositionInfo />
-      <DockZoomTools />
     </div>
   );
 }

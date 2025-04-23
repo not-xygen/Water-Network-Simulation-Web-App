@@ -72,30 +72,34 @@ export const Board = ({
     y: number;
   } | null>(null);
 
-  const { handleBoardMouseDown, handleBoardMouseUp, handleBoardMouseMove } =
-    useBoardHandler({
-      zoom,
-      offset,
-      setOffset,
-      zoomIn,
-      zoomOut,
-      nodes,
-      setSelectedNode,
-      selectedNodes,
-      setSelectedNodes,
-      setSelectedEdge,
-      setSelectedEdges,
-      draggedNode,
-      setDraggedNode,
-      updateNodePosition,
-      isDraggingBoardRef,
-      lastMousePosRef,
-      isSpacePressed,
-      selectionStart,
-      setSelectionStart,
-      selectionEnd,
-      setSelectionEnd,
-    });
+  const {
+    handleBoardMouseWheel,
+    handleBoardMouseDown,
+    handleBoardMouseUp,
+    handleBoardMouseMove,
+  } = useBoardHandler({
+    zoom,
+    offset,
+    setOffset,
+    zoomIn,
+    zoomOut,
+    nodes,
+    setSelectedNode,
+    selectedNodes,
+    setSelectedNodes,
+    setSelectedEdge,
+    setSelectedEdges,
+    draggedNode,
+    setDraggedNode,
+    updateNodePosition,
+    isDraggingBoardRef,
+    lastMousePosRef,
+    isSpacePressed,
+    selectionStart,
+    setSelectionStart,
+    selectionEnd,
+    setSelectionEnd,
+  });
 
   const { handleConnectionStart, handleConnectionEnd, handleEdgeReconnection } =
     useConnectionHandler({
@@ -138,11 +142,13 @@ export const Board = ({
         for (const node of selectedNodes) {
           removeNode(node.id);
         }
+        setSelectedNode(null);
         setSelectedNodes([]);
 
         for (const edge of selectedEdges) {
           removeEdge(edge.id);
         }
+        setSelectedEdge(null);
         setSelectedEdges([]);
       }
     };
@@ -158,12 +164,15 @@ export const Board = ({
     selectedEdges,
     setSelectedEdges,
     removeEdge,
+    setSelectedNode,
+    setSelectedEdge,
   ]);
 
   return (
     <div
       id="board"
       className="relative z-40 w-full h-full overflow-hidden bg-gray-100"
+      onWheel={handleBoardMouseWheel}
       onMouseDown={handleBoardMouseDown}
       onMouseUp={handleBoardMouseUp}
       onMouseLeave={handleBoardMouseUp}
@@ -311,7 +320,9 @@ export const Board = ({
                 top: `${y}px`,
                 transform: `translate(-50%, -50%) rotate(${
                   node.rotation ?? 0
-                }deg) translateY(-${60 * (zoom / 100)}px)`,
+                }deg) translateX(-${50 * (zoom / 100)}px) translateY(-${
+                  50 * (zoom / 100)
+                }px)`,
                 width: `${20 * (zoom / 100)}px`,
                 height: `${20 * (zoom / 100)}px`,
               }}>

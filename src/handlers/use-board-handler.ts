@@ -92,7 +92,6 @@ export const useBoardHandler = ({
         });
         setSelectionEnd(null);
 
-        // Simpan posisi awal node
         for (const node of selectedNodes) {
           initialNodePositionsRef.current.set(node.id, {
             x: node.position.x,
@@ -165,7 +164,6 @@ export const useBoardHandler = ({
       setSelectionStart(null);
       setSelectionEnd(null);
 
-      // Simpan posisi awal node
       for (const node of selectedNodes) {
         initialNodePositionsRef.current.set(node.id, {
           x: node.position.x,
