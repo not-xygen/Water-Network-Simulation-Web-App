@@ -1,5 +1,5 @@
 /* eslint-disable no-unused-vars */
-import { RotateCcw } from "lucide-react";
+import { RedoDot } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 
 import { useBoardHandler } from "@/handlers/use-board-handler";
@@ -308,34 +308,43 @@ export const Board = ({
         return (
           <div key={node.id} className="absolute group z-[40]">
             {/* Rotate Handle */}
-            <div
-              className={`absolute z-[60] rounded-full cursor-rotate transition-opacity opacity-0 group-hover:opacity-100 bg-blue-500 ${
-                isRotating ? "pointer-events-none opacity-100" : ""
-              }`}
-              onMouseDown={(e) => {
-                handleNodeStartRotate(e, node.id);
-              }}
-              style={{
-                left: `${x}px`,
-                top: `${y}px`,
-                transform: `translate(-50%, -50%) rotate(${
-                  node.rotation ?? 0
-                }deg) translateX(-${50 * (zoom / 100)}px) translateY(-${
-                  50 * (zoom / 100)
-                }px)`,
-                width: `${20 * (zoom / 100)}px`,
-                height: `${20 * (zoom / 100)}px`,
-              }}>
-              <RotateCcw
-                className="text-white"
-                style={{
-                  width: "100%",
-                  height: "100%",
-                }}
-              />
-            </div>
+            {(
+              ["top", "bottom", "left", "right"] as (
+                | "top"
+                | "bottom"
+                | "left"
+                | "right"
+              )[]
+            ).map((pos) => {
+              const transformMap = {
+                top: `translateY(-${50 * (zoom / 100)}px)`,
+                bottom: `translateY(${50 * (zoom / 100)}px)`,
+                left: `translateX(-${50 * (zoom / 100)}px)`,
+                right: `translateX(${50 * (zoom / 100)}px)`,
+              };
 
-            {/* Node Item */}
+              return (
+                <div
+                  key={pos}
+                  className={`absolute z-[60] p-1 rounded-full cursor-rotate transition-opacity opacity-0 ${
+                    isRotating ? "opacity-100 pointer-events-none" : ""
+                  } group-hover:opacity-100`}
+                  onMouseDown={(e) => handleNodeStartRotate(e, node.id)}
+                  style={{
+                    left: `${x}px`,
+                    top: `${y}px`,
+                    transform: `translate(-50%, -50%) rotate(${
+                      node.rotation ?? 0
+                    }deg) ${transformMap[pos]}`,
+                    width: `${12 * (zoom / 100)}px`,
+                    height: `${12 * (zoom / 100)}px`,
+                    backgroundColor: "#94B4C1",
+                  }}>
+                  <RedoDot className="w-full h-full text-center text-white" />
+                </div>
+              );
+            })}
+
             <NodeItem
               node={node}
               x={x}
