@@ -2,7 +2,7 @@
 /* eslint-disable no-unused-vars */
 import type React from "react";
 import { useCallback } from "react";
-import type { Node } from "@/store/node-edge";
+import type { Edge, Node } from "@/store/node-edge";
 
 export const useBoardHandler = ({
   zoom,
@@ -11,9 +11,12 @@ export const useBoardHandler = ({
   zoomIn,
   zoomOut,
   nodes,
-  setSelectedNodes,
   draggedNode,
+  setSelectedNode,
   selectedNodes,
+  setSelectedNodes,
+  setSelectedEdge,
+  setSelectedEdges,
   setDraggedNode,
   updateNodePosition,
   isDraggingBoardRef,
@@ -30,8 +33,11 @@ export const useBoardHandler = ({
   zoomIn: () => void;
   zoomOut: () => void;
   nodes: Node[];
+  setSelectedNode: (nodes: Node | null) => void;
   selectedNodes: Node[];
   setSelectedNodes: (nodes: Node[]) => void;
+  setSelectedEdge: (edge: Edge | null) => void;
+  setSelectedEdges: (edges: Edge[]) => void;
   draggedNode: string | null;
   setDraggedNode: (id: string | null) => void;
   updateNodePosition: (id: string, dx: number, dy: number) => void;
@@ -43,7 +49,7 @@ export const useBoardHandler = ({
   selectionEnd: { x: number; y: number } | null;
   setSelectionEnd: (pos: { x: number; y: number } | null) => void;
 }) => {
-  const handleWheel = useCallback(
+  const handleBoardMouseWheel = useCallback(
     (event: React.WheelEvent) => {
       event.preventDefault();
       if (event.deltaY > 0) zoomOut();
@@ -64,9 +70,18 @@ export const useBoardHandler = ({
       }
 
       if (!isSpacePressed && event.button === 0) {
-        const board = document
-          .getElementById("board-container")
-          ?.getBoundingClientRect();
+        const target = event.target as HTMLElement;
+        const isInNode = target.closest("[data-node-id]");
+        const isInHandle = target.closest("[data-handle]");
+
+        if (!isInNode && !isInHandle) {
+          setSelectedNodes([]);
+          setSelectedEdges([]);
+          setSelectedNode(null);
+          setSelectedEdge(null);
+        }
+
+        const board = document.getElementById("board")?.getBoundingClientRect();
         if (!board) return;
 
         setSelectionStart({
@@ -80,12 +95,16 @@ export const useBoardHandler = ({
       isDraggingBoardRef,
       isSpacePressed,
       lastMousePosRef,
+      setSelectedEdge,
+      setSelectedEdges,
+      setSelectedNode,
+      setSelectedNodes,
       setSelectionEnd,
       setSelectionStart,
     ],
   );
 
-  const handleMouseUp = useCallback(
+  const handleBoardMouseUp = useCallback(
     (_event: React.MouseEvent) => {
       if (draggedNode) {
         setDraggedNode(null);
@@ -99,10 +118,15 @@ export const useBoardHandler = ({
           start: { x: number; y: number },
           end: { x: number; y: number },
         ) => {
+          const boardRect = document
+            .getElementById("board")
+            ?.getBoundingClientRect();
+          if (!boardRect) return;
+
           const nodeX =
-            window.innerWidth / 2 + node.position.x * (zoom / 100) + offset.x;
+            boardRect.width / 2 + node.position.x * (zoom / 100) + offset.x;
           const nodeY =
-            window.innerHeight / 2 + node.position.y * (zoom / 100) + offset.y;
+            boardRect.height / 2 + node.position.y * (zoom / 100) + offset.y;
 
           const minX = Math.min(start.x, end.x);
           const maxX = Math.max(start.x, end.x);
@@ -148,7 +172,7 @@ export const useBoardHandler = ({
     ],
   );
 
-  const handleMouseMove = useCallback(
+  const handleBoardMouseMove = useCallback(
     (event: React.MouseEvent) => {
       if (isDraggingBoardRef.current && lastMousePosRef.current) {
         const deltaX = event.clientX - lastMousePosRef.current.x;
@@ -176,9 +200,7 @@ export const useBoardHandler = ({
       }
 
       if (selectionStart) {
-        const board = document
-          .getElementById("board-container")
-          ?.getBoundingClientRect();
+        const board = document.getElementById("board")?.getBoundingClientRect();
         if (!board) return;
 
         setSelectionEnd({
@@ -204,9 +226,9 @@ export const useBoardHandler = ({
   );
 
   return {
-    handleWheel,
+    handleBoardMouseWheel,
     handleBoardMouseDown,
-    handleMouseUp,
-    handleMouseMove,
+    handleBoardMouseUp,
+    handleBoardMouseMove,
   };
 };

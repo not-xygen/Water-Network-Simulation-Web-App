@@ -1,14 +1,89 @@
-import { Board } from "./components/board";
-import { DockNodeTools } from "./components/dock-node-tools";
-import { DockPositionInfo } from "./components/dock-position-info";
-import { DockZoomTools } from "./components/dock-zoom-tools";
+import { useEffect, useRef, useState } from "react";
+
+import { Board } from "@/components/board";
+import { DockNodeTools } from "@/components/dock-node-tools";
+import { DockPositionInfo } from "@/components/dock-position-info";
+import { DockZoomTools } from "@/components/dock-zoom-tools";
+import { SidebarLeft } from "@/components/sidebar-left";
+import { SidebarRight } from "@/components/sidebar-right";
+import {
+  ResizableHandle,
+  ResizablePanel,
+  ResizablePanelGroup,
+} from "@/components/ui/resizable";
+
+import type { Node, Edge } from "@/store/node-edge";
 
 function App() {
+  const [selectedNode, setSelectedNode] = useState<Node | null>(null);
+  const [selectedEdge, setSelectedEdge] = useState<Edge | null>(null);
+
+  const [isSpacePressed, setIsSpacePressed] = useState(false);
+
+  const boardRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (event.code === "Space") {
+        event.preventDefault();
+        setIsSpacePressed(true);
+      }
+    };
+    const handleKeyUp = (event: KeyboardEvent) => {
+      if (event.code === "Space") {
+        event.preventDefault();
+        setIsSpacePressed(false);
+      }
+    };
+    window.addEventListener("keydown", handleKeyDown);
+    window.addEventListener("keyup", handleKeyUp);
+    return () => {
+      window.removeEventListener("keydown", handleKeyDown);
+      window.removeEventListener("keyup", handleKeyUp);
+    };
+  }, []);
+
   return (
     <div
       id="board-container"
+      ref={boardRef}
       className="relative w-screen h-screen overflow-hidden">
-      <Board />
+      <ResizablePanelGroup direction="horizontal" className="w-screen h-screen">
+        <ResizablePanel
+          defaultSize={15}
+          minSize={15}
+          maxSize={20}
+          className="z-40 bg-white">
+          <SidebarLeft />
+        </ResizablePanel>
+        <ResizableHandle withHandle />
+        <ResizablePanel defaultSize={70} minSize={40} maxSize={70}>
+          <Board
+            selectedNode={selectedNode}
+            setSelectedNode={setSelectedNode}
+            selectedEdge={selectedEdge}
+            setSelectedEdge={setSelectedEdge}
+            isSpacePressed={isSpacePressed}
+          />
+        </ResizablePanel>
+        <ResizableHandle withHandle />
+        <ResizablePanel
+          defaultSize={15}
+          minSize={15}
+          maxSize={30}
+          className="z-40 bg-white">
+          <SidebarRight
+            node={selectedNode}
+            edge={selectedEdge}
+            onClearSelection={() => {
+              setSelectedNode(null);
+              setSelectedEdge(null);
+            }}
+          />
+        </ResizablePanel>
+      </ResizablePanelGroup>
+
+      {/* Docks */}
       <DockNodeTools />
       <DockPositionInfo />
       <DockZoomTools />

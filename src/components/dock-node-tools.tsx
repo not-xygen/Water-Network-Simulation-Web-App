@@ -33,7 +33,7 @@ export const DockNodeTools = () => {
 
   return (
     <TooltipProvider>
-      <div className="fixed z-50 flex flex-col p-2 space-y-2 transform -translate-x-1/2 bg-white shadow top-4 left-1/2 rounded-xl">
+      <div className="fixed z-50 flex flex-col p-2 space-y-2 transform -translate-x-1/2 bg-white shadow bottom-4 left-1/2 rounded-xl">
         <div className="flex flex-row space-x-2">
           {tools.map((tool) =>
             tool.id === "fitting" ? (

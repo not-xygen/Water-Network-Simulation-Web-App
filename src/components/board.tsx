@@ -1,26 +1,42 @@
-import useGlobalStore from "@/store/globals";
+/* eslint-disable no-unused-vars */
+import { RotateCcw } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 
-import { NodeItem } from "./node-item";
-import type { Edge, Node } from "@/store/node-edge";
-import useNodeEdgeStore from "@/store/node-edge";
-import { NodePropertyDrawer } from "./node-property-drawer";
-import { RotateCcw } from "lucide-react";
-import { EdgePropertyDrawer } from "./edge-property-drawer";
 import { useBoardHandler } from "@/handlers/use-board-handler";
 import { useConnectionHandler } from "@/handlers/use-connection-handler";
+import { useHandlePosition } from "@/handlers/use-position-handler";
 import { useNodeHandler } from "@/handlers/use-node-handler";
-import { useHandlePosition } from "@/handlers/use-handle-position";
+import useGlobalStore from "@/store/globals";
+import useNodeEdgeStore from "@/store/node-edge";
 
-export const Board = () => {
+import { NodeItem } from "./node-item";
+
+import type { Edge, Node } from "@/store/node-edge";
+
+type BoardProps = {
+  selectedNode: Node | null;
+  setSelectedNode: (node: Node | null) => void;
+  selectedEdge: Edge | null;
+  setSelectedEdge: (edge: Edge | null) => void;
+  isSpacePressed: boolean;
+};
+
+export const Board = ({
+  selectedNode,
+  setSelectedNode,
+  setSelectedEdge,
+  isSpacePressed,
+}: BoardProps) => {
   const { zoom, offset, setOffset, zoomIn, zoomOut, mode } = useGlobalStore();
   const {
     nodes,
     updateNodePosition,
     updateNodeRotation,
+    removeNode,
     edges,
     addEdge,
     updateEdgeConnection,
+    removeEdge,
     selectedNodes,
     setSelectedNodes,
     selectedEdges,
@@ -42,17 +58,10 @@ export const Board = () => {
 
   const [rotatingNodeId, setRotatingNodeId] = useState<string | null>(null);
 
-  const [selectedNode, setSelectedNode] = useState<Node | null>(null);
-  const [drawerNodeOpen, setDrawerNodeOpen] = useState(false);
-  const [selectedEdge, setSelectedEdge] = useState<Edge | null>(null);
-  const [drawerEdgeOpen, setDrawerEdgeOpen] = useState(false);
-
   const [draggingEdgeHandle, setDraggingEdgeHandle] = useState<{
     edgeId: string;
     type: "source" | "target";
   } | null>(null);
-
-  const [isSpacePressed, setIsSpacePressed] = useState(false);
 
   const [selectionStart, setSelectionStart] = useState<{
     x: number;
@@ -63,29 +72,7 @@ export const Board = () => {
     y: number;
   } | null>(null);
 
-  useEffect(() => {
-    const handleKeyDown = (e: KeyboardEvent) => {
-      if (e.code === "Space") {
-        setIsSpacePressed(true);
-      }
-    };
-
-    const handleKeyUp = (e: KeyboardEvent) => {
-      if (e.code === "Space") {
-        setIsSpacePressed(false);
-      }
-    };
-
-    window.addEventListener("keydown", handleKeyDown);
-    window.addEventListener("keyup", handleKeyUp);
-
-    return () => {
-      window.removeEventListener("keydown", handleKeyDown);
-      window.removeEventListener("keyup", handleKeyUp);
-    };
-  }, []);
-
-  const { handleBoardMouseDown, handleMouseUp, handleMouseMove } =
+  const { handleBoardMouseDown, handleBoardMouseUp, handleBoardMouseMove } =
     useBoardHandler({
       zoom,
       offset,
@@ -93,8 +80,11 @@ export const Board = () => {
       zoomIn,
       zoomOut,
       nodes,
+      setSelectedNode,
       selectedNodes,
       setSelectedNodes,
+      setSelectedEdge,
+      setSelectedEdges,
       draggedNode,
       setDraggedNode,
       updateNodePosition,
@@ -107,22 +97,19 @@ export const Board = () => {
       setSelectionEnd,
     });
 
-  const {
-    handleStartConnection,
-    handleEndConnection,
-    handleStartEdgeReconnect,
-  } = useConnectionHandler({
-    addEdge,
-    edges,
-    connecting,
-    setConnecting,
-    setMousePos,
-    updateEdgeConnection,
-    isConnectingRef,
-    setDraggingEdgeHandle,
-  });
+  const { handleConnectionStart, handleConnectionEnd, handleEdgeReconnection } =
+    useConnectionHandler({
+      addEdge,
+      edges,
+      connecting,
+      setConnecting,
+      setMousePos,
+      updateEdgeConnection,
+      isConnectingRef,
+      setDraggingEdgeHandle,
+    });
 
-  const { handleNodeMouseDown, handleStartRotate } = useNodeHandler({
+  const { handleNodeMouseDown, handleNodeStartRotate } = useNodeHandler({
     nodes,
     zoom,
     offset,
@@ -131,8 +118,6 @@ export const Board = () => {
     updateNodeRotation,
     setSelectedNode,
     setSelectedEdge,
-    setDrawerNodeOpen,
-    setDrawerEdgeOpen,
     setDraggedNode,
     lastMousePosRef,
     selectedNodes,
@@ -141,42 +126,51 @@ export const Board = () => {
     setSelectedEdges,
   });
 
-  const { worldToScreen, getHandlePosition } = useHandlePosition({
+  const { getWorldToScreen, getHandlePosition } = useHandlePosition({
     nodes,
     zoom,
     offset,
   });
 
   useEffect(() => {
-    const board = document.getElementById("board-container");
-    if (!board) return;
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (event.key === "Delete") {
+        for (const node of selectedNodes) {
+          removeNode(node.id);
+        }
+        setSelectedNodes([]);
 
-    const handleWheel = (e: WheelEvent) => {
-      e.preventDefault();
-      if (e.deltaY > 0) zoomOut();
-      else zoomIn();
+        for (const edge of selectedEdges) {
+          removeEdge(edge.id);
+        }
+        setSelectedEdges([]);
+      }
     };
 
-    board.addEventListener("wheel", handleWheel as EventListener, {
-      passive: false,
-    });
-
+    window.addEventListener("keydown", handleKeyDown);
     return () => {
-      board.removeEventListener("wheel", handleWheel);
+      window.removeEventListener("keydown", handleKeyDown);
     };
-  }, [zoomIn, zoomOut]);
+  }, [
+    selectedNodes,
+    setSelectedNodes,
+    removeNode,
+    selectedEdges,
+    setSelectedEdges,
+    removeEdge,
+  ]);
 
   return (
     <div
-      id="board-container"
-      className="w-screen h-screen overflow-hidden bg-gray-100"
+      id="board"
+      className="relative z-40 w-full h-full overflow-hidden bg-gray-100"
       onMouseDown={handleBoardMouseDown}
-      onMouseUp={handleMouseUp}
-      onMouseLeave={handleMouseUp}
-      onMouseMove={handleMouseMove}>
+      onMouseUp={handleBoardMouseUp}
+      onMouseLeave={handleBoardMouseUp}
+      onMouseMove={handleBoardMouseMove}>
       {/* Grid Background */}
       <div
-        className="absolute inset-0 board-background"
+        className="absolute inset-0 board-background z-[-10]"
         style={{
           backgroundSize: `${30 * (zoom / 100)}px ${30 * (zoom / 100)}px`,
           backgroundImage:
@@ -191,9 +185,8 @@ export const Board = () => {
             : "default",
         }}
       />
-
       {/* biome-ignore lint/a11y/noSvgWithoutTitle: <intended> */}
-      <svg className="absolute top-0 left-0 w-full h-full pointer-events-none z-[45] bg-red">
+      <svg className="absolute inset-0 w-full h-full pointer-events-none z-[45] bg-red">
         {/* Connection lines */}
         {edges.map((edge) => {
           const sourcePos = getHandlePosition(
@@ -220,7 +213,9 @@ export const Board = () => {
               strokeWidth={14 * (zoom / 100)}
               onClick={() => {
                 setSelectedEdge(edge);
-                setDrawerEdgeOpen(true);
+                setSelectedEdges([edge]);
+                setSelectedNode(null);
+                setSelectedNodes([]);
               }}
               style={{
                 cursor: "pointer",
@@ -294,64 +289,22 @@ export const Board = () => {
               />
             );
           })()}
-
-        {/* Reconnecting Edge */}
-        {draggingEdgeHandle &&
-          mousePos &&
-          (() => {
-            const edge = edges.find((e) => e.id === draggingEdgeHandle.edgeId);
-            if (!edge) return null;
-
-            const fromPosition =
-              draggingEdgeHandle.type === "source"
-                ? edge.targetPosition
-                : edge.sourcePosition;
-
-            const fixedNodeId =
-              draggingEdgeHandle.type === "source"
-                ? edge.targetId
-                : edge.sourceId;
-
-            const fixedPos = getHandlePosition(fixedNodeId, fromPosition);
-            if (!fixedPos) return null;
-
-            const x1 =
-              draggingEdgeHandle.type === "source" ? mousePos.x : fixedPos.x;
-            const y1 =
-              draggingEdgeHandle.type === "source" ? mousePos.y : fixedPos.y;
-            const x2 =
-              draggingEdgeHandle.type === "source" ? fixedPos.x : mousePos.x;
-            const y2 =
-              draggingEdgeHandle.type === "source" ? fixedPos.y : mousePos.y;
-
-            return (
-              <line
-                x1={x1}
-                y1={y1}
-                x2={x2}
-                y2={y2}
-                stroke="gray"
-                strokeWidth={12 * (zoom / 100)}
-                strokeDasharray="4 4"
-              />
-            );
-          })()}
       </svg>
 
       {/* Nodes */}
       {nodes.map((node) => {
-        const { x, y } = worldToScreen(node);
+        const { x, y } = getWorldToScreen(node);
         const isRotating = rotatingNodeId === node.id;
 
         return (
-          <div key={node.id} className="absolute group">
+          <div key={node.id} className="absolute group z-[40]">
             {/* Rotate Handle */}
             <div
               className={`absolute z-[60] rounded-full cursor-rotate transition-opacity opacity-0 group-hover:opacity-100 bg-blue-500 ${
                 isRotating ? "pointer-events-none opacity-100" : ""
               }`}
               onMouseDown={(e) => {
-                handleStartRotate(e, node.id);
+                handleNodeStartRotate(e, node.id);
               }}
               style={{
                 left: `${x}px`,
@@ -383,9 +336,9 @@ export const Board = () => {
               }
               isDragged={draggedNode === node.id}
               onMouseDown={handleNodeMouseDown}
-              onMouseUp={handleMouseUp}
-              onStartConnect={handleStartConnection}
-              onEndConnect={handleEndConnection}
+              onMouseUp={handleBoardMouseUp}
+              onStartConnect={handleConnectionStart}
+              onEndConnect={handleConnectionEnd}
             />
           </div>
         );
@@ -411,9 +364,7 @@ export const Board = () => {
               data-handle
               data-node-id={edge.sourceId}
               data-position={edge.sourcePosition}
-              onMouseDown={(e) =>
-                handleStartEdgeReconnect(e, edge.id, "source")
-              }
+              onMouseDown={(e) => handleEdgeReconnection(e, edge.id, "source")}
             />
             <div
               className="absolute z-50 w-4 h-4 bg-white border border-blue-500 rounded-full cursor-crosshair"
@@ -427,9 +378,7 @@ export const Board = () => {
               data-handle
               data-node-id={edge.targetId}
               data-position={edge.targetPosition}
-              onMouseDown={(e) =>
-                handleStartEdgeReconnect(e, edge.id, "target")
-              }
+              onMouseDown={(e) => handleEdgeReconnection(e, edge.id, "target")}
             />
           </div>
         );
@@ -438,7 +387,7 @@ export const Board = () => {
       {/* Selection Box */}
       {selectionStart && selectionEnd && (
         <div
-          className="absolute z-40 border border-blue-500 bg-blue-500/10"
+          className="absolute z-20 w-full h-full border border-blue-500 bg-blue-500/10"
           style={{
             left: Math.min(selectionStart.x, selectionEnd.x),
             top: Math.min(selectionStart.y, selectionEnd.y),
@@ -447,30 +396,6 @@ export const Board = () => {
           }}
         />
       )}
-
-      {/* Node Property Drawer */}
-      <NodePropertyDrawer
-        open={drawerNodeOpen}
-        onOpenChange={(open) => {
-          setDrawerNodeOpen(open);
-          if (!open) {
-            setSelectedNode(null);
-          }
-        }}
-        node={selectedNode}
-      />
-
-      {/* Edge Property Drawer */}
-      <EdgePropertyDrawer
-        open={drawerEdgeOpen}
-        onOpenChange={(open) => {
-          setDrawerEdgeOpen(open);
-          if (!open) {
-            setSelectedEdge(null);
-          }
-        }}
-        edge={selectedEdge}
-      />
     </div>
   );
 };

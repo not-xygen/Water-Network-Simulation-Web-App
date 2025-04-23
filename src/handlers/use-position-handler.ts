@@ -10,10 +10,15 @@ export const useHandlePosition = ({
   zoom: number;
   offset: { x: number; y: number };
 }) => {
-  const worldToScreen = useCallback(
+  const getWorldToScreen = useCallback(
     (node: Node) => {
-      const centerX = window.innerWidth / 2;
-      const centerY = window.innerHeight / 2;
+      const boardRect = document
+        .getElementById("board")
+        ?.getBoundingClientRect();
+      if (!boardRect) return { x: 0, y: 0 };
+
+      const centerX = boardRect.width / 2;
+      const centerY = boardRect.height / 2;
       const screenX = centerX + node.position.x * (zoom / 100) + offset.x;
       const screenY = centerY + node.position.y * (zoom / 100) + offset.y;
       return { x: screenX, y: screenY };
@@ -26,7 +31,7 @@ export const useHandlePosition = ({
       const node = nodes.find((n) => n.id === nodeId);
       if (!node) return null;
 
-      const { x, y } = worldToScreen(node);
+      const { x, y } = getWorldToScreen(node);
       const visualOffset = (32 * zoom) / 100;
       const rotationDeg = node.rotation ?? 0;
       const rotationRad = (rotationDeg * Math.PI) / 180;
@@ -57,8 +62,8 @@ export const useHandlePosition = ({
         y: y + rotatedY,
       };
     },
-    [nodes, zoom, worldToScreen],
+    [nodes, zoom, getWorldToScreen],
   );
 
-  return { worldToScreen, getHandlePosition };
+  return { getWorldToScreen, getHandlePosition };
 };

@@ -10,12 +10,12 @@ export const useNodeHandler = ({
   mode,
   setRotatingNodeId,
   updateNodeRotation,
-  setSelectedNode,
-  setDrawerNodeOpen,
   setDraggedNode,
   lastMousePosRef,
   selectedNodes,
+  setSelectedNode,
   setSelectedNodes,
+  setSelectedEdge,
   setSelectedEdges,
 }: {
   nodes: Node[];
@@ -24,10 +24,8 @@ export const useNodeHandler = ({
   offset: { x: number; y: number };
   setRotatingNodeId: (id: string | null) => void;
   updateNodeRotation: (id: string, angle: number) => void;
-  setSelectedNode: React.Dispatch<React.SetStateAction<Node | null>>;
-  setSelectedEdge: React.Dispatch<React.SetStateAction<Edge | null>>;
-  setDrawerNodeOpen: (open: boolean) => void;
-  setDrawerEdgeOpen: (open: boolean) => void;
+  setSelectedNode: (node: Node | null) => void;
+  setSelectedEdge: (edge: Edge | null) => void;
   setDraggedNode: (id: string | null) => void;
   lastMousePosRef: React.MutableRefObject<{ x: number; y: number } | null>;
   selectedNodes: Node[];
@@ -70,15 +68,20 @@ export const useNodeHandler = ({
             setSelectedNodes(
               selectedNodes.filter((n) => n.id !== clickedNode.id),
             );
+            setSelectedEdge(null);
+            setSelectedEdges([]);
           } else {
             setSelectedNodes([...selectedNodes, clickedNode]);
+            setSelectedEdge(null);
+            setSelectedEdges([]);
           }
+          setSelectedEdge(null);
           setSelectedEdges([]);
         } else {
-          setSelectedNodes([clickedNode]);
-          setSelectedEdges([]);
           setSelectedNode(clickedNode);
-          setDrawerNodeOpen(true);
+          setSelectedNodes([clickedNode]);
+          setSelectedEdge(null);
+          setSelectedEdges([]);
         }
       };
 
@@ -88,17 +91,17 @@ export const useNodeHandler = ({
     [
       mode,
       lastMousePosRef,
+      setDraggedNode,
       nodes,
       selectedNodes,
-      setSelectedNodes,
+      setSelectedEdge,
       setSelectedEdges,
+      setSelectedNodes,
       setSelectedNode,
-      setDrawerNodeOpen,
-      setDraggedNode,
     ],
   );
 
-  const handleStartRotate = (e: React.MouseEvent, nodeId: string) => {
+  const handleNodeStartRotate = (e: React.MouseEvent, nodeId: string) => {
     e.stopPropagation();
     e.preventDefault();
 
@@ -145,6 +148,6 @@ export const useNodeHandler = ({
 
   return {
     handleNodeMouseDown,
-    handleStartRotate,
+    handleNodeStartRotate,
   };
 };

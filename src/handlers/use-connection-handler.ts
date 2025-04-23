@@ -42,7 +42,7 @@ export const useConnectionHandler = ({
     } | null,
   ) => void;
 }) => {
-  const handleStartConnection = useCallback(
+  const handleConnectionStart = useCallback(
     (
       event: React.MouseEvent,
       nodeId: string,
@@ -51,7 +51,7 @@ export const useConnectionHandler = ({
       event.stopPropagation();
 
       const boardRect = document
-        .getElementById("board-container")
+        .getElementById("board")
         ?.getBoundingClientRect();
 
       const startX = event.clientX - (boardRect?.left ?? 0);
@@ -85,7 +85,7 @@ export const useConnectionHandler = ({
     [isConnectingRef, setConnecting, setMousePos],
   );
 
-  const handleEndConnection = useCallback(
+  const handleConnectionEnd = useCallback(
     (
       event: React.MouseEvent,
       nodeId: string,
@@ -125,13 +125,13 @@ export const useConnectionHandler = ({
     [connecting, edges, addEdge, setConnecting, setMousePos],
   );
 
-  const handleStartEdgeReconnect = useCallback(
+  const handleEdgeReconnection = useCallback(
     (e: React.MouseEvent, edgeId: string, from: "source" | "target") => {
       e.stopPropagation();
       e.preventDefault();
 
       const boardRect = document
-        .getElementById("board-container")
+        .getElementById("board")
         ?.getBoundingClientRect();
 
       const startX = e.clientX - (boardRect?.left ?? 0);
@@ -178,8 +178,8 @@ export const useConnectionHandler = ({
   );
 
   return {
-    handleStartConnection,
-    handleEndConnection,
-    handleStartEdgeReconnect,
+    handleConnectionStart,
+    handleConnectionEnd,
+    handleEdgeReconnection,
   };
 };
