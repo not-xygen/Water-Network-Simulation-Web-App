@@ -80,6 +80,10 @@ const useNodeEdgeStore = create<NodeEdgeState>((set) => ({
       edges: state.edges.filter(
         (edge) => edge.sourceId !== id && edge.targetId !== id,
       ),
+      selectedNodes: state.selectedNodes.filter((node) => node.id !== id),
+      selectedEdges: state.selectedEdges.filter(
+        (edge) => edge.sourceId !== id && edge.targetId !== id,
+      ),
     })),
   edges: [],
   addEdge: (edge) =>
@@ -105,6 +109,7 @@ const useNodeEdgeStore = create<NodeEdgeState>((set) => ({
   removeEdge: (id) =>
     set((state) => ({
       edges: state.edges.filter((e) => e.id !== id),
+      selectedEdges: state.selectedEdges.filter((e) => e.id !== id),
     })),
   selectedNodes: [],
   setSelectedNodes: (nodes) =>
