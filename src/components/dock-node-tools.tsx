@@ -20,11 +20,31 @@ import useGlobalStore from "@/store/globals";
 import useNodeEdgeStore from "@/store/node-edge";
 
 const tools = [
-  { id: "fitting", name: "Fitting", icon: <PenTool size={18} /> },
-  { id: "circle", name: "Reservoir", icon: <Circle size={18} /> },
-  { id: "square", name: "Tank", icon: <Square size={18} /> },
-  { id: "filter", name: "Valve", icon: <Filter size={18} /> },
-  { id: "pump", name: "Pump", icon: <Zap size={18} /> },
+  {
+    id: "fitting",
+    name: "Fitting",
+    icon: <PenTool size={18} />,
+    color: "bg-gray-300",
+  },
+  {
+    id: "circle",
+    name: "Reservoir",
+    icon: <Circle size={18} />,
+    color: "bg-blue-500",
+  },
+  {
+    id: "square",
+    name: "Tank",
+    icon: <Square size={18} />,
+    color: "bg-orange-500",
+  },
+  {
+    id: "filter",
+    name: "Valve",
+    icon: <Filter size={18} />,
+    color: "bg-green-600",
+  },
+  { id: "pump", name: "Pump", icon: <Zap size={18} />, color: "bg-yellow-400" },
 ];
 
 export const DockNodeTools = () => {
@@ -41,7 +61,10 @@ export const DockNodeTools = () => {
                 <Tooltip>
                   <TooltipTrigger asChild>
                     <DropdownMenuTrigger asChild>
-                      <Button variant="ghost" size="icon" className="w-10 h-10">
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        className={`w-10 h-10 ${tool.color}`}>
                         {tool.icon}
                       </Button>
                     </DropdownMenuTrigger>
@@ -96,7 +119,7 @@ export const DockNodeTools = () => {
                   <Button
                     variant="ghost"
                     size="icon"
-                    className="w-10 h-10"
+                    className={`w-10 h-10 ${tool.color}`}
                     onClick={() => {
                       const newNode = createNode(
                         tool.id,

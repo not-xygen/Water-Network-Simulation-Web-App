@@ -168,7 +168,7 @@ export const Board = ({ isSpacePressed }: BoardProps) => {
               y1={sourcePos.y}
               x2={targetPos.x}
               y2={targetPos.y}
-              stroke="#3b82f6"
+              className="stroke-blue-200"
               strokeLinecap="round"
               strokeLinejoin="round"
               strokeWidth={14 * (zoom / 100)}
@@ -200,7 +200,7 @@ export const Board = ({ isSpacePressed }: BoardProps) => {
                 y1={sourcePos.y}
                 x2={mousePos.x}
                 y2={mousePos.y}
-                stroke="gray"
+                className="stroke-blue-100"
                 strokeWidth={12 * (zoom / 100)}
                 strokeDasharray="4 4"
               />
@@ -242,7 +242,7 @@ export const Board = ({ isSpacePressed }: BoardProps) => {
                 y1={y1}
                 x2={x2}
                 y2={y2}
-                stroke="gray"
+                className="stroke-blue-200"
                 strokeWidth={12 * (zoom / 100)}
                 strokeDasharray="4 4"
               />

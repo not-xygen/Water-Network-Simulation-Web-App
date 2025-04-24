@@ -23,7 +23,7 @@ export const EdgeConnectionPoint: React.FC<PointProps> = ({
 }) => {
   return (
     <div
-      className={`absolute w-3 h-3 bg-blue-500 rounded-full z-10 cursor-crosshair ${positionStyles[position]}`}
+      className={`absolute w-3 h-3 bg-stone-500 rounded-full z-10 cursor-crosshair ${positionStyles[position]}`}
       onMouseDown={onMouseDown}
       onMouseUp={onMouseUp}
       data-handle

@@ -4,6 +4,7 @@ import React from "react";
 import { EdgeConnectionPoint } from "./edge-connection-point";
 
 import type { Node } from "@/store/node-edge";
+import { Zap } from "lucide-react";
 
 type NodeItemProps = {
   node: Node;
@@ -43,21 +44,57 @@ export const NodeItem = React.memo(function NodeItem({
       case "Tee":
         return (
           <div className="relative flex items-center justify-center w-16 h-16">
-            <div className="w-full h-4 bg-blue-600" />
-            <div className="absolute top-0 w-4 -translate-x-1/2 bg-blue-600 h-1/2 left-1/2" />
+            <div className="w-full h-4 bg-gray-300" />
+            <div className="absolute top-0 w-4 -translate-x-1/2 bg-gray-300 h-1/2 left-1/2" />
           </div>
         );
       case "Cross":
         return (
           <div className="relative flex items-center justify-center w-16 h-16">
-            <div className="absolute left-0 w-full h-4 -translate-y-1/2 bg-green-600 top-1/2" />
-            <div className="absolute top-0 w-4 h-full -translate-x-1/2 bg-green-600 left-1/2" />
+            <div className="absolute left-0 w-full h-4 -translate-y-1/2 bg-gray-300 top-1/2" />
+            <div className="absolute top-0 w-4 h-full -translate-x-1/2 bg-gray-300 left-1/2" />
           </div>
         );
       case "Coupling":
-        return <div className="w-16 h-4 bg-gray-600" />;
+        return <div className="w-16 h-4 bg-gray-300" />;
       default:
-        return <span className="text-sm font-semibold">Node</span>;
+        return (
+          <div className="flex items-center justify-center w-16 h-16 bg-gray-300 rounded-md">
+            Node
+          </div>
+        );
+    }
+  };
+
+  const renderNodeShape = () => {
+    if (node.type === "fitting")
+      return renderJunctionShape(node.data.label as string);
+
+    const label = typeof node.data.label === "string" ? node.data.label : "";
+
+    switch (label) {
+      case "Reservoir":
+        return <div className="w-16 h-16 bg-blue-500 rounded-full" />;
+      case "Tank":
+        return <div className="w-16 h-16 bg-orange-500 rounded-md" />;
+      case "Pump":
+        return (
+          <div className="flex items-center justify-center w-16 h-16 font-bold text-black bg-yellow-400 rounded-full">
+            <Zap />
+          </div>
+        );
+      case "Valve":
+        return (
+          <div className="flex items-center justify-center w-16 h-16 font-bold text-white bg-green-600 rounded-md">
+            V
+          </div>
+        );
+      default:
+        return (
+          <div className="flex items-center justify-center w-16 h-16 bg-gray-300 rounded-md">
+            {label}
+          </div>
+        );
     }
   };
 
@@ -104,9 +141,7 @@ export const NodeItem = React.memo(function NodeItem({
       onMouseDown={(e) => onMouseDown(e, node.id)}
       onMouseUp={(e) => onMouseUp(e, node.id)}>
       <div className="relative">
-        {node.type === "fitting"
-          ? renderJunctionShape(node.data.label as string)
-          : node.data.label}
+        {renderNodeShape()}
         {renderHandles()}
       </div>
     </div>
