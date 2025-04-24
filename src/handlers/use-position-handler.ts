@@ -1,15 +1,13 @@
 import { useCallback } from "react";
-import type { Node } from "@/store/node-edge";
 
-export const useHandlePosition = ({
-  nodes,
-  zoom,
-  offset,
-}: {
-  nodes: Node[];
-  zoom: number;
-  offset: { x: number; y: number };
-}) => {
+import useGlobalStore from "@/store/globals";
+import useNodeEdgeStore from "@/store/node-edge";
+
+import type { Node } from "@/store/node-edge";
+export const useHandlePosition = () => {
+  const { nodes } = useNodeEdgeStore();
+  const { zoom, offset } = useGlobalStore();
+
   const getWorldToScreen = useCallback(
     (node: Node) => {
       const boardRect = document
@@ -28,7 +26,7 @@ export const useHandlePosition = ({
 
   const getHandlePosition = useCallback(
     (nodeId: string, position: "left" | "right" | "top" | "bottom") => {
-      const node = nodes.find((n) => n.id === nodeId);
+      const node = nodes.find((n: Node) => n.id === nodeId);
       if (!node) return null;
 
       const { x, y } = getWorldToScreen(node);

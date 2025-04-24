@@ -1,40 +1,25 @@
-/* eslint-disable no-unused-vars */
 import { RedoDot } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 
 import { useBoardHandler } from "@/handlers/use-board-handler";
 import { useConnectionHandler } from "@/handlers/use-connection-handler";
-import { useHandlePosition } from "@/handlers/use-position-handler";
 import { useNodeHandler } from "@/handlers/use-node-handler";
+import { useHandlePosition } from "@/handlers/use-position-handler";
 import useGlobalStore from "@/store/globals";
 import useNodeEdgeStore from "@/store/node-edge";
 
 import { NodeItem } from "./node-item";
 
-import type { Edge, Node } from "@/store/node-edge";
-
 type BoardProps = {
-  selectedNode: Node | null;
-  setSelectedNode: (node: Node | null) => void;
-  selectedEdge: Edge | null;
-  setSelectedEdge: (edge: Edge | null) => void;
   isSpacePressed: boolean;
 };
 
-export const Board = ({
-  selectedNode,
-  setSelectedNode,
-  setSelectedEdge,
-  isSpacePressed,
-}: BoardProps) => {
-  const { zoom, offset, setOffset, zoomIn, zoomOut, mode } = useGlobalStore();
+export const Board = ({ isSpacePressed }: BoardProps) => {
+  const { zoom, offset } = useGlobalStore();
   const {
     nodes,
-    updateNodePosition,
-    updateNodeRotation,
     removeNode,
     edges,
-    addEdge,
     updateEdgeConnection,
     removeEdge,
     selectedNodes,
@@ -78,20 +63,8 @@ export const Board = ({
     handleBoardMouseUp,
     handleBoardMouseMove,
   } = useBoardHandler({
-    zoom,
-    offset,
-    setOffset,
-    zoomIn,
-    zoomOut,
-    nodes,
-    setSelectedNode,
-    selectedNodes,
-    setSelectedNodes,
-    setSelectedEdge,
-    setSelectedEdges,
     draggedNode,
     setDraggedNode,
-    updateNodePosition,
     isDraggingBoardRef,
     lastMousePosRef,
     isSpacePressed,
@@ -103,8 +76,6 @@ export const Board = ({
 
   const { handleConnectionStart, handleConnectionEnd, handleEdgeReconnection } =
     useConnectionHandler({
-      addEdge,
-      edges,
       connecting,
       setConnecting,
       setMousePos,
@@ -114,27 +85,12 @@ export const Board = ({
     });
 
   const { handleNodeMouseDown, handleNodeStartRotate } = useNodeHandler({
-    nodes,
-    zoom,
-    offset,
-    mode,
     setRotatingNodeId,
-    updateNodeRotation,
-    setSelectedNode,
-    setSelectedEdge,
     setDraggedNode,
     lastMousePosRef,
-    selectedNodes,
-    setSelectedNodes,
-    selectedEdges,
-    setSelectedEdges,
   });
 
-  const { getWorldToScreen, getHandlePosition } = useHandlePosition({
-    nodes,
-    zoom,
-    offset,
-  });
+  const { getWorldToScreen, getHandlePosition } = useHandlePosition();
 
   useEffect(() => {
     const handleKeyDown = (event: KeyboardEvent) => {
@@ -142,13 +98,11 @@ export const Board = ({
         for (const node of selectedNodes) {
           removeNode(node.id);
         }
-        setSelectedNode(null);
         setSelectedNodes([]);
 
         for (const edge of selectedEdges) {
           removeEdge(edge.id);
         }
-        setSelectedEdge(null);
         setSelectedEdges([]);
       }
     };
@@ -164,8 +118,6 @@ export const Board = ({
     selectedEdges,
     setSelectedEdges,
     removeEdge,
-    setSelectedNode,
-    setSelectedEdge,
   ]);
 
   return (
@@ -221,9 +173,7 @@ export const Board = ({
               strokeLinejoin="round"
               strokeWidth={14 * (zoom / 100)}
               onClick={() => {
-                setSelectedEdge(edge);
                 setSelectedEdges([edge]);
-                setSelectedNode(null);
                 setSelectedNodes([]);
               }}
               style={{
@@ -350,10 +300,7 @@ export const Board = ({
               x={x}
               y={y}
               zoom={zoom}
-              isSelected={
-                selectedNode?.id === node.id ||
-                selectedNodes.some((n) => n.id === node.id)
-              }
+              isSelected={selectedNodes.some((n) => n.id === node.id)}
               isDragged={draggedNode === node.id}
               onMouseDown={handleNodeMouseDown}
               onMouseUp={handleBoardMouseUp}

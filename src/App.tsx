@@ -10,12 +10,7 @@ import {
   ResizablePanelGroup,
 } from "@/components/ui/resizable";
 
-import type { Node, Edge } from "@/store/node-edge";
-
 function App() {
-  const [selectedNode, setSelectedNode] = useState<Node | null>(null);
-  const [selectedEdge, setSelectedEdge] = useState<Edge | null>(null);
-
   const [isSpacePressed, setIsSpacePressed] = useState(false);
 
   const boardRef = useRef<HTMLDivElement>(null);
@@ -56,13 +51,7 @@ function App() {
         </ResizablePanel>
         <ResizableHandle withHandle />
         <ResizablePanel defaultSize={70} minSize={40} maxSize={70}>
-          <Board
-            selectedNode={selectedNode}
-            setSelectedNode={setSelectedNode}
-            selectedEdge={selectedEdge}
-            setSelectedEdge={setSelectedEdge}
-            isSpacePressed={isSpacePressed}
-          />
+          <Board isSpacePressed={isSpacePressed} />
         </ResizablePanel>
         <ResizableHandle withHandle />
         <ResizablePanel
@@ -70,14 +59,7 @@ function App() {
           minSize={15}
           maxSize={30}
           className="z-40 bg-white">
-          <SidebarRight
-            node={selectedNode}
-            edge={selectedEdge}
-            onClearSelection={() => {
-              setSelectedNode(null);
-              setSelectedEdge(null);
-            }}
-          />
+          <SidebarRight />
         </ResizablePanel>
       </ResizablePanelGroup>
 

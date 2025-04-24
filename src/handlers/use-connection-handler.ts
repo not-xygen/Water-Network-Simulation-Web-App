@@ -1,11 +1,9 @@
 /* eslint-disable no-unused-vars */
 import { useCallback } from "react";
-import type { Edge } from "@/store/node-edge";
 import { nanoid } from "nanoid";
+import useNodeEdgeStore from "@/store/node-edge";
 
 export const useConnectionHandler = ({
-  addEdge,
-  edges,
   connecting,
   setConnecting,
   setMousePos,
@@ -13,8 +11,6 @@ export const useConnectionHandler = ({
   isConnectingRef,
   setDraggingEdgeHandle,
 }: {
-  addEdge: (edge: Edge) => void;
-  edges: Edge[];
   connecting: {
     sourceId: string;
     sourcePosition: "left" | "right" | "top" | "bottom";
@@ -42,6 +38,8 @@ export const useConnectionHandler = ({
     } | null,
   ) => void;
 }) => {
+  const { edges, addEdge } = useNodeEdgeStore();
+
   const handleConnectionStart = useCallback(
     (
       event: React.MouseEvent,

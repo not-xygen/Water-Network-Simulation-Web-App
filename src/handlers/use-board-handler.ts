@@ -2,23 +2,13 @@
 /* eslint-disable no-unused-vars */
 import { useRef, useCallback } from "react";
 import type React from "react";
-import type { Edge, Node } from "@/store/node-edge";
+import type { Node } from "@/store/node-edge";
+import useGlobalStore from "@/store/globals";
+import useNodeEdgeStore from "@/store/node-edge";
 
 export const useBoardHandler = ({
-  zoom,
-  offset,
-  setOffset,
-  zoomIn,
-  zoomOut,
-  nodes,
   draggedNode,
-  setSelectedNode,
-  selectedNodes,
-  setSelectedNodes,
-  setSelectedEdge,
-  setSelectedEdges,
   setDraggedNode,
-  updateNodePosition,
   isDraggingBoardRef,
   lastMousePosRef,
   isSpacePressed,
@@ -27,20 +17,8 @@ export const useBoardHandler = ({
   selectionEnd,
   setSelectionEnd,
 }: {
-  zoom: number;
-  offset: { x: number; y: number };
-  setOffset: (x: number, y: number) => void;
-  zoomIn: () => void;
-  zoomOut: () => void;
-  nodes: Node[];
-  setSelectedNode: (nodes: Node | null) => void;
-  selectedNodes: Node[];
-  setSelectedNodes: (nodes: Node[]) => void;
-  setSelectedEdge: (edge: Edge | null) => void;
-  setSelectedEdges: (edges: Edge[]) => void;
   draggedNode: string | null;
   setDraggedNode: (id: string | null) => void;
-  updateNodePosition: (id: string, dx: number, dy: number) => void;
   isDraggingBoardRef: React.MutableRefObject<boolean>;
   lastMousePosRef: React.MutableRefObject<{ x: number; y: number } | null>;
   isSpacePressed: boolean;
@@ -49,6 +27,15 @@ export const useBoardHandler = ({
   selectionEnd: { x: number; y: number } | null;
   setSelectionEnd: (pos: { x: number; y: number } | null) => void;
 }) => {
+  const { zoom, zoomIn, zoomOut, offset, setOffset } = useGlobalStore();
+
+  const {
+    nodes,
+    updateNodePosition,
+    selectedNodes,
+    setSelectedNodes,
+    setSelectedEdges,
+  } = useNodeEdgeStore();
   const initialNodePositionsRef = useRef(new Map());
 
   const handleBoardMouseWheel = useCallback(
@@ -79,8 +66,6 @@ export const useBoardHandler = ({
         if (!isInNode && !isInHandle) {
           setSelectedNodes([]);
           setSelectedEdges([]);
-          setSelectedNode(null);
-          setSelectedEdge(null);
         }
 
         const board = document.getElementById("board")?.getBoundingClientRect();
@@ -105,9 +90,7 @@ export const useBoardHandler = ({
       isSpacePressed,
       lastMousePosRef,
       selectedNodes,
-      setSelectedEdge,
       setSelectedEdges,
-      setSelectedNode,
       setSelectedNodes,
       setSelectionEnd,
       setSelectionStart,

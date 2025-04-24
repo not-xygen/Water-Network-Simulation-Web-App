@@ -1,4 +1,3 @@
-import type { Node, Edge } from "@/store/node-edge";
 import { ChevronDown, RotateCcw, ZoomInIcon, ZoomOutIcon } from "lucide-react";
 
 import useGlobalStore from "@/store/globals";
@@ -15,20 +14,11 @@ import {
 } from "./ui/dropdown";
 import { Separator } from "./ui/separator";
 
-type SidebarRightProps = {
-  node: Node | null;
-  edge: Edge | null;
-  onClearSelection: () => void;
-};
-
-export const SidebarRight = ({
-  node,
-  edge,
-  onClearSelection,
-}: SidebarRightProps) => {
+export const SidebarRight = () => {
   const { zoom, resetZoom, zoomIn, zoomOut, offset, setOffset } =
     useGlobalStore();
-  const { removeNode, removeEdge } = useNodeEdgeStore();
+  const { selectedNodes, selectedEdges, removeNode, removeEdge } =
+    useNodeEdgeStore();
 
   const resetPosition = () => {
     setOffset(0, 0);
@@ -36,6 +26,8 @@ export const SidebarRight = ({
 
   const displayX = -offset.x;
   const displayY = offset.y;
+
+  console.log(selectedNodes);
 
   return (
     <div className="w-full h-full p-2 overflow-y-auto text-xs text-gray-700 border-l">
@@ -91,30 +83,31 @@ export const SidebarRight = ({
       <Separator className="h-0.5 bg-gray-200 rounded-md" />
 
       {/* Node Property */}
-      {node && !edge && (
+      {selectedNodes.length > 0 && !(selectedEdges.length > 0) && (
         <div className="p-2 space-y-2">
           <h2 className="font-semibold">Properti Node</h2>
           <div>
-            <strong>ID:</strong> {node.id}
+            <strong>ID:</strong> {selectedNodes[0].id}
           </div>
           <div>
-            <strong>Tipe:</strong> {node.type}
+            <strong>Tipe:</strong> {selectedNodes[0].type}
           </div>
           <div>
             <strong>Label:</strong>{" "}
-            {typeof node.data.label === "string" ? node.data.label : "Custom"}
+            {typeof selectedNodes[0].data.label === "string"
+              ? selectedNodes[0].data.label
+              : "Custom"}
           </div>
           <div>
-            <strong>Posisi:</strong> X: {node.position.x.toFixed(2)}, Y:{" "}
-            {node.position.y.toFixed(2)}
+            <strong>Posisi:</strong> X: {selectedNodes[0].position.x.toFixed(2)}
+            , Y: {selectedNodes[0].position.y.toFixed(2)}
           </div>
 
           <Button
             variant="destructive"
             className="w-full"
             onClick={() => {
-              removeNode(node.id);
-              onClearSelection();
+              removeNode(selectedNodes[0].id);
             }}>
             Hapus Node
           </Button>
@@ -122,31 +115,30 @@ export const SidebarRight = ({
       )}
 
       {/* Edge Property */}
-      {!node && edge && (
+      {!(selectedNodes.length > 0) && selectedEdges.length > 0 && (
         <div className="p-2 space-y-2">
           <h2 className="font-semibold">Properti Edge</h2>
           <div>
-            <strong>ID:</strong> {edge.id}
+            <strong>ID:</strong> {selectedEdges[0].id}
           </div>
           <div>
-            <strong>Source:</strong> {edge.sourceId}
+            <strong>Source:</strong> {selectedEdges[0].sourceId}
           </div>
           <div>
-            <strong>Target:</strong> {edge.targetId}
+            <strong>Target:</strong> {selectedEdges[0].targetId}
           </div>
           <div>
-            <strong>Source Pos:</strong> {edge.sourcePosition}
+            <strong>Source Pos:</strong> {selectedEdges[0].sourcePosition}
           </div>
           <div>
-            <strong>Target Pos:</strong> {edge.targetPosition}
+            <strong>Target Pos:</strong> {selectedEdges[0].targetPosition}
           </div>
 
           <Button
             variant="destructive"
             className="w-full"
             onClick={() => {
-              removeEdge(edge.id);
-              onClearSelection();
+              removeEdge(selectedEdges[0].id);
             }}>
             Hapus Edge
           </Button>

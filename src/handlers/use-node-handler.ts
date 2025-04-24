@@ -1,38 +1,27 @@
 /* eslint-disable no-unused-vars */
-import type { Edge, Node } from "@/store/node-edge";
+import useGlobalStore from "@/store/globals";
+import useNodeEdgeStore from "@/store/node-edge";
 import type React from "react";
 import { useCallback } from "react";
 
 export const useNodeHandler = ({
-  nodes,
-  zoom,
-  offset,
-  mode,
   setRotatingNodeId,
-  updateNodeRotation,
   setDraggedNode,
   lastMousePosRef,
-  selectedNodes,
-  setSelectedNode,
-  setSelectedNodes,
-  setSelectedEdge,
-  setSelectedEdges,
 }: {
-  nodes: Node[];
-  zoom: number;
-  mode: "drag" | "connect";
-  offset: { x: number; y: number };
   setRotatingNodeId: (id: string | null) => void;
-  updateNodeRotation: (id: string, angle: number) => void;
-  setSelectedNode: (node: Node | null) => void;
-  setSelectedEdge: (edge: Edge | null) => void;
   setDraggedNode: (id: string | null) => void;
   lastMousePosRef: React.MutableRefObject<{ x: number; y: number } | null>;
-  selectedNodes: Node[];
-  setSelectedNodes: (nodes: Node[]) => void;
-  selectedEdges: Edge[];
-  setSelectedEdges: (edges: Edge[]) => void;
 }) => {
+  const { zoom, offset, mode } = useGlobalStore();
+  const {
+    nodes,
+    updateNodeRotation,
+    selectedNodes,
+    setSelectedNodes,
+    setSelectedEdges,
+  } = useNodeEdgeStore();
+
   const handleNodeMouseDown = useCallback(
     (event: React.MouseEvent, nodeId: string) => {
       event.stopPropagation();
@@ -68,19 +57,14 @@ export const useNodeHandler = ({
             setSelectedNodes(
               selectedNodes.filter((n) => n.id !== clickedNode.id),
             );
-            setSelectedEdge(null);
             setSelectedEdges([]);
           } else {
             setSelectedNodes([...selectedNodes, clickedNode]);
-            setSelectedEdge(null);
             setSelectedEdges([]);
           }
-          setSelectedEdge(null);
           setSelectedEdges([]);
         } else {
-          setSelectedNode(clickedNode);
           setSelectedNodes([clickedNode]);
-          setSelectedEdge(null);
           setSelectedEdges([]);
         }
       };
@@ -94,10 +78,8 @@ export const useNodeHandler = ({
       setDraggedNode,
       nodes,
       selectedNodes,
-      setSelectedEdge,
       setSelectedEdges,
       setSelectedNodes,
-      setSelectedNode,
     ],
   );
 
