@@ -27,8 +27,6 @@ export const SidebarRight = () => {
   const displayX = -offset.x;
   const displayY = offset.y;
 
-  console.log(selectedNodes);
-
   return (
     <div className="w-full h-full p-2 overflow-y-auto text-xs text-gray-700 border-l">
       <div className="flex items-center justify-between p-2 font-semibold">

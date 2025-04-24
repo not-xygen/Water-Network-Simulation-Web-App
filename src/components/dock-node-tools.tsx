@@ -49,7 +49,9 @@ export const DockNodeTools = () => {
                   <TooltipContent align="center">Fitting</TooltipContent>
                 </Tooltip>
 
-                <DropdownMenuContent align="center">
+                <DropdownMenuContent
+                  align="center"
+                  onCloseAutoFocus={(e) => e.preventDefault()}>
                   <DropdownMenuItem
                     onSelect={() => {
                       const newNode = createNode(

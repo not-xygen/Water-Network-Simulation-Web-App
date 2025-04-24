@@ -64,7 +64,7 @@ function App() {
       </ResizablePanelGroup>
 
       {/* Docks */}
-      <DockNodeTools />
+      <DockNodeTools/>
     </div>
   );
 }

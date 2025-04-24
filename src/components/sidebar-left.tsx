@@ -27,7 +27,14 @@ import {
 import { Separator } from "./ui/separator";
 
 export const SidebarLeft = () => {
-  const { nodes, edges } = useNodeEdgeStore();
+  const {
+    nodes,
+    edges,
+    selectedNodes,
+    setSelectedNodes,
+    selectedEdges,
+    setSelectedEdges,
+  } = useNodeEdgeStore();
 
   const [nodeListMenuOpen, setNodeListMenuOpen] = useState(false);
   const [edgeListMenuOpen, setEdgeListMenuOpen] = useState(false);
@@ -88,8 +95,13 @@ export const SidebarLeft = () => {
             nodes.map((n: Node) => (
               <Button
                 variant={"ghost"}
+                onClick={() => setSelectedNodes([n])}
                 key={n.id}
-                className="flex items-center justify-between px-2 py-1 text-xs font-semibold text-gray-700 cursor-pointer hover:bg-gray-100 h-max">
+                className={`flex items-center justify-between px-2 py-1 text-xs font-semibold cursor-pointer h-max text-gray-700 rounded-sm ${
+                  selectedNodes.some((sel) => sel.id === n.id)
+                    ? "bg-blue-200"
+                    : " hover:bg-gray-100"
+                }`}>
                 <span>{n.data.label}</span>
               </Button>
             ))}
@@ -113,12 +125,17 @@ export const SidebarLeft = () => {
         </CollapsibleTrigger>
         <CollapsibleContent className="flex flex-col gap-0.5">
           {edges.length > 0 &&
-            edges.map((n: Edge) => (
+            edges.map((e: Edge) => (
               <Button
                 variant={"ghost"}
-                key={n.id}
-                className="flex items-center justify-between px-2 py-1 text-xs font-semibold text-gray-700 cursor-pointer hover:bg-gray-100 h-max">
-                <span>{n.id}</span>
+                key={e.id}
+                onClick={() => setSelectedEdges([e])}
+                className={`flex items-center justify-between px-2 py-1 text-xs font-semibold cursor-pointer h-max text-gray-700 rounded-sm ${
+                  selectedEdges.some((sel) => sel.id === e.id)
+                    ? "bg-blue-200"
+                    : " hover:bg-gray-100"
+                }`}>
+                <span>{e.id}</span>
               </Button>
             ))}
         </CollapsibleContent>

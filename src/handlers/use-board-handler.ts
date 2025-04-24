@@ -40,7 +40,6 @@ export const useBoardHandler = ({
 
   const handleBoardMouseWheel = useCallback(
     (event: React.WheelEvent) => {
-      event.preventDefault();
       if (event.deltaY > 0) zoomOut();
       else zoomIn();
     },
@@ -49,6 +48,7 @@ export const useBoardHandler = ({
 
   const handleBoardMouseDown = useCallback(
     (event: React.MouseEvent) => {
+      event.preventDefault();
       if (
         isSpacePressed &&
         (event.target as HTMLElement).classList.contains("board-background")
@@ -98,7 +98,9 @@ export const useBoardHandler = ({
   );
 
   const handleBoardMouseUp = useCallback(
-    (_event: React.MouseEvent) => {
+    (event: React.MouseEvent) => {
+      event.preventDefault();
+
       if (draggedNode) {
         setDraggedNode(null);
       }
@@ -175,6 +177,7 @@ export const useBoardHandler = ({
 
   const handleBoardMouseMove = useCallback(
     (event: React.MouseEvent) => {
+      event.preventDefault();
       if (isDraggingBoardRef.current && lastMousePosRef.current) {
         const deltaX = event.clientX - lastMousePosRef.current.x;
         const deltaY = event.clientY - lastMousePosRef.current.y;
@@ -203,10 +206,10 @@ export const useBoardHandler = ({
             targetY = Math.round(targetY / gridSize) * gridSize;
           }
 
-          const deltaX = targetX - node.position.x;
-          const deltaY = targetY - node.position.y;
+          const dx = targetX - node.position.x;
+          const dy = targetY - node.position.y;
 
-          updateNodePosition(node.id, deltaX, deltaY);
+          updateNodePosition(node.id, dx, dy);
         }
 
         lastMousePosRef.current = { x: event.clientX, y: event.clientY };
