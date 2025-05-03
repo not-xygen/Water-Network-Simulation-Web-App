@@ -103,7 +103,7 @@ export const SidebarLeft = () => {
                     ? "bg-blue-200"
                     : " hover:bg-gray-100"
                 }`}>
-                <span>{n.id}</span>
+                <span>{n.label}</span>
               </Button>
             ))}
         </CollapsibleContent>
@@ -136,7 +136,7 @@ export const SidebarLeft = () => {
                     ? "bg-blue-200"
                     : " hover:bg-gray-100"
                 }`}>
-                <span>{e.id}</span>
+                <span>{e.label}</span>
               </Button>
             ))}
         </CollapsibleContent>
