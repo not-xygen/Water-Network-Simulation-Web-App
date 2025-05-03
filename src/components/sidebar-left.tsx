@@ -8,7 +8,8 @@ import {
 } from "lucide-react";
 import { useState } from "react";
 
-import useNodeEdgeStore, { type Edge, type Node } from "@/store/node-edge";
+import useNodeEdgeStore from "@/store/node-edge";
+import type { Edge, Node } from "@/types/node-edge";
 
 import { Button } from "./ui/button";
 import {
@@ -102,7 +103,7 @@ export const SidebarLeft = () => {
                     ? "bg-blue-200"
                     : " hover:bg-gray-100"
                 }`}>
-                <span>{n.data.label}</span>
+                <span>{n.id}</span>
               </Button>
             ))}
         </CollapsibleContent>

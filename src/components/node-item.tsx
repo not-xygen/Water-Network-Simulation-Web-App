@@ -3,11 +3,11 @@ import React from "react";
 
 import { EdgeConnectionPoint } from "./edge-connection-point";
 
-import type { Node } from "@/store/node-edge";
-import { Zap } from "lucide-react";
+import type { NodeBase } from "@/types/node-edge";
+import { Filter, Zap } from "lucide-react";
 
 type NodeItemProps = {
-  node: Node;
+  node: NodeBase;
   x: number;
   y: number;
   zoom: number;
@@ -39,60 +39,60 @@ export const NodeItem = React.memo(function NodeItem({
   onStartConnect,
   onEndConnect,
 }: NodeItemProps) {
-  const renderJunctionShape = (subtype: string | undefined) => {
-    switch (subtype) {
-      case "Tee":
-        return (
-          <div className="relative flex items-center justify-center w-16 h-16">
-            <div className="w-full h-4 bg-gray-300" />
-            <div className="absolute top-0 w-4 -translate-x-1/2 bg-gray-300 h-1/2 left-1/2" />
-          </div>
-        );
-      case "Cross":
-        return (
-          <div className="relative flex items-center justify-center w-16 h-16">
-            <div className="absolute left-0 w-full h-4 -translate-y-1/2 bg-gray-300 top-1/2" />
-            <div className="absolute top-0 w-4 h-full -translate-x-1/2 bg-gray-300 left-1/2" />
-          </div>
-        );
-      case "Coupling":
-        return <div className="w-16 h-4 bg-gray-300" />;
-      default:
-        return (
-          <div className="flex items-center justify-center w-16 h-16 bg-gray-300 rounded-md">
-            Node
-          </div>
-        );
-    }
-  };
-
   const renderNodeShape = () => {
-    if (node.type === "fitting")
-      return renderJunctionShape(node.data.label as string);
-
-    const label = typeof node.data.label === "string" ? node.data.label : "";
-
-    switch (label) {
-      case "Reservoir":
+    switch (node.type as string) {
+      case "reservoir":
         return <div className="w-16 h-16 bg-blue-500 rounded-full" />;
-      case "Tank":
+
+      case "tank":
         return <div className="w-16 h-16 bg-orange-500 rounded-md" />;
-      case "Pump":
+
+      case "pump":
         return (
           <div className="flex items-center justify-center w-16 h-16 font-bold text-black bg-yellow-400 rounded-full">
             <Zap />
           </div>
         );
-      case "Valve":
+
+      case "valve":
         return (
-          <div className="flex items-center justify-center w-16 h-16 font-bold text-white bg-green-600 rounded-md">
-            V
+          <div className="flex items-center justify-center w-16 h-16 font-bold text-black bg-green-600 rounded-md">
+            <Filter />
           </div>
         );
+
+      case "fitting": {
+        const fittingType = node.subtype as string;
+        switch (fittingType) {
+          case "tee":
+            return (
+              <div className="relative flex items-center justify-center w-16 h-16">
+                <div className="w-full h-4 bg-gray-300" />
+                <div className="absolute top-0 w-4 -translate-x-1/2 bg-gray-300 h-1/2 left-1/2" />
+              </div>
+            );
+          case "cross":
+            return (
+              <div className="relative flex items-center justify-center w-16 h-16">
+                <div className="absolute left-0 w-full h-4 -translate-y-1/2 bg-gray-300 top-1/2" />
+                <div className="absolute top-0 w-4 h-full -translate-x-1/2 bg-gray-300 left-1/2" />
+              </div>
+            );
+          case "coupling":
+            return <div className="w-16 h-4 bg-gray-300" />;
+          default:
+            return (
+              <div className="flex items-center justify-center w-16 h-16 bg-gray-300 rounded-md">
+                Node
+              </div>
+            );
+        }
+      }
+
       default:
         return (
           <div className="flex items-center justify-center w-16 h-16 bg-gray-300 rounded-md">
-            {label}
+            {node.label}
           </div>
         );
     }
@@ -100,9 +100,9 @@ export const NodeItem = React.memo(function NodeItem({
 
   const renderHandles = () => {
     const positions: ("left" | "right" | "top" | "bottom")[] =
-      node.type === "fitting" && node.data.label === "Cross"
+      node.type === "fitting" && node.subtype === "cross"
         ? ["left", "right", "top", "bottom"]
-        : node.type === "fitting" && node.data.label === "Tee"
+        : node.subtype === "tee"
         ? ["left", "right", "top"]
         : ["left", "right"];
 

@@ -8,10 +8,12 @@ export const useNodeHandler = ({
   setRotatingNodeId,
   setDraggedNode,
   lastMousePosRef,
+  isShiftPressed,
 }: {
   setRotatingNodeId: (id: string | null) => void;
   setDraggedNode: (id: string | null) => void;
   lastMousePosRef: React.MutableRefObject<{ x: number; y: number } | null>;
+  isShiftPressed: boolean;
 }) => {
   const { zoom, offset, mode } = useGlobalStore();
   const {
@@ -111,7 +113,7 @@ export const useNodeHandler = ({
       const deltaAngle = currentCursorAngle - initialCursorAngle;
       const rawAngle = initialNodeAngle + deltaAngle;
 
-      const finalAngle = moveEvent.shiftKey
+      const finalAngle = isShiftPressed
         ? Math.round(rawAngle / 45) * 45
         : rawAngle;
 

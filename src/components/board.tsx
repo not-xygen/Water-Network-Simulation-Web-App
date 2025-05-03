@@ -12,9 +12,10 @@ import { NodeItem } from "./node-item";
 
 type BoardProps = {
   isSpacePressed: boolean;
+  isShiftPressed: boolean;
 };
 
-export const Board = ({ isSpacePressed }: BoardProps) => {
+export const Board = ({ isSpacePressed, isShiftPressed }: BoardProps) => {
   const { zoom, offset } = useGlobalStore();
   const {
     nodes,
@@ -68,6 +69,7 @@ export const Board = ({ isSpacePressed }: BoardProps) => {
     isDraggingBoardRef,
     lastMousePosRef,
     isSpacePressed,
+    isShiftPressed,
     selectionStart,
     setSelectionStart,
     selectionEnd,
@@ -88,6 +90,7 @@ export const Board = ({ isSpacePressed }: BoardProps) => {
     setRotatingNodeId,
     setDraggedNode,
     lastMousePosRef,
+    isShiftPressed,
   });
 
   const { getWorldToScreen, getHandlePosition } = useHandlePosition();
@@ -259,18 +262,26 @@ export const Board = ({ isSpacePressed }: BoardProps) => {
           <div key={node.id} className="absolute group z-[40]">
             {/* Rotate Handle */}
             {(
-              ["top", "bottom", "left", "right"] as (
-                | "top"
-                | "bottom"
-                | "left"
-                | "right"
+              ["top-left", "top-right", "bottom-left", "bottom-right"] as (
+                | "top-left"
+                | "top-right"
+                | "bottom-left"
+                | "bottom-right"
               )[]
             ).map((pos) => {
               const transformMap = {
-                top: `translateY(-${50 * (zoom / 100)}px)`,
-                bottom: `translateY(${50 * (zoom / 100)}px)`,
-                left: `translateX(-${50 * (zoom / 100)}px)`,
-                right: `translateX(${50 * (zoom / 100)}px)`,
+                "top-left": `translate(-${40 * (zoom / 100)}px, -${
+                  40 * (zoom / 100)
+                }px)`,
+                "top-right": `translate(${40 * (zoom / 100)}px, -${
+                  40 * (zoom / 100)
+                }px)`,
+                "bottom-left": `translate(-${40 * (zoom / 100)}px, ${
+                  40 * (zoom / 100)
+                }px)`,
+                "bottom-right": `translate(${40 * (zoom / 100)}px, ${
+                  40 * (zoom / 100)
+                }px)`,
               };
 
               return (

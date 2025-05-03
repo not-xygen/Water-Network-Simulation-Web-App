@@ -1,23 +1,24 @@
-import { Circle, PenTool, Square, Filter, Zap } from "lucide-react";
+import { Circle, Filter, PenTool, Square, Zap } from "lucide-react";
+
+import { createNode } from "@/lib/node-edge-factory";
+import useGlobalStore from "@/store/globals";
+import useNodeEdgeStore from "@/store/node-edge";
 
 import { Button } from "./ui/button";
 import {
   DropdownMenu,
-  DropdownMenuTrigger,
   DropdownMenuContent,
   DropdownMenuItem,
+  DropdownMenuTrigger,
 } from "./ui/dropdown";
-
 import {
   Tooltip,
-  TooltipTrigger,
   TooltipContent,
   TooltipProvider,
+  TooltipTrigger,
 } from "./ui/tooltip";
 
-import { createNode } from "@/lib/node-factory";
-import useGlobalStore from "@/store/globals";
-import useNodeEdgeStore from "@/store/node-edge";
+import type { NodeType } from "@/types/node-edge";
 
 const tools = [
   {
@@ -27,19 +28,19 @@ const tools = [
     color: "bg-gray-300",
   },
   {
-    id: "circle",
+    id: "reservoir",
     name: "Reservoir",
     icon: <Circle size={18} />,
     color: "bg-blue-500",
   },
   {
-    id: "square",
+    id: "tank",
     name: "Tank",
     icon: <Square size={18} />,
     color: "bg-orange-500",
   },
   {
-    id: "filter",
+    id: "valve",
     name: "Valve",
     icon: <Filter size={18} />,
     color: "bg-green-600",
@@ -79,9 +80,10 @@ export const DockNodeTools = () => {
                     onSelect={() => {
                       const newNode = createNode(
                         "fitting",
+                        "tee",
                         offset,
                         zoom,
-                        "Tee",
+                        "Tee Fitting",
                       );
                       addNode(newNode);
                     }}>
@@ -91,9 +93,10 @@ export const DockNodeTools = () => {
                     onSelect={() => {
                       const newNode = createNode(
                         "fitting",
+                        "cross",
                         offset,
                         zoom,
-                        "Cross",
+                        "Cross Fitting",
                       );
                       addNode(newNode);
                     }}>
@@ -103,9 +106,10 @@ export const DockNodeTools = () => {
                     onSelect={() => {
                       const newNode = createNode(
                         "fitting",
+                        "coupling",
                         offset,
                         zoom,
-                        "Coupling",
+                        "Coupling Fitting",
                       );
                       addNode(newNode);
                     }}>
@@ -122,7 +126,8 @@ export const DockNodeTools = () => {
                     className={`w-10 h-10 ${tool.color}`}
                     onClick={() => {
                       const newNode = createNode(
-                        tool.id,
+                        tool.id as NodeType,
+                        "",
                         offset,
                         zoom,
                         tool.name,

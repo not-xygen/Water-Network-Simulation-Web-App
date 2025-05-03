@@ -1,7 +1,7 @@
 /* eslint-disable no-unused-vars */
 import { useRef, useCallback } from "react";
 import type React from "react";
-import type { Node } from "@/store/node-edge";
+import type { Node } from "@/types/node-edge";
 import useGlobalStore from "@/store/globals";
 import useNodeEdgeStore from "@/store/node-edge";
 
@@ -11,6 +11,7 @@ export const useBoardHandler = ({
   isDraggingBoardRef,
   lastMousePosRef,
   isSpacePressed,
+  isShiftPressed,
   selectionStart,
   setSelectionStart,
   selectionEnd,
@@ -21,6 +22,7 @@ export const useBoardHandler = ({
   isDraggingBoardRef: React.MutableRefObject<boolean>;
   lastMousePosRef: React.MutableRefObject<{ x: number; y: number } | null>;
   isSpacePressed: boolean;
+  isShiftPressed: boolean;
   selectionStart: { x: number; y: number } | null;
   setSelectionStart: (pos: { x: number; y: number } | null) => void;
   selectionEnd: { x: number; y: number } | null;
@@ -188,9 +190,7 @@ export const useBoardHandler = ({
         const worldDeltaX = deltaX / (zoom / 100);
         const worldDeltaY = deltaY / (zoom / 100);
 
-        const isInSelected = selectedNodes.some(
-          (n: { id: string }) => n.id === draggedNode,
-        );
+        const isInSelected = selectedNodes.some((n) => n.id === draggedNode);
         const nodesToMove = isInSelected
           ? selectedNodes
           : nodes.filter((n) => n.id === draggedNode);
@@ -199,7 +199,7 @@ export const useBoardHandler = ({
           let targetX = node.position.x + worldDeltaX;
           let targetY = node.position.y + worldDeltaY;
 
-          if (event.shiftKey) {
+          if (isShiftPressed) {
             const gridSize = 20;
             targetX = Math.round(targetX / gridSize) * gridSize;
             targetY = Math.round(targetY / gridSize) * gridSize;
@@ -235,6 +235,7 @@ export const useBoardHandler = ({
       zoom,
       selectedNodes,
       nodes,
+      isShiftPressed,
       updateNodePosition,
       setSelectionEnd,
     ],

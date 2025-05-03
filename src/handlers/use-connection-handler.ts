@@ -114,6 +114,11 @@ export const useConnectionHandler = ({
           targetId: nodeId,
           sourcePosition: connecting.sourcePosition,
           targetPosition: position,
+          label: "pipe",
+          diameter: 100,
+          length: 10,
+          roughness: 100,
+          status: "open",
         });
       }
 

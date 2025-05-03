@@ -3,7 +3,8 @@ import { useCallback } from "react";
 import useGlobalStore from "@/store/globals";
 import useNodeEdgeStore from "@/store/node-edge";
 
-import type { Node } from "@/store/node-edge";
+import type { Node } from "@/types/node-edge";
+
 export const useHandlePosition = () => {
   const { nodes } = useNodeEdgeStore();
   const { zoom, offset } = useGlobalStore();
