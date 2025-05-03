@@ -96,7 +96,10 @@ export const SidebarLeft = () => {
             nodes.map((n: Node) => (
               <Button
                 variant={"ghost"}
-                onClick={() => setSelectedNodes([n])}
+                onClick={() => {
+                  setSelectedNodes([n]);
+                  setSelectedEdges([]);
+                }}
                 key={n.id}
                 className={`flex items-center justify-between px-2 py-1 text-xs font-semibold cursor-pointer h-max text-gray-700 rounded-sm ${
                   selectedNodes.some((sel) => sel.id === n.id)
@@ -130,7 +133,10 @@ export const SidebarLeft = () => {
               <Button
                 variant={"ghost"}
                 key={e.id}
-                onClick={() => setSelectedEdges([e])}
+                onClick={() => {
+                  setSelectedEdges([e]);
+                  setSelectedNodes([]);
+                }}
                 className={`flex items-center justify-between px-2 py-1 text-xs font-semibold cursor-pointer h-max text-gray-700 rounded-sm ${
                   selectedEdges.some((sel) => sel.id === e.id)
                     ? "bg-blue-200"

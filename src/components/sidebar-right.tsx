@@ -43,12 +43,16 @@ const renderEditableProperty = <T,>(
     return (
       // biome-ignore lint/suspicious/noExplicitAny: <intended>
       <Select value={value as any} onValueChange={(v) => onChange(v as T)}>
-        <SelectTrigger className="w-full px-2 text-xs h-max md:text-xs">
+        <SelectTrigger className="w-1/2 px-1 py-0.5 text-xs h-max md:text-xs">
           <SelectValue placeholder="Pilih Status" />
         </SelectTrigger>
-        <SelectContent>
-          <SelectItem value="open">Open</SelectItem>
-          <SelectItem value="close">Close</SelectItem>
+        <SelectContent className="px-1 py-0.5">
+          <SelectItem className="text-xs py-0.5 md:text-xs" value="open">
+            Open
+          </SelectItem>
+          <SelectItem className="text-xs py-0.5 md:text-xs" value="close">
+            Close
+          </SelectItem>
         </SelectContent>
       </Select>
     );
@@ -194,7 +198,11 @@ export const SidebarRight = () => {
                 {selectedNodes[0].position.y.toFixed(2)}
               </span>
             </div>
+          </div>
 
+          <Separator className="h-0.5 bg-gray-200 rounded-md" />
+
+          <div className="space-y-1">
             {renderObjectProperties(
               selectedNodes[0],
               ["id", "type", "subtype", "position", "rotation"],
@@ -244,7 +252,11 @@ export const SidebarRight = () => {
               <span>Target</span>
               <span>{selectedEdges[0].targetId}</span>
             </div>
+          </div>
 
+          <Separator className="h-0.5 bg-gray-200 rounded-md" />
+
+          <div className="space-y-1">
             {renderObjectProperties(
               selectedEdges[0],
               [

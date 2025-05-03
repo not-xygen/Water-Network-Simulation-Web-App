@@ -1,6 +1,7 @@
 /* eslint-disable no-unused-vars */
 import { useCallback } from "react";
-import { nanoid } from "nanoid";
+
+import { createEdge } from "@/lib/node-edge-factory";
 import useNodeEdgeStore from "@/store/node-edge";
 
 export const useConnectionHandler = ({
@@ -108,24 +109,19 @@ export const useConnectionHandler = ({
       if (edgeExists) {
         console.warn("Edge sudah ada, tidak bisa membuat koneksi ganda.");
       } else {
-        addEdge({
-          id: `e-${nanoid(12)}`,
-          sourceId: connecting.sourceId,
-          targetId: nodeId,
-          sourcePosition: connecting.sourcePosition,
-          targetPosition: position,
-          label: "pipe",
-          diameter: 100,
-          length: 10,
-          roughness: 100,
-          status: "open",
-        });
+        const newEdge = createEdge(
+          connecting.sourceId,
+          nodeId,
+          connecting.sourcePosition,
+          position,
+        );
+        addEdge(newEdge);
       }
 
       setConnecting(null);
       setMousePos(null);
     },
-    [connecting, edges, addEdge, setConnecting, setMousePos],
+    [addEdge, connecting, edges, setConnecting, setMousePos],
   );
 
   const handleEdgeReconnection = useCallback(
