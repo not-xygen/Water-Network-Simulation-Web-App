@@ -39,7 +39,7 @@ export const useConnectionHandler = ({
     } | null,
   ) => void;
 }) => {
-  const { edges, addEdge } = useNodeEdgeStore();
+  const { nodes, edges, addEdge } = useNodeEdgeStore();
 
   const handleConnectionStart = useCallback(
     (
@@ -109,19 +109,38 @@ export const useConnectionHandler = ({
       if (edgeExists) {
         console.warn("Edge sudah ada, tidak bisa membuat koneksi ganda.");
       } else {
+        const sourceNode = nodes.find((n) => n.id === connecting.sourceId);
+        const targetNode = nodes.find((n) => n.id === nodeId);
+
+        if (!sourceNode || !targetNode) {
+          console.warn("Node tidak ditemukan");
+          setConnecting(null);
+          setMousePos(null);
+          return;
+        }
+
+        const dx = targetNode.position.x - sourceNode.position.x;
+        const dy = targetNode.position.y - sourceNode.position.y;
+        const distance = Math.sqrt(dx * dx + dy * dy);
+
         const newEdge = createEdge(
           connecting.sourceId,
           nodeId,
           connecting.sourcePosition,
           position,
+          {
+            length: Math.round(distance),
+            status: "close",
+          },
         );
+
         addEdge(newEdge);
       }
 
       setConnecting(null);
       setMousePos(null);
     },
-    [addEdge, connecting, edges, setConnecting, setMousePos],
+    [addEdge, connecting, edges, nodes, setConnecting, setMousePos],
   );
 
   const handleEdgeReconnection = useCallback(

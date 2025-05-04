@@ -52,8 +52,9 @@ export const SidebarLeft = () => {
             </Button>
           </DropdownMenuTrigger>
           <DropdownMenuContent
-            className="p-1 space-y-1 text-xs bg-white border rounded-lg shadow cursor-pointer w-max"
-            align="start">
+            onCloseAutoFocus={(e) => e.preventDefault()}
+            align="start"
+            className="p-1 space-y-1 text-xs bg-white border rounded-lg shadow cursor-pointer w-max">
             <DropdownMenuGroup className="space-y-1">
               <DropdownMenuItem className="flex flex-row items-center gap-2 p-1">
                 <File className="w-4 h-4" />

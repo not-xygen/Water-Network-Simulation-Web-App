@@ -11,7 +11,6 @@ export const useBoardHandler = ({
   isDraggingBoardRef,
   lastMousePosRef,
   isSpacePressed,
-  isShiftPressed,
   selectionStart,
   setSelectionStart,
   selectionEnd,
@@ -22,7 +21,6 @@ export const useBoardHandler = ({
   isDraggingBoardRef: React.MutableRefObject<boolean>;
   lastMousePosRef: React.MutableRefObject<{ x: number; y: number } | null>;
   isSpacePressed: boolean;
-  isShiftPressed: boolean;
   selectionStart: { x: number; y: number } | null;
   setSelectionStart: (pos: { x: number; y: number } | null) => void;
   selectionEnd: { x: number; y: number } | null;
@@ -199,7 +197,7 @@ export const useBoardHandler = ({
           let targetX = node.position.x + worldDeltaX;
           let targetY = node.position.y + worldDeltaY;
 
-          if (isShiftPressed) {
+          if (event.shiftKey) {
             const gridSize = 20;
             targetX = Math.round(targetX / gridSize) * gridSize;
             targetY = Math.round(targetY / gridSize) * gridSize;
@@ -235,7 +233,6 @@ export const useBoardHandler = ({
       zoom,
       selectedNodes,
       nodes,
-      isShiftPressed,
       updateNodePosition,
       setSelectionEnd,
     ],

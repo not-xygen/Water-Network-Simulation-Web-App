@@ -1,38 +1,41 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 /* eslint-disable no-unused-vars */
 import { ChevronDown, RotateCcw, ZoomInIcon, ZoomOutIcon } from "lucide-react";
+
+import { formatLengthCm } from "@/lib/utils";
 import useGlobalStore from "@/store/globals";
 import useNodeEdgeStore from "@/store/node-edge";
 
-import { Button } from "./ui/button";
-import { Input } from "./ui/input";
-import { Separator } from "./ui/separator";
-import {
-  DropdownMenu,
-  DropdownMenuTrigger,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuGroup,
-  DropdownMenuSeparator,
-} from "./ui/dropdown";
 import {
   AlertDialog,
-  AlertDialogTrigger,
+  AlertDialogAction,
+  AlertDialogCancel,
   AlertDialogContent,
-  AlertDialogHeader,
-  AlertDialogTitle,
   AlertDialogDescription,
   AlertDialogFooter,
-  AlertDialogCancel,
-  AlertDialogAction,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
 } from "./ui/alert-dialog";
+import { Button } from "./ui/button";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuGroup,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "./ui/dropdown";
+import { Input } from "./ui/input";
 import {
   Select,
-  SelectTrigger,
   SelectContent,
   SelectItem,
+  SelectTrigger,
   SelectValue,
 } from "./ui/select";
+import { Separator } from "./ui/separator";
+import { Switch } from "./ui/switch";
 
 const renderEditableProperty = <T,>(
   key: string,
@@ -98,7 +101,7 @@ const renderObjectProperties = <T extends object>(
 export const SidebarRight = () => {
   const { zoom, resetZoom, zoomIn, zoomOut, offset, setOffset } =
     useGlobalStore();
-  const { selectedNodes, selectedEdges, removeNode, removeEdge } =
+  const { nodes, selectedNodes, removeNode, edges, selectedEdges, removeEdge } =
     useNodeEdgeStore();
 
   const resetPosition = () => setOffset(0, 0);
@@ -132,6 +135,14 @@ export const SidebarRight = () => {
     }));
   };
 
+  const liveSelectedNodes = selectedNodes.map(
+    (selected) => nodes.find((n) => n.id === selected.id) ?? selected,
+  );
+
+  const liveSelectedEdges = selectedEdges.map(
+    (selected) => edges.find((n) => n.id === selected.id) ?? selected,
+  );
+
   return (
     <div className="w-full h-full p-2 overflow-y-auto text-xs text-gray-700 border-l">
       <div className="flex items-center justify-between p-2 font-semibold">
@@ -146,6 +157,7 @@ export const SidebarRight = () => {
             </Button>
           </DropdownMenuTrigger>
           <DropdownMenuContent
+            onCloseAutoFocus={(e) => e.preventDefault()}
             align="end"
             className="p-1 space-y-1 bg-white border rounded-lg shadow">
             <DropdownMenuGroup className="space-y-1">
@@ -194,9 +206,13 @@ export const SidebarRight = () => {
             <div className="flex justify-between">
               <span>Posisi</span>
               <span>
-                X: {selectedNodes[0].position.x.toFixed(2)}, Y:{" "}
-                {selectedNodes[0].position.y.toFixed(2)}
+                X: {liveSelectedNodes[0].position.x.toFixed(2)}, Y:{" "}
+                {-liveSelectedNodes[0].position.y.toFixed(2)}
               </span>
+            </div>
+            <div className="flex justify-between">
+              <span>Rotasi</span>
+              <span>{liveSelectedNodes[0].rotation.toFixed()}</span>
             </div>
           </div>
 
@@ -252,6 +268,19 @@ export const SidebarRight = () => {
               <span>Target</span>
               <span>{selectedEdges[0].targetId}</span>
             </div>
+            <div className="flex justify-between">
+              <label htmlFor="pipe-status">Status</label>
+              <Switch
+                disabled
+                id="pipe-status"
+                checked={selectedEdges[0].status === "open"}
+                className="h-4"
+              />
+            </div>
+            <div className="flex justify-between">
+              <span>Panjang</span>
+              <span>{formatLengthCm(liveSelectedEdges[0].length)}</span>
+            </div>
           </div>
 
           <Separator className="h-0.5 bg-gray-200 rounded-md" />
@@ -265,6 +294,8 @@ export const SidebarRight = () => {
                 "targetId",
                 "sourcePosition",
                 "targetPosition",
+                "status",
+                "length",
               ],
               updateEdgeProperty,
             )}

@@ -12,10 +12,9 @@ import { NodeItem } from "./node-item";
 
 type BoardProps = {
   isSpacePressed: boolean;
-  isShiftPressed: boolean;
 };
 
-export const Board = ({ isSpacePressed, isShiftPressed }: BoardProps) => {
+export const Board = ({ isSpacePressed }: BoardProps) => {
   const { zoom, offset } = useGlobalStore();
   const {
     nodes,
@@ -69,7 +68,6 @@ export const Board = ({ isSpacePressed, isShiftPressed }: BoardProps) => {
     isDraggingBoardRef,
     lastMousePosRef,
     isSpacePressed,
-    isShiftPressed,
     selectionStart,
     setSelectionStart,
     selectionEnd,
@@ -90,7 +88,6 @@ export const Board = ({ isSpacePressed, isShiftPressed }: BoardProps) => {
     setRotatingNodeId,
     setDraggedNode,
     lastMousePosRef,
-    isShiftPressed,
   });
 
   const { getWorldToScreen, getHandlePosition } = useHandlePosition();
@@ -163,6 +160,9 @@ export const Board = ({ isSpacePressed, isShiftPressed }: BoardProps) => {
           );
           if (!sourcePos || !targetPos) return null;
 
+          const color = edge.status === "open" ? "#3B82F6" : "#A3A3A3";
+          const strokeDasharray = edge.status === "open" ? "0" : "4 4";
+
           return (
             // biome-ignore lint/a11y/useKeyWithClickEvents: <intended>
             <line
@@ -171,10 +171,11 @@ export const Board = ({ isSpacePressed, isShiftPressed }: BoardProps) => {
               y1={sourcePos.y}
               x2={targetPos.x}
               y2={targetPos.y}
-              className="stroke-blue-200"
+              stroke={color}
+              strokeWidth={14 * (zoom / 100)}
               strokeLinecap="round"
               strokeLinejoin="round"
-              strokeWidth={14 * (zoom / 100)}
+              strokeDasharray={strokeDasharray}
               onClick={() => {
                 setSelectedEdges([edge]);
                 setSelectedNodes([]);

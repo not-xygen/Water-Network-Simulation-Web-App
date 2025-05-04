@@ -12,7 +12,6 @@ import {
 
 function App() {
   const [isSpacePressed, setIsSpacePressed] = useState(false);
-  const [isShiftPressed, setIsShiftPressed] = useState(false);
 
   const boardRef = useRef<HTMLDivElement>(null);
 
@@ -27,25 +26,6 @@ function App() {
       if (event.code === "Space") {
         event.preventDefault();
         setIsSpacePressed(false);
-      }
-    };
-    window.addEventListener("keydown", handleKeyDown);
-    window.addEventListener("keyup", handleKeyUp);
-    return () => {
-      window.removeEventListener("keydown", handleKeyDown);
-      window.removeEventListener("keyup", handleKeyUp);
-    };
-  }, []);
-
-  useEffect(() => {
-    const handleKeyDown = (event: KeyboardEvent) => {
-      if (event.key === "Shift") {
-        setIsShiftPressed(true);
-      }
-    };
-    const handleKeyUp = (event: KeyboardEvent) => {
-      if (event.key === "Shift") {
-        setIsShiftPressed(false);
       }
     };
     window.addEventListener("keydown", handleKeyDown);
@@ -71,10 +51,7 @@ function App() {
         </ResizablePanel>
         <ResizableHandle withHandle />
         <ResizablePanel defaultSize={70} minSize={40} maxSize={70}>
-          <Board
-            isSpacePressed={isSpacePressed}
-            isShiftPressed={isShiftPressed}
-          />
+          <Board isSpacePressed={isSpacePressed} />
         </ResizablePanel>
         <ResizableHandle withHandle />
         <ResizablePanel
