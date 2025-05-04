@@ -18,10 +18,10 @@ export const createNode = (
       y: -offset.y / (zoom / 100),
     },
     rotation: 0,
-    ...(type === "fitting" && { elevation: 0, demand: 0 }),
-    ...(type === "reservoir" && { elevation: 0, head: 0 }),
+    elevation: 0,
+    ...(type === "fitting" && { demand: 0 }),
+    ...(type === "reservoir" && { head: 10 }),
     ...(type === "tank" && {
-      elevation: 0,
       level: 0,
       minLevel: 0,
       maxLevel: 10,
@@ -41,7 +41,7 @@ export const createEdge = (
   sourcePosition: "left" | "right" | "top" | "bottom",
   targetPosition: "left" | "right" | "top" | "bottom",
   options?: Partial<
-    Pick<Edge, "label" | "diameter" | "length" | "roughness" | "status">
+    Pick<Edge, "label" | "diameter" | "length" | "roughness">
   >,
 ): Edge => {
   return {
@@ -51,10 +51,9 @@ export const createEdge = (
     sourcePosition,
     targetPosition,
     label: options?.label ?? "Pipe",
-    diameter: options?.diameter ?? 0,
+    diameter: options?.diameter ?? 0.02,
     length: options?.length ?? 0,
-    roughness: options?.roughness ?? 0,
-    status: options?.status ?? "close",
+    roughness: options?.roughness ?? 0.02,
     flowRate: 0,
   };
 };

@@ -130,7 +130,6 @@ export const useConnectionHandler = ({
           position,
           {
             length: Math.round(distance),
-            status: "close",
           },
         );
 

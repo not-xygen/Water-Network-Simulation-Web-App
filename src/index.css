@@ -66,4 +66,8 @@
   body {
     @apply bg-background text-foreground;
   }
+
+  .stroke-dashed {
+    stroke-dasharray: 4 4;
+  }
 }

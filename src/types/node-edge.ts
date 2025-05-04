@@ -58,6 +58,5 @@ export type Edge = {
   diameter: number;
   length: number;
   roughness: number;
-  status: "open" | "close";
   flowRate: number;
 };

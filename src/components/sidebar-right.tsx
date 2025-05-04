@@ -2,7 +2,12 @@
 /* eslint-disable no-unused-vars */
 import { ChevronDown, RotateCcw, ZoomInIcon, ZoomOutIcon } from "lucide-react";
 
-import { formatElapsedTime, formatLengthCm } from "@/lib/utils";
+import {
+  formatElapsedTime,
+  formatFlowRate,
+  formatLengthCm,
+  formatPressure,
+} from "@/lib/utils";
 import useGlobalStore from "@/store/globals";
 import useNodeEdgeStore from "@/store/node-edge";
 import useSimulationStore from "@/store/simulation";
@@ -10,7 +15,7 @@ import {
   startSimulation,
   stopSimulation,
   resetSimulation,
-} from "@/handlers/use-simulation-handler";
+} from "@/handlers/use-simulation-engine-handler";
 
 import {
   AlertDialog,
@@ -33,16 +38,11 @@ import {
   DropdownMenuTrigger,
 } from "./ui/dropdown";
 import { Input } from "./ui/input";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "./ui/select";
+
 import { Separator } from "./ui/separator";
-import { Switch } from "./ui/switch";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Switch } from "./ui/switch";
+import { Textarea } from "./ui/textarea";
 
 const renderEditableProperty = <T,>(
   key: string,
@@ -51,20 +51,24 @@ const renderEditableProperty = <T,>(
 ) => {
   if (key === "status") {
     return (
-      // biome-ignore lint/suspicious/noExplicitAny: <intended>
-      <Select value={value as any} onValueChange={(v) => onChange(v as T)}>
-        <SelectTrigger className="w-1/2 px-1 py-0.5 text-xs h-max md:text-xs">
-          <SelectValue placeholder="Pilih Status" />
-        </SelectTrigger>
-        <SelectContent className="px-1 py-0.5">
-          <SelectItem className="text-xs py-0.5 md:text-xs" value="open">
-            Open
-          </SelectItem>
-          <SelectItem className="text-xs py-0.5 md:text-xs" value="close">
-            Close
-          </SelectItem>
-        </SelectContent>
-      </Select>
+      <div className="flex justify-between">
+        <Switch
+          id="node-active"
+          onCheckedChange={(checked) =>
+            onChange((checked ? "open" : "close") as T)
+          }
+          className="h-4"
+        />
+      </div>
+    );
+  }
+
+  if (key === "note") {
+    return (
+      <Textarea
+        onChange={(e) => onChange(e.target.value as T)}
+        className="w-full px-1 py-0.5 text-xs h-max md:text-xs"
+      />
     );
   }
 
@@ -97,12 +101,20 @@ const renderEditableProperties = <T extends object>(
 ) => {
   return Object.entries(obj)
     .filter(([key]) => !exclude.includes(key))
-    .map(([key, value]) => (
-      <div key={key} className="flex items-center justify-between gap-2">
-        <span className="capitalize">{key}</span>
-        {renderEditableProperty(key, value, (v) => update(key as keyof T, v))}
-      </div>
-    ));
+    .map(([key, value]) => {
+      const isNote = key === "note";
+
+      return (
+        <div
+          key={key}
+          className={`flex ${
+            isNote ? "flex-col" : "items-center justify-between"
+          } gap-2`}>
+          <span className="capitalize">{key}</span>
+          {renderEditableProperty(key, value, (v) => update(key as keyof T, v))}
+        </div>
+      );
+    });
 };
 
 const renderReadonlyProperties = <T extends object>(
@@ -111,14 +123,46 @@ const renderReadonlyProperties = <T extends object>(
 ) => {
   return Object.entries(obj)
     .filter(([key]) => !exclude.includes(key))
-    .map(([key, value]) => (
-      <div
-        key={key}
-        className="flex items-center justify-between gap-2 text-xs text-gray-700">
-        <span className="capitalize">{key}</span>
-        <span className="font-mono">{String(value)}</span>
-      </div>
-    ));
+    .map(([key, value]) => {
+      let displayValue = String(value);
+
+      if (key === "elevation" && typeof value === "number") {
+        displayValue = `${value.toFixed()} m`;
+      }
+
+      if (key === "head" && typeof value === "number") {
+        displayValue = `${value.toFixed()} m`;
+      }
+
+      if (key === "diameter" && typeof value === "number") {
+        displayValue = `${value.toFixed(2)} cm`;
+      }
+
+      if (key === "roughness" && typeof value === "number") {
+        displayValue = `${value.toFixed(2)} cm`;
+      }
+
+      if (key === "flowRate" && typeof value === "number") {
+        displayValue = formatFlowRate(value);
+      }
+
+      if (key === "pressure" && typeof value === "number") {
+        displayValue = formatPressure(value);
+      }
+
+      const isNote = key === "note";
+
+      return (
+        <div
+          key={key}
+          className={`flex ${
+            isNote ? "flex-col gap-1" : "items-center justify-between gap-2"
+          }`}>
+          <span className="capitalize">{key}</span>
+          <span className="font-mono">{displayValue}</span>
+        </div>
+      );
+    });
 };
 
 export const SidebarRight = () => {
@@ -128,6 +172,7 @@ export const SidebarRight = () => {
     useNodeEdgeStore();
 
   const running = useSimulationStore((s) => s.running);
+  const paused = useSimulationStore((s) => s.paused);
   const elapsedTime = useSimulationStore((s) => s.elapsedTime);
 
   const resetPosition = () => setOffset(0, 0);
@@ -171,7 +216,51 @@ export const SidebarRight = () => {
 
   return (
     <div className="w-full h-full p-2 overflow-y-auto text-xs text-gray-700 border-l">
-      <Tabs defaultValue="editor" className="w-full">
+      <div className="flex items-center justify-between p-2 font-semibold">
+        <div className="flex gap-2">
+          <div>X: {displayX.toFixed(0)}</div>
+          <div>Y: {displayY.toFixed(0)}</div>
+        </div>
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <Button
+              variant="outline"
+              className="flex gap-1 px-3 py-1 text-xs md:text-xs h-max">
+              {zoom} <ChevronDown />
+            </Button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent
+            onCloseAutoFocus={(e) => e.preventDefault()}
+            align="end"
+            className="p-1 space-y-1 bg-white border rounded-lg shadow">
+            <DropdownMenuGroup className="space-y-1">
+              <DropdownMenuItem onClick={zoomIn} className="text-xs md:text-xs">
+                <ZoomInIcon className="w-3 h-3 mr-2" /> Zoom In
+              </DropdownMenuItem>
+              <DropdownMenuItem
+                onClick={zoomOut}
+                className="text-xs md:text-xs">
+                <ZoomOutIcon className="w-3 h-3 mr-2" /> Zoom Out
+              </DropdownMenuItem>
+              <DropdownMenuItem
+                onClick={resetZoom}
+                className="text-xs md:text-xs">
+                <RotateCcw className="w-3 h-3 mr-2" /> Reset Zoom
+              </DropdownMenuItem>
+            </DropdownMenuGroup>
+            <DropdownMenuSeparator />
+            <DropdownMenuGroup>
+              <DropdownMenuItem
+                onClick={resetPosition}
+                className="text-xs md:text-xs">
+                <RotateCcw className="w-3 h-3 mr-2" /> Reset Position
+              </DropdownMenuItem>
+            </DropdownMenuGroup>
+          </DropdownMenuContent>
+        </DropdownMenu>
+      </div>
+      <Separator className="h-0.5 bg-gray-200 rounded-md" />
+      <Tabs defaultValue="editor" className="w-full mt-3">
         <TabsList className="w-full">
           <TabsTrigger
             className="w-full"
@@ -186,52 +275,6 @@ export const SidebarRight = () => {
           </TabsTrigger>
         </TabsList>
         <TabsContent value="editor">
-          <div className="flex items-center justify-between p-2 font-semibold">
-            <div className="flex gap-2">
-              <div>X: {displayX.toFixed(0)}</div>
-              <div>Y: {displayY.toFixed(0)}</div>
-            </div>
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <Button
-                  variant="outline"
-                  className="flex gap-1 px-3 py-1 text-xs md:text-xs h-max">
-                  {zoom} <ChevronDown />
-                </Button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent
-                onCloseAutoFocus={(e) => e.preventDefault()}
-                align="end"
-                className="p-1 space-y-1 bg-white border rounded-lg shadow">
-                <DropdownMenuGroup className="space-y-1">
-                  <DropdownMenuItem
-                    onClick={zoomIn}
-                    className="text-xs md:text-xs">
-                    <ZoomInIcon className="w-3 h-3 mr-2" /> Zoom In
-                  </DropdownMenuItem>
-                  <DropdownMenuItem
-                    onClick={zoomOut}
-                    className="text-xs md:text-xs">
-                    <ZoomOutIcon className="w-3 h-3 mr-2" /> Zoom Out
-                  </DropdownMenuItem>
-                  <DropdownMenuItem
-                    onClick={resetZoom}
-                    className="text-xs md:text-xs">
-                    <RotateCcw className="w-3 h-3 mr-2" /> Reset Zoom
-                  </DropdownMenuItem>
-                </DropdownMenuGroup>
-                <DropdownMenuSeparator />
-                <DropdownMenuGroup>
-                  <DropdownMenuItem
-                    onClick={resetPosition}
-                    className="text-xs md:text-xs">
-                    <RotateCcw className="w-3 h-3 mr-2" /> Reset Position
-                  </DropdownMenuItem>
-                </DropdownMenuGroup>
-              </DropdownMenuContent>
-            </DropdownMenu>
-          </div>
-          <Separator className="h-0.5 bg-gray-200 rounded-md" />
           {/* Node Properties */}
           {selectedNodes.length > 0 && selectedEdges.length === 0 && (
             <div className="p-2 space-y-3">
@@ -265,6 +308,17 @@ export const SidebarRight = () => {
                   <span>Rotasi</span>
                   <span>{liveSelectedNodes[0].rotation.toFixed()}</span>
                 </div>
+                <div className="flex justify-between">
+                  <label htmlFor="node-active">Aktif</label>
+                  <Switch
+                    id="node-active"
+                    checked={liveSelectedNodes[0].active}
+                    onCheckedChange={(checked) =>
+                      updateNodeProperty("active", checked)
+                    }
+                    className="h-4"
+                  />
+                </div>
               </div>
 
               <Separator className="h-0.5 bg-gray-200 rounded-md" />
@@ -272,7 +326,16 @@ export const SidebarRight = () => {
               <div className="space-y-1">
                 {renderEditableProperties(
                   selectedNodes[0],
-                  ["id", "type", "subtype", "position", "rotation"],
+                  [
+                    "id",
+                    "type",
+                    "subtype",
+                    "position",
+                    "rotation",
+                    "active",
+                    "flowRate",
+                    "pressure",
+                  ],
                   updateNodeProperty,
                 )}
               </div>
@@ -319,15 +382,6 @@ export const SidebarRight = () => {
                   <span>{selectedEdges[0].targetId}</span>
                 </div>
                 <div className="flex justify-between">
-                  <label htmlFor="pipe-status">Status</label>
-                  <Switch
-                    disabled
-                    id="pipe-status"
-                    checked={selectedEdges[0].status === "open"}
-                    className="h-4"
-                  />
-                </div>
-                <div className="flex justify-between">
                   <span>Panjang</span>
                   <span>{formatLengthCm(liveSelectedEdges[0].length)}</span>
                 </div>
@@ -346,6 +400,8 @@ export const SidebarRight = () => {
                     "targetPosition",
                     "status",
                     "length",
+                    "flowRate",
+                    "pressure",
                   ],
                   updateEdgeProperty,
                 )}
@@ -396,21 +452,50 @@ export const SidebarRight = () => {
             <Separator className="h-0.5 bg-gray-200 rounded-md" />
 
             <div className="flex flex-col gap-2">
-              <Button onClick={startSimulation} className="w-full">
-                Mulai Simulasi
-              </Button>
-              <Button
-                onClick={stopSimulation}
-                className="w-full"
-                variant="secondary">
-                Stop
-              </Button>
-              <Button
-                onClick={resetSimulation}
-                className="w-full"
-                variant="destructive">
-                Reset
-              </Button>
+              {!running && !paused && (
+                <Button onClick={startSimulation} className="w-full">
+                  Mulai Simulasi
+                </Button>
+              )}
+
+              {running && (
+                <Button
+                  onClick={stopSimulation}
+                  className="w-full"
+                  variant="secondary">
+                  Berhenti
+                </Button>
+              )}
+
+              {!running && paused && (
+                <>
+                  <Button onClick={startSimulation} className="w-full">
+                    Lanjutkan Simulasi
+                  </Button>
+
+                  <AlertDialog>
+                    <AlertDialogTrigger asChild>
+                      <Button className="w-full" variant="destructive">
+                        Reset Simulasi
+                      </Button>
+                    </AlertDialogTrigger>
+                    <AlertDialogContent>
+                      <AlertDialogHeader>
+                        <AlertDialogTitle>Reset Simulasi?</AlertDialogTitle>
+                        <AlertDialogDescription>
+                          Data simulasi akan direset ke awal.
+                        </AlertDialogDescription>
+                      </AlertDialogHeader>
+                      <AlertDialogFooter>
+                        <AlertDialogCancel>Batal</AlertDialogCancel>
+                        <AlertDialogAction onClick={resetSimulation}>
+                          Reset
+                        </AlertDialogAction>
+                      </AlertDialogFooter>
+                    </AlertDialogContent>
+                  </AlertDialog>
+                </>
+              )}
             </div>
 
             {/* Node Properties */}
@@ -446,17 +531,27 @@ export const SidebarRight = () => {
                     <span>Rotasi</span>
                     <span>{liveSelectedNodes[0].rotation.toFixed()}</span>
                   </div>
+                  <div className="flex justify-between">
+                    <label htmlFor="node-active">Aktif</label>
+                    <Switch
+                      disabled
+                      id="node-active"
+                      checked={liveSelectedNodes[0].active === true}
+                      className="h-4"
+                    />
+                  </div>
                 </div>
 
                 <Separator className="h-0.5 bg-gray-200 rounded-md" />
 
                 <div className="space-y-1">
-                  {renderReadonlyProperties(selectedNodes[0], [
+                  {renderReadonlyProperties(liveSelectedNodes[0], [
                     "id",
                     "type",
                     "subtype",
                     "position",
                     "rotation",
+                    "active",
                   ])}
                 </div>
               </div>
@@ -479,32 +574,18 @@ export const SidebarRight = () => {
                     <span>Target</span>
                     <span>{selectedEdges[0].targetId}</span>
                   </div>
-                  <div className="flex justify-between">
-                    <label htmlFor="pipe-status">Status</label>
-                    <Switch
-                      disabled
-                      id="pipe-status"
-                      checked={selectedEdges[0].status === "open"}
-                      className="h-4"
-                    />
-                  </div>
-                  <div className="flex justify-between">
-                    <span>Panjang</span>
-                    <span>{formatLengthCm(liveSelectedEdges[0].length)}</span>
-                  </div>
                 </div>
 
                 <Separator className="h-0.5 bg-gray-200 rounded-md" />
 
                 <div className="space-y-1">
-                  {renderReadonlyProperties(selectedEdges[0], [
+                  {renderReadonlyProperties(liveSelectedEdges[0], [
                     "id",
                     "sourceId",
                     "targetId",
                     "sourcePosition",
                     "targetPosition",
                     "status",
-                    "length",
                   ])}
                 </div>
               </div>

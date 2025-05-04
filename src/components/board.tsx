@@ -9,6 +9,7 @@ import useGlobalStore from "@/store/globals";
 import useNodeEdgeStore from "@/store/node-edge";
 
 import { NodeItem } from "./node-item";
+import clsx from "clsx";
 
 const RedoDot = React.memo(LucideRedoDot);
 
@@ -162,9 +163,6 @@ export const Board = ({ isSpacePressed }: BoardProps) => {
           );
           if (!sourcePos || !targetPos) return null;
 
-          const color = edge.status === "open" ? "#3B82F6" : "#A3A3A3";
-          const strokeDasharray = edge.status === "open" ? "0" : "4 4";
-
           return (
             // biome-ignore lint/a11y/useKeyWithClickEvents: <intended>
             <line
@@ -173,11 +171,14 @@ export const Board = ({ isSpacePressed }: BoardProps) => {
               y1={sourcePos.y}
               x2={targetPos.x}
               y2={targetPos.y}
-              stroke={color}
+              className={clsx("transition-all duration-300", {
+                "stroke-blue-500": edge.flowRate > 0,
+                "stroke-gray-400": edge.flowRate <= 0,
+                "stroke-dashed": edge.flowRate <= 0,
+              })}
               strokeWidth={14 * (zoom / 100)}
               strokeLinecap="round"
               strokeLinejoin="round"
-              strokeDasharray={strokeDasharray}
               onClick={() => {
                 setSelectedEdges([edge]);
                 setSelectedNodes([]);

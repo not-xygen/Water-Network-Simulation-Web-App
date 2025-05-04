@@ -1,2 +1,2 @@
-// 1 Pixel = 0.5 cm
-export const PIXEL_TO_CM = 0.5;
+export const PIXEL_TO_CM = 0.25;
+export const GRAVITY_PRESSURE = 9.81;

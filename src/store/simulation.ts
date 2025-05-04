@@ -3,6 +3,7 @@ import { devtools } from "zustand/middleware";
 
 type SimulationState = {
   running: boolean;
+  paused: boolean;
   step: number;
   elapsedTime: number;
   start: () => void;
@@ -14,6 +15,7 @@ type SimulationState = {
 const useSimulationStore = create(
   devtools<SimulationState>((set) => ({
     running: false,
+    paused: false,
     step: 0,
     elapsedTime: 0,
     start: () => set({ running: true }),
