@@ -177,14 +177,11 @@ export const SidebarRight = () => {
             className="w-full"
             value="editor"
             onClick={() => {
-              resetPosition();
-              resetZoom();
               stopSimulation();
-              resetSimulation();
             }}>
             Editor
           </TabsTrigger>
-          <TabsTrigger className="w-full" value="simulation">
+          <TabsTrigger className="w-full" value="simulation" onClick={() => {}}>
             Simulasi
           </TabsTrigger>
         </TabsList>

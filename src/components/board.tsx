@@ -1,5 +1,5 @@
-import { RedoDot } from "lucide-react";
-import { useEffect, useRef, useState } from "react";
+import { RedoDot as LucideRedoDot } from "lucide-react";
+import React, { useEffect, useRef, useState } from "react";
 
 import { useBoardHandler } from "@/handlers/use-board-handler";
 import { useConnectionHandler } from "@/handlers/use-connection-handler";
@@ -9,6 +9,8 @@ import useGlobalStore from "@/store/globals";
 import useNodeEdgeStore from "@/store/node-edge";
 
 import { NodeItem } from "./node-item";
+
+const RedoDot = React.memo(LucideRedoDot);
 
 type BoardProps = {
   isSpacePressed: boolean;
