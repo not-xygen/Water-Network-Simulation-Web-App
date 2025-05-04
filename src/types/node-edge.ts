@@ -8,6 +8,10 @@ export type NodeBase = {
   position: { x: number; y: number };
   rotation: number;
   elevation: number;
+  flowRate: number;
+  pressure: number;
+  active: boolean;
+  note?: string;
 };
 
 export type FittingNode = NodeBase & {
@@ -55,4 +59,5 @@ export type Edge = {
   length: number;
   roughness: number;
   status: "open" | "close";
+  flowRate: number;
 };

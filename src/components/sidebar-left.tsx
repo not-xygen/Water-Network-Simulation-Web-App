@@ -37,8 +37,8 @@ export const SidebarLeft = () => {
     setSelectedEdges,
   } = useNodeEdgeStore();
 
-  const [nodeListMenuOpen, setNodeListMenuOpen] = useState(false);
-  const [edgeListMenuOpen, setEdgeListMenuOpen] = useState(false);
+  const [nodeListMenuOpen, setNodeListMenuOpen] = useState(true);
+  const [edgeListMenuOpen, setEdgeListMenuOpen] = useState(true);
 
   return (
     <div className="w-full h-full p-2 overflow-y-auto text-xs text-gray-700 border-r">
@@ -56,20 +56,20 @@ export const SidebarLeft = () => {
             align="start"
             className="p-1 space-y-1 text-xs bg-white border rounded-lg shadow cursor-pointer w-max">
             <DropdownMenuGroup className="space-y-1">
-              <DropdownMenuItem className="flex flex-row items-center gap-2 p-1">
-                <File className="w-4 h-4" />
-                <span>New</span>
+              <DropdownMenuItem className="flex flex-row items-center gap-2 p-1 text-xs md:text-xs">
+                <File className="w-3 h-3" />
+                New
               </DropdownMenuItem>
             </DropdownMenuGroup>
-            <DropdownMenuSeparator className="h-0.5 bg-gray-200 rounded-md" />
+            <DropdownMenuSeparator />
             <DropdownMenuGroup>
-              <DropdownMenuItem className="flex flex-row items-center gap-2 p-1">
-                <Save className="w-4 h-4" />
-                <span>Save</span>
+              <DropdownMenuItem className="flex flex-row items-center gap-2 p-1 text-xs md:text-xs">
+                <Save className="w-3 h-3" />
+                Save
               </DropdownMenuItem>
-              <DropdownMenuItem className="flex flex-row items-center gap-2 p-1">
-                <Upload className="w-4 h-4" />
-                <span>Load</span>
+              <DropdownMenuItem className="flex flex-row items-center gap-2 p-1 text-xs md:text-xs">
+                <Upload className="w-3 h-3" />
+                Load
               </DropdownMenuItem>
             </DropdownMenuGroup>
           </DropdownMenuContent>

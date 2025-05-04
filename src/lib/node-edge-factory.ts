@@ -28,6 +28,10 @@ export const createNode = (
     }),
     ...(type === "pump" && { curve: "" }),
     ...(type === "valve" && { status: "close" }),
+    flowRate: 0,
+    pressure: 0,
+    active: true,
+    note: "",
   } as Node;
 };
 
@@ -47,9 +51,10 @@ export const createEdge = (
     sourcePosition,
     targetPosition,
     label: options?.label ?? "Pipe",
-    diameter: options?.diameter ?? 100,
-    length: options?.length ?? 10,
-    roughness: options?.roughness ?? 100,
-    status: options?.status ?? "open",
+    diameter: options?.diameter ?? 0,
+    length: options?.length ?? 0,
+    roughness: options?.roughness ?? 0,
+    status: options?.status ?? "close",
+    flowRate: 0,
   };
 };
