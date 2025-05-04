@@ -134,6 +134,10 @@ const renderReadonlyProperties = <T extends object>(
         displayValue = `${value.toFixed()} m`;
       }
 
+      if (key === "length" && typeof value === "number") {
+        displayValue = formatLengthCm(value);
+      }
+
       if (key === "diameter" && typeof value === "number") {
         displayValue = `${value.toFixed(2)} cm`;
       }
