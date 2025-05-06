@@ -59,4 +59,5 @@ export type Edge = {
   length: number;
   roughness: number;
   flowRate: number;
+  velocity: number;
 };

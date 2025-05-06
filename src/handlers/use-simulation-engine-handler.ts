@@ -1,4 +1,8 @@
-import { GRAVITY_PRESSURE } from "@/constant/globals";
+import {
+  FLOW_COEFFICIENT,
+  GRAVITY_PRESSURE,
+  PIXEL_TO_CM,
+} from "@/constant/globals";
 import useNodeEdgeStore from "@/store/node-edge";
 import useSimulationStore from "@/store/simulation";
 
@@ -10,35 +14,43 @@ export const startSimulation = () => {
   useSimulationStore.setState({ running: true });
 
   simulationInterval = setInterval(() => {
-    const { nodes: currentNodes, edges: currentEdges } =
-      useNodeEdgeStore.getState();
+    const { nodes, edges } = useNodeEdgeStore.getState();
 
-    const nodePressureMap = new Map(
-      currentNodes.map((n) => {
-        if (n.type === "reservoir") return [n.id, n.head * GRAVITY_PRESSURE];
-        if (n.type === "tank") return [n.id, n.level * GRAVITY_PRESSURE];
-        return [n.id, n.pressure];
-      }),
-    );
+    const nodeMap = new Map(nodes.map((n) => [n.id, n]));
 
     useSimulationStore.setState((state) => ({
       step: state.step + 1,
       elapsedTime: state.elapsedTime + 1,
     }));
 
-    const newEdges = currentEdges.map((edge) => {
-      const sourcePressure = nodePressureMap.get(edge.sourceId) ?? 0;
-      const targetPressure = nodePressureMap.get(edge.targetId) ?? 0;
+    const newEdges = edges.map((edge) => {
+      const sourceNode = nodeMap.get(edge.sourceId);
+      const targetNode = nodeMap.get(edge.targetId);
 
+      let sourcePressure = 0;
+      const lengthM = (edge.length * PIXEL_TO_CM) / 100;
+      const diameterM = edge.diameter / 100;
+
+      if (sourceNode?.type === "reservoir") sourcePressure = sourceNode.head;
+      else if (sourceNode?.type === "tank") sourcePressure = sourceNode.level;
+      else sourcePressure = sourceNode?.pressure ?? 0;
+
+      sourcePressure *= GRAVITY_PRESSURE;
+
+      const targetPressure = targetNode?.pressure ?? 0;
       const pressureDiff = sourcePressure - targetPressure;
-      const headLoss = (edge.length * edge.diameter) / (edge.roughness * 1000);
-      let flowRate = pressureDiff - headLoss;
+      const headLoss = (lengthM * diameterM) / edge.roughness;
 
+      let flowRate = (pressureDiff - headLoss) * FLOW_COEFFICIENT;
       if (flowRate < 0) flowRate = 0;
+
+      const area = Math.PI * (diameterM / 2) ** 2;
+      const velocity = area === 0 ? 0 : flowRate / 1000 / area;
 
       return {
         ...edge,
         flowRate,
+        velocity,
       };
     });
 
@@ -51,35 +63,35 @@ export const startSimulation = () => {
       {},
     );
 
-    const newNodes = currentNodes.map((node) => {
+    const nextNodes = nodes.map((node) => {
       const incomingFlows = edgeByTarget[node.id] ?? [];
       const totalFlow = incomingFlows.reduce((sum, f) => sum + f, 0);
 
       if (node.type === "reservoir") {
         return {
           ...node,
-          flowRate: totalFlow,
           pressure: node.head * GRAVITY_PRESSURE,
+          flowRate: totalFlow,
         };
       }
 
       if (node.type === "tank") {
         return {
           ...node,
-          flowRate: totalFlow,
           pressure: node.level * GRAVITY_PRESSURE,
+          flowRate: totalFlow,
         };
       }
 
       return {
         ...node,
-        flowRate: totalFlow,
         pressure: totalFlow,
+        flowRate: totalFlow,
       };
     });
 
     useNodeEdgeStore.setState({
-      nodes: newNodes,
+      nodes: nextNodes,
       edges: newEdges,
     });
   }, 1000);
@@ -105,6 +117,7 @@ export const resetSimulation = () => {
     edges: state.edges.map((edge) => ({
       ...edge,
       flowRate: 0,
+      velocity: 0,
     })),
   }));
 

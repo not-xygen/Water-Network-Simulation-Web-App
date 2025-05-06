@@ -40,9 +40,7 @@ export const createEdge = (
   targetId: string,
   sourcePosition: "left" | "right" | "top" | "bottom",
   targetPosition: "left" | "right" | "top" | "bottom",
-  options?: Partial<
-    Pick<Edge, "label" | "diameter" | "length" | "roughness">
-  >,
+  options?: Partial<Pick<Edge, "label" | "diameter" | "length" | "roughness">>,
 ): Edge => {
   return {
     id: `e-${nanoid(12)}`,
@@ -51,9 +49,10 @@ export const createEdge = (
     sourcePosition,
     targetPosition,
     label: options?.label ?? "Pipe",
-    diameter: options?.diameter ?? 0.02,
+    diameter: options?.diameter ?? 2,
     length: options?.length ?? 0,
-    roughness: options?.roughness ?? 0.02,
+    roughness: options?.roughness ?? 140,
     flowRate: 0,
+    velocity: 0,
   };
 };

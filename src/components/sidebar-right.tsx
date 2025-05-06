@@ -2,12 +2,7 @@
 /* eslint-disable no-unused-vars */
 import { ChevronDown, RotateCcw, ZoomInIcon, ZoomOutIcon } from "lucide-react";
 
-import {
-  formatElapsedTime,
-  formatFlowRate,
-  formatLengthCm,
-  formatPressure,
-} from "@/lib/utils";
+import { formatElapsedTime } from "@/lib/utils";
 import useGlobalStore from "@/store/globals";
 import useNodeEdgeStore from "@/store/node-edge";
 import useSimulationStore from "@/store/simulation";
@@ -43,6 +38,7 @@ import { Separator } from "./ui/separator";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Switch } from "./ui/switch";
 import { Textarea } from "./ui/textarea";
+import { PIXEL_TO_CM } from "@/constant/globals";
 
 const renderEditableProperty = <T,>(
   key: string,
@@ -135,23 +131,27 @@ const renderReadonlyProperties = <T extends object>(
       }
 
       if (key === "length" && typeof value === "number") {
-        displayValue = formatLengthCm(value);
+        displayValue = `${(value * PIXEL_TO_CM).toFixed(1)} cm`;
       }
 
       if (key === "diameter" && typeof value === "number") {
-        displayValue = `${value.toFixed(2)} cm`;
+        displayValue = `${value.toFixed(1)} cm`;
       }
 
       if (key === "roughness" && typeof value === "number") {
-        displayValue = `${value.toFixed(2)} cm`;
+        displayValue = `${value.toFixed(1)} C`;
       }
 
       if (key === "flowRate" && typeof value === "number") {
-        displayValue = formatFlowRate(value);
+        displayValue = `${value.toFixed(1)} m³/s`;
       }
 
       if (key === "pressure" && typeof value === "number") {
-        displayValue = formatPressure(value);
+        displayValue = `${value.toFixed(1)} bar`;
+      }
+
+      if (key === "velocity" && typeof value === "number") {
+        displayValue = `${value.toFixed(1)} m/s`;
       }
 
       const isNote = key === "note";
@@ -387,7 +387,9 @@ export const SidebarRight = () => {
                 </div>
                 <div className="flex justify-between">
                   <span>Panjang</span>
-                  <span>{formatLengthCm(liveSelectedEdges[0].length)}</span>
+                  <span>
+                    {(liveSelectedEdges[0].length * PIXEL_TO_CM).toFixed(1)}
+                  </span>
                 </div>
               </div>
 
@@ -406,6 +408,7 @@ export const SidebarRight = () => {
                     "length",
                     "flowRate",
                     "pressure",
+                    "velocity",
                   ],
                   updateEdgeProperty,
                 )}
