@@ -275,7 +275,7 @@ export const SidebarRight = () => {
             Editor
           </TabsTrigger>
           <TabsTrigger className="w-full" value="simulation" onClick={() => {}}>
-            Simulasi
+            Simulation
           </TabsTrigger>
         </TabsList>
         <TabsContent value="editor">

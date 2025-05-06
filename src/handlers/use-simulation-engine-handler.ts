@@ -1,8 +1,4 @@
-import {
-  FLOW_COEFFICIENT,
-  GRAVITY_PRESSURE,
-  PIXEL_TO_CM,
-} from "@/constant/globals";
+import { GRAVITY_PRESSURE, PIXEL_TO_CM } from "@/constant/globals";
 import useNodeEdgeStore from "@/store/node-edge";
 import useSimulationStore from "@/store/simulation";
 
@@ -30,6 +26,7 @@ export const startSimulation = () => {
       let sourcePressure = 0;
       const lengthM = (edge.length * PIXEL_TO_CM) / 100;
       const diameterM = edge.diameter / 100;
+      const roughnessC = edge.roughness;
 
       if (sourceNode?.type === "reservoir") sourcePressure = sourceNode.head;
       else if (sourceNode?.type === "tank") sourcePressure = sourceNode.level;
@@ -39,13 +36,13 @@ export const startSimulation = () => {
 
       const targetPressure = targetNode?.pressure ?? 0;
       const pressureDiff = sourcePressure - targetPressure;
-      const headLoss = (lengthM * diameterM) / edge.roughness;
 
-      let flowRate = (pressureDiff - headLoss) * FLOW_COEFFICIENT;
-      if (flowRate < 0) flowRate = 0;
+      const slope = Math.max(pressureDiff / lengthM, 0.00001);
+
+      const flowRate = 0.849 * roughnessC * diameterM ** 2.63 * slope ** 0.54;
 
       const area = Math.PI * (diameterM / 2) ** 2;
-      const velocity = area === 0 ? 0 : flowRate / 1000 / area;
+      const velocity = area === 0 ? 0 : flowRate / area;
 
       return {
         ...edge,
