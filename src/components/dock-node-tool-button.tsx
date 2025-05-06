@@ -3,14 +3,12 @@ import { Button } from "./ui/button";
 import { Tooltip, TooltipContent, TooltipTrigger } from "./ui/tooltip";
 
 type DockNodeToolButtonProps = {
-  color: string;
   icon: React.ReactNode;
   name: string;
   onClick: () => void;
 };
 
 export const DockNodeToolButton = React.memo(function DockNodeToolButton({
-  color,
   icon,
   name,
   onClick,
@@ -21,7 +19,7 @@ export const DockNodeToolButton = React.memo(function DockNodeToolButton({
         <Button
           variant="ghost"
           size="icon"
-          className={`w-10 h-10 ${color}`}
+          className={"w-10 h-10"}
           onClick={onClick}>
           {icon}
         </Button>

@@ -1,4 +1,4 @@
-import { Circle, Filter, PenTool, Square, Zap } from "lucide-react";
+import { Box, Droplet, ToggleRight, Zap } from "lucide-react";
 import React from "react";
 
 import { createNode } from "@/lib/node-edge-factory";
@@ -12,30 +12,21 @@ import { TooltipProvider } from "./ui/tooltip";
 import type { NodeType } from "@/types/node-edge";
 const tools = [
   {
-    id: "fitting",
-    name: "Fitting",
-    icon: <PenTool size={18} />,
-    color: "bg-gray-300",
-  },
-  {
     id: "reservoir",
     name: "Reservoir",
-    icon: <Circle size={18} />,
-    color: "bg-blue-500",
+    icon: <Droplet size={18} />,
   },
   {
     id: "tank",
     name: "Tank",
-    icon: <Square size={18} />,
-    color: "bg-orange-500",
+    icon: <Box size={18} />,
   },
   {
     id: "valve",
     name: "Valve",
-    icon: <Filter size={18} />,
-    color: "bg-green-600",
+    icon: <ToggleRight size={18} />,
   },
-  { id: "pump", name: "Pump", icon: <Zap size={18} />, color: "bg-yellow-400" },
+  { id: "pump", name: "Pump", icon: <Zap size={18} /> },
 ];
 
 export const DockNodeTools = React.memo(() => {
@@ -47,26 +38,23 @@ export const DockNodeTools = React.memo(() => {
       <div className="fixed z-50 flex flex-col p-2 space-y-2 transform -translate-x-1/2 bg-white shadow bottom-4 left-1/2 rounded-xl">
         <div className="flex flex-row space-x-2">
           <DockNodeFittingDropdown />
-          {tools
-            .filter((tool) => tool.id !== "fitting")
-            .map((tool) => (
-              <DockNodeToolButton
-                key={tool.id}
-                color={tool.color}
-                icon={tool.icon}
-                name={tool.name}
-                onClick={() => {
-                  const newNode = createNode(
-                    tool.id as NodeType,
-                    "",
-                    offset,
-                    zoom,
-                    tool.name,
-                  );
-                  addNode(newNode);
-                }}
-              />
-            ))}
+          {tools.map((tool) => (
+            <DockNodeToolButton
+              key={tool.id}
+              icon={tool.icon}
+              name={tool.name}
+              onClick={() => {
+                const newNode = createNode(
+                  tool.id as NodeType,
+                  "",
+                  offset,
+                  zoom,
+                  tool.name,
+                );
+                addNode(newNode);
+              }}
+            />
+          ))}
         </div>
       </div>
     </TooltipProvider>

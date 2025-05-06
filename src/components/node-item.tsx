@@ -4,7 +4,7 @@ import React from "react";
 import { EdgeConnectionPoint } from "./edge-connection-point";
 
 import type { NodeBase } from "@/types/node-edge";
-import { Filter, Zap } from "lucide-react";
+import { Box, Droplet, ToggleRight, Zap } from "lucide-react";
 
 type NodeItemProps = {
   node: NodeBase;
@@ -42,10 +42,18 @@ export const NodeItem = React.memo(function NodeItem({
   const renderNodeShape = () => {
     switch (node.type as string) {
       case "reservoir":
-        return <div className="w-16 h-16 bg-blue-500 rounded-full" />;
+        return (
+          <div className="flex items-center justify-center w-16 h-16 font-bold text-black bg-blue-500 rounded-full">
+            <Droplet />
+          </div>
+        );
 
       case "tank":
-        return <div className="w-16 h-16 bg-orange-500 rounded-md" />;
+        return (
+          <div className="flex items-center justify-center w-16 h-16 font-bold text-black bg-orange-500 rounded-md">
+            <Box />
+          </div>
+        );
 
       case "pump":
         return (
@@ -57,7 +65,7 @@ export const NodeItem = React.memo(function NodeItem({
       case "valve":
         return (
           <div className="flex items-center justify-center w-16 h-16 font-bold text-black bg-green-600 rounded-md">
-            <Filter />
+            <ToggleRight />
           </div>
         );
 

@@ -7,7 +7,7 @@ import {
 } from "./ui/dropdown";
 import { Tooltip, TooltipContent, TooltipTrigger } from "./ui/tooltip";
 
-import { PenTool } from "lucide-react";
+import { Wrench } from "lucide-react";
 import { createNode } from "@/lib/node-edge-factory";
 import useGlobalStore from "@/store/globals";
 import useNodeEdgeStore from "@/store/node-edge";
@@ -27,11 +27,8 @@ export const DockNodeFittingDropdown = React.memo(() => {
       <Tooltip>
         <TooltipTrigger asChild>
           <DropdownMenuTrigger asChild>
-            <Button
-              variant="ghost"
-              size="icon"
-              className="w-10 h-10 bg-gray-300">
-              <PenTool size={18} />
+            <Button variant="ghost" size="icon" className="w-10 h-10">
+              <Wrench size={18} />
             </Button>
           </DropdownMenuTrigger>
         </TooltipTrigger>
@@ -41,15 +38,15 @@ export const DockNodeFittingDropdown = React.memo(() => {
       <DropdownMenuContent
         align="center"
         onCloseAutoFocus={(e) => e.preventDefault()}>
+        <DropdownMenuItem
+          onSelect={() => addFitting("coupling", "Coupling Fitting")}>
+          Coupling Fitting
+        </DropdownMenuItem>
         <DropdownMenuItem onSelect={() => addFitting("tee", "Tee Fitting")}>
           Tee Fitting
         </DropdownMenuItem>
         <DropdownMenuItem onSelect={() => addFitting("cross", "Cross Fitting")}>
           Cross Fitting
-        </DropdownMenuItem>
-        <DropdownMenuItem
-          onSelect={() => addFitting("coupling", "Coupling Fitting")}>
-          Coupling Fitting
         </DropdownMenuItem>
       </DropdownMenuContent>
     </DropdownMenu>

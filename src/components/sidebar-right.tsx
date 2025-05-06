@@ -282,38 +282,38 @@ export const SidebarRight = () => {
           {/* Node Properties */}
           {selectedNodes.length > 0 && selectedEdges.length === 0 && (
             <div className="p-2 space-y-3">
-              <h2 className="text-sm font-semibold">Properti Node</h2>
+              <h2 className="text-sm font-semibold">Node Property</h2>
               <div className="space-y-1">
                 <div className="flex justify-between">
                   <span>ID</span>
                   <span className="font-mono">{selectedNodes[0].id}</span>
                 </div>
                 <div className="flex justify-between">
-                  <span>Tipe</span>
+                  <span>Type</span>
                   <span className="capitalize">{selectedNodes[0].type}</span>
                 </div>
                 {selectedNodes[0].subtype &&
                   selectedNodes[0].subtype.length > 0 && (
                     <div className="flex justify-between">
-                      <span>Sub-tipe</span>
+                      <span>Sub-type</span>
                       <span className="capitalize">
                         {selectedNodes[0].subtype}
                       </span>
                     </div>
                   )}
                 <div className="flex justify-between">
-                  <span>Posisi</span>
+                  <span>Position</span>
                   <span>
                     X: {liveSelectedNodes[0].position.x.toFixed(2)}, Y:{" "}
                     {-liveSelectedNodes[0].position.y.toFixed(2)}
                   </span>
                 </div>
                 <div className="flex justify-between">
-                  <span>Rotasi</span>
+                  <span>Rotation</span>
                   <span>{liveSelectedNodes[0].rotation.toFixed()}</span>
                 </div>
                 <div className="flex justify-between">
-                  <label htmlFor="node-active">Aktif</label>
+                  <label htmlFor="node-active">Active</label>
                   <Switch
                     id="node-active"
                     checked={liveSelectedNodes[0].active}
@@ -347,21 +347,22 @@ export const SidebarRight = () => {
               <AlertDialog>
                 <AlertDialogTrigger asChild>
                   <Button variant="destructive" className="w-full">
-                    Hapus Node
+                    Delete Node
                   </Button>
                 </AlertDialogTrigger>
                 <AlertDialogContent>
                   <AlertDialogHeader>
-                    <AlertDialogTitle>Hapus Node?</AlertDialogTitle>
+                    <AlertDialogTitle>Delete Node?</AlertDialogTitle>
                     <AlertDialogDescription>
-                      Node ini akan dihapus beserta koneksi terkait.
+                      Node will be removed from the board. This action cannot be
+                      undone.
                     </AlertDialogDescription>
                   </AlertDialogHeader>
                   <AlertDialogFooter>
-                    <AlertDialogCancel>Batal</AlertDialogCancel>
+                    <AlertDialogCancel>Cancel</AlertDialogCancel>
                     <AlertDialogAction
                       onClick={() => removeNode(selectedNodes[0].id)}>
-                      Hapus
+                      Delete
                     </AlertDialogAction>
                   </AlertDialogFooter>
                 </AlertDialogContent>
@@ -371,7 +372,7 @@ export const SidebarRight = () => {
           {/* Edge Properties */}
           {selectedEdges.length > 0 && selectedNodes.length === 0 && (
             <div className="p-2 space-y-3">
-              <h2 className="text-sm font-semibold">Properti Edge</h2>
+              <h2 className="text-sm font-semibold">Edge Property</h2>
               <div className="space-y-1">
                 <div className="flex justify-between">
                   <span>ID</span>
@@ -386,7 +387,7 @@ export const SidebarRight = () => {
                   <span>{selectedEdges[0].targetId}</span>
                 </div>
                 <div className="flex justify-between">
-                  <span>Panjang</span>
+                  <span>Length</span>
                   <span>
                     {(liveSelectedEdges[0].length * PIXEL_TO_CM).toFixed(1)}
                   </span>
@@ -417,21 +418,22 @@ export const SidebarRight = () => {
               <AlertDialog>
                 <AlertDialogTrigger asChild>
                   <Button variant="destructive" className="w-full">
-                    Hapus Edge
+                    Delete Edge
                   </Button>
                 </AlertDialogTrigger>
                 <AlertDialogContent>
                   <AlertDialogHeader>
-                    <AlertDialogTitle>Hapus Edge?</AlertDialogTitle>
+                    <AlertDialogTitle>Delete Edge?</AlertDialogTitle>
                     <AlertDialogDescription>
-                      Edge ini akan dihapus dari koneksi.
+                      Edge will be removed from the board. This action cannot be
+                      undone.
                     </AlertDialogDescription>
                   </AlertDialogHeader>
                   <AlertDialogFooter>
-                    <AlertDialogCancel>Batal</AlertDialogCancel>
+                    <AlertDialogCancel>Cancel</AlertDialogCancel>
                     <AlertDialogAction
                       onClick={() => removeEdge(selectedEdges[0].id)}>
-                      Hapus
+                      Delete
                     </AlertDialogAction>
                   </AlertDialogFooter>
                 </AlertDialogContent>
@@ -448,11 +450,11 @@ export const SidebarRight = () => {
                 }`}
               />
               <span className="text-xs font-semibold">
-                {running ? "Berjalan" : "Berhenti"}
+                {running ? "Running" : "Stopped"}
               </span>
             </div>
             <div className="flex items-center justify-between text-xs">
-              <span className="font-semibold">Waktu:</span>
+              <span className="font-semibold">Elapsed Time:</span>
               <span>{formatElapsedTime(elapsedTime)}</span>
             </div>
 
@@ -461,7 +463,7 @@ export const SidebarRight = () => {
             <div className="flex flex-col gap-2">
               {!running && !paused && (
                 <Button onClick={startSimulation} className="w-full">
-                  Mulai Simulasi
+                  Start Simulation
                 </Button>
               )}
 
@@ -470,27 +472,29 @@ export const SidebarRight = () => {
                   onClick={stopSimulation}
                   className="w-full"
                   variant="secondary">
-                  Berhenti
+                  Stop Simulation
                 </Button>
               )}
 
               {!running && paused && (
                 <>
                   <Button onClick={startSimulation} className="w-full">
-                    Lanjutkan Simulasi
+                    Continue Simulation
                   </Button>
 
                   <AlertDialog>
                     <AlertDialogTrigger asChild>
                       <Button className="w-full" variant="destructive">
-                        Reset Simulasi
+                        Reset Simulation
                       </Button>
                     </AlertDialogTrigger>
                     <AlertDialogContent>
                       <AlertDialogHeader>
-                        <AlertDialogTitle>Reset Simulasi?</AlertDialogTitle>
+                        <AlertDialogTitle>Reset Simulation?</AlertDialogTitle>
                         <AlertDialogDescription>
-                          Data simulasi akan direset ke awal.
+                          Resetting the simulation will restore all nodes and
+                          edges to their default properties. This action cannot
+                          be undone.
                         </AlertDialogDescription>
                       </AlertDialogHeader>
                       <AlertDialogFooter>
@@ -508,38 +512,38 @@ export const SidebarRight = () => {
             {/* Node Properties */}
             {selectedNodes.length > 0 && selectedEdges.length === 0 && (
               <div className="p-2 space-y-3">
-                <h2 className="text-sm font-semibold">Properti Node</h2>
+                <h2 className="text-sm font-semibold">Node Property</h2>
                 <div className="space-y-1">
                   <div className="flex justify-between">
                     <span>ID</span>
                     <span className="font-mono">{selectedNodes[0].id}</span>
                   </div>
                   <div className="flex justify-between">
-                    <span>Tipe</span>
+                    <span>Type</span>
                     <span className="capitalize ">{selectedNodes[0].type}</span>
                   </div>
                   {selectedNodes[0].subtype &&
                     selectedNodes[0].subtype.length > 0 && (
                       <div className="flex justify-between">
-                        <span>Sub-tipe</span>
+                        <span>Sub-type</span>
                         <span className="capitalize">
                           {selectedNodes[0].subtype}
                         </span>
                       </div>
                     )}
                   <div className="flex justify-between">
-                    <span>Posisi</span>
+                    <span>Position</span>
                     <span>
                       X: {liveSelectedNodes[0].position.x.toFixed(2)}, Y:{" "}
                       {-liveSelectedNodes[0].position.y.toFixed(2)}
                     </span>
                   </div>
                   <div className="flex justify-between">
-                    <span>Rotasi</span>
+                    <span>Rotation</span>
                     <span>{liveSelectedNodes[0].rotation.toFixed()}</span>
                   </div>
                   <div className="flex justify-between">
-                    <label htmlFor="node-active">Aktif</label>
+                    <label htmlFor="node-active">Active</label>
                     <Switch
                       disabled
                       id="node-active"
@@ -567,7 +571,7 @@ export const SidebarRight = () => {
             {/* Edge Properties */}
             {selectedEdges.length > 0 && selectedNodes.length === 0 && (
               <div className="p-2 space-y-3">
-                <h2 className="text-sm font-semibold">Properti Edge</h2>
+                <h2 className="text-sm font-semibold">Edge Property</h2>
                 <div className="space-y-1">
                   <div className="flex justify-between">
                     <span>ID</span>
