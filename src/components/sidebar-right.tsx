@@ -143,15 +143,15 @@ const renderReadonlyProperties = <T extends object>(
       }
 
       if (key === "flowRate" && typeof value === "number") {
-        displayValue = `${value.toFixed(1)} m³/s`;
+        displayValue = `${value.toFixed(4)} m³/s`;
       }
 
       if (key === "pressure" && typeof value === "number") {
-        displayValue = `${value.toFixed(1)} bar`;
+        displayValue = `${value.toFixed(4)} bar`;
       }
 
       if (key === "velocity" && typeof value === "number") {
-        displayValue = `${value.toFixed(1)} m/s`;
+        displayValue = `${value.toFixed(4)} m/s`;
       }
 
       const isNote = key === "note";

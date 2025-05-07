@@ -28,11 +28,10 @@ export const startSimulation = () => {
       const diameterM = edge.diameter / 100;
       const roughnessC = edge.roughness;
 
-      if (sourceNode?.type === "reservoir") sourcePressure = sourceNode.head;
+      if (sourceNode?.type === "reservoir")
+        sourcePressure = (sourceNode.head * GRAVITY_PRESSURE) / 100;
       else if (sourceNode?.type === "tank") sourcePressure = sourceNode.level;
       else sourcePressure = sourceNode?.pressure ?? 0;
-
-      sourcePressure *= GRAVITY_PRESSURE;
 
       const targetPressure = targetNode?.pressure ?? 0;
       const pressureDiff = sourcePressure - targetPressure;
@@ -67,7 +66,7 @@ export const startSimulation = () => {
       if (node.type === "reservoir") {
         return {
           ...node,
-          pressure: node.head * GRAVITY_PRESSURE,
+          pressure: (node.head * GRAVITY_PRESSURE) / 100,
           flowRate: totalFlow,
         };
       }
