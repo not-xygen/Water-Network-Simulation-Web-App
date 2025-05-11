@@ -1,3 +1,4 @@
+import { clsx } from "clsx";
 /* eslint-disable no-unused-vars */
 import React from "react";
 
@@ -71,26 +72,53 @@ export const NodeItem = React.memo(function NodeItem({
 
       case "fitting": {
         const fittingType = node.subtype as string;
+        const hasFlow = node.flowRate && node.flowRate !== 0;
+        const bgColor = hasFlow ? "bg-blue-500" : "bg-gray-300";
+        const transitionClass = "transition-all duration-300";
+
         switch (fittingType) {
           case "tee":
             return (
               <div className="relative flex items-center justify-center w-16 h-16">
-                <div className="w-full h-4 bg-gray-300" />
-                <div className="absolute top-0 w-4 -translate-x-1/2 bg-gray-300 h-1/2 left-1/2" />
+                <div
+                  className={clsx(`w-full h-4 ${bgColor}`, transitionClass)}
+                />
+                <div
+                  className={clsx(
+                    `absolute top-0 w-4 -translate-x-1/2 ${bgColor} h-1/2 left-1/2`,
+                    transitionClass,
+                  )}
+                />
               </div>
             );
           case "cross":
             return (
               <div className="relative flex items-center justify-center w-16 h-16">
-                <div className="absolute left-0 w-full h-4 -translate-y-1/2 bg-gray-300 top-1/2" />
-                <div className="absolute top-0 w-4 h-full -translate-x-1/2 bg-gray-300 left-1/2" />
+                <div
+                  className={clsx(
+                    `absolute left-0 w-full h-4 -translate-y-1/2 ${bgColor} top-1/2`,
+                    transitionClass,
+                  )}
+                />
+                <div
+                  className={clsx(
+                    `absolute top-0 w-4 h-full -translate-x-1/2 ${bgColor} left-1/2`,
+                    transitionClass,
+                  )}
+                />
               </div>
             );
           case "coupling":
-            return <div className="w-16 h-4 bg-gray-300" />;
+            return (
+              <div className={clsx(`w-16 h-4 ${bgColor}`, transitionClass)} />
+            );
           default:
             return (
-              <div className="flex items-center justify-center w-16 h-16 bg-gray-300 rounded-md">
+              <div
+                className={clsx(
+                  `flex items-center justify-center w-16 h-16 ${bgColor} rounded-md`,
+                  transitionClass,
+                )}>
                 Node
               </div>
             );
