@@ -8,8 +8,8 @@ import { useHandlePosition } from "@/handlers/use-position-handler";
 import useGlobalStore from "@/store/globals";
 import useNodeEdgeStore from "@/store/node-edge";
 
-import { NodeItem } from "./node-item";
 import clsx from "clsx";
+import { NodeItem } from "./node-item";
 
 const RedoDot = React.memo(LucideRedoDot);
 

@@ -1,4 +1,5 @@
-import type { Node, NodeType, Edge } from "@/types/node-edge";
+import { FITTING_COEFFICIENTS } from "@/constant/globals";
+import type { Edge, Node, NodeType } from "@/types/node-edge";
 import { nanoid } from "nanoid";
 
 export const createNode = (
@@ -18,8 +19,17 @@ export const createNode = (
       y: -offset.y / (zoom / 100),
     },
     rotation: 0,
-    elevation: 0,
-    ...(type === "fitting" && { demand: 0 }),
+    elevation: 1,
+    ...(type === "fitting" && {
+      demand: 0,
+      diameter: 2,
+      inletPressure: 0,
+      outletPressure: 0,
+      minorLossCoefficient:
+        FITTING_COEFFICIENTS[subtype as keyof typeof FITTING_COEFFICIENTS] ||
+        FITTING_COEFFICIENTS.default,
+      velocity: 0,
+    }),
     ...(type === "reservoir" && { head: 10 }),
     ...(type === "tank" && {
       level: 0,

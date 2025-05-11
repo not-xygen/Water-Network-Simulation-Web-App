@@ -1,9 +1,9 @@
-/* eslint-disable no-unused-vars */
-import { useRef, useCallback } from "react";
-import type React from "react";
-import type { Node } from "@/types/node-edge";
 import useGlobalStore from "@/store/globals";
 import useNodeEdgeStore from "@/store/node-edge";
+import type { Node } from "@/types/node-edge";
+/* eslint-disable no-unused-vars */
+import { useCallback, useRef } from "react";
+import type React from "react";
 
 export const useBoardHandler = ({
   draggedNode,
@@ -198,7 +198,7 @@ export const useBoardHandler = ({
           let targetY = node.position.y + worldDeltaY;
 
           if (event.shiftKey) {
-            const gridSize = 20;
+            const gridSize = 5;
             targetX = Math.round(targetX / gridSize) * gridSize;
             targetY = Math.round(targetY / gridSize) * gridSize;
           }
