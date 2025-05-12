@@ -156,14 +156,8 @@ const renderReadonlyProperties = <T extends object>(
         displayValue = `${value.toFixed(4)} m/s`;
       }
 
-      const isNote = key === "note";
-
       return (
-        <div
-          key={key}
-          className={`flex ${
-            isNote ? "flex-col gap-1" : "items-center justify-between gap-2"
-          }`}>
+        <div key={key} className={"flex items-center justify-between gap-2"}>
           <span className="capitalize">{key}</span>
           <span className="font-mono">{displayValue}</span>
         </div>
@@ -340,9 +334,18 @@ export const SidebarRight = () => {
                     "rotation",
                     "active",
                     "pressure",
+                    "note",
                   ],
                   updateNodeProperty,
                 )}
+                <div className="space-y-1">
+                  <span className="capitalize">Note</span>
+                  <Textarea
+                    value={selectedNodes[0].note}
+                    onChange={(e) => updateNodeProperty("note", e.target.value)}
+                    className="w-full px-1 py-0.5 text-xs h-max md:text-xs"
+                  />
+                </div>
               </div>
 
               <ActionAlertDialog
@@ -527,10 +530,15 @@ export const SidebarRight = () => {
                     "position",
                     "rotation",
                     "active",
+                    "note",
                     ...(selectedNodes[0].type === "reservoir"
                       ? ["flowRate"]
                       : []),
                   ])}
+                  <div>
+                    <span className="capitalize">Note</span>
+                    <p>{selectedNodes[0].note}</p>
+                  </div>
                 </div>
               </div>
             )}
