@@ -91,6 +91,25 @@ export const NodeItem = React.memo(function NodeItem({
                 />
               </div>
             );
+          case "elbow":
+            return (
+              <div>
+                <div className="relative flex items-center justify-center w-16 h-16">
+                  <div
+                    className={clsx(
+                      `absolute left-0 w-[62%] h-4 -translate-y-1/2 ${bgColor} top-1/2`,
+                      transitionClass,
+                    )}
+                  />
+                  <div
+                    className={clsx(
+                      `absolute top-0 w-4 h-[62%] -translate-x-1/2 ${bgColor} left-1/2`,
+                      transitionClass,
+                    )}
+                  />
+                </div>
+              </div>
+            );
           case "cross":
             return (
               <div className="relative flex items-center justify-center w-16 h-16">
@@ -136,10 +155,14 @@ export const NodeItem = React.memo(function NodeItem({
 
   const renderHandles = () => {
     const positions: ("left" | "right" | "top" | "bottom")[] =
-      node.type === "fitting" && node.subtype === "cross"
+      node.type === "reservoir"
+        ? ["bottom"]
+        : node.type === "fitting" && node.subtype === "cross"
         ? ["left", "right", "top", "bottom"]
         : node.subtype === "tee"
         ? ["left", "right", "top"]
+        : node.subtype === "elbow"
+        ? ["left", "top"]
         : ["left", "right"];
 
     return positions.map((pos) => (

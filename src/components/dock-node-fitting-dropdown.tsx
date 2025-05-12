@@ -42,6 +42,9 @@ export const DockNodeFittingDropdown = React.memo(() => {
           onSelect={() => addFitting("coupling", "Coupling Fitting")}>
           Coupling Fitting
         </DropdownMenuItem>
+        <DropdownMenuItem onSelect={() => addFitting("elbow", "Elbow Fitting")}>
+          Elbow Fitting
+        </DropdownMenuItem>
         <DropdownMenuItem onSelect={() => addFitting("tee", "Tee Fitting")}>
           Tee Fitting
         </DropdownMenuItem>
