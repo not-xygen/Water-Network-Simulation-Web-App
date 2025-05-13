@@ -158,10 +158,23 @@ export const startSimulation = () => {
           const volumeM3 = Math.PI * radiusM ** 2 * heightM;
           const maxVolume = volumeM3 * 1000;
 
-          const addedVolume = totalFlow * 1000;
-          const updatedVolume = Math.min(
-            node.currentVolume + addedVolume,
-            maxVolume,
+          const incomingFlows = edgeByTarget[node.id] ?? [];
+          const totalInflow = incomingFlows.reduce((sum, f) => sum + f, 0);
+
+          const outgoingEdges = edges.filter(
+            (edge) => edge.sourceId === node.id,
+          );
+          const totalOutflow = outgoingEdges.reduce((sum, edge) => {
+            const targetNode = nodeMap.get(edge.targetId);
+            if (!targetNode || !targetNode.active) return sum;
+            return sum + (edge.flowRate || 0);
+          }, 0);
+
+          const netFlow = totalInflow - totalOutflow;
+          const addedVolume = netFlow * 1000;
+          const updatedVolume = Math.max(
+            0,
+            Math.min(node.currentVolume + addedVolume, maxVolume),
           );
 
           const updatedHeight = updatedVolume / 1000 / baseArea;
@@ -180,7 +193,7 @@ export const startSimulation = () => {
             currentVolume: updatedVolume,
             currentVolumeHeight: clampedHeight,
             pressure,
-            flowRate: totalFlow,
+            flowRate: netFlow,
             filledPercentage,
           };
         }
