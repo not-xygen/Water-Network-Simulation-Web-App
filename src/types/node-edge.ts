@@ -41,7 +41,13 @@ export type TankNode = NodeBase & {
 
 export type PumpNode = NodeBase & {
   type: "pump";
-  curve?: string;
+  suctionHeadMax: number;
+  totalHeadMax: number;
+  capacityMax: number;
+  curveHead: number[];
+  curveFlow: number[];
+  suctionPipeDiameter: number;
+  dischargePipeDiameter: number;
 };
 
 export type ValveNode = NodeBase & {
