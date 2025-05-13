@@ -1,50 +1,111 @@
-# React + TypeScript + Vite
+# Water Network Simulation Web App
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+## Deskripsi
 
-Currently, two official plugins are available:
+Water Network Simulation Web App adalah aplikasi berbasis web yang dirancang
+untuk mensimulasikan perilaku hidraulik dan kualitas air dalam sistem distribusi
+air bertekanan. Proyek ini dikembangkan sebagai tugas akhir untuk
+memvisualisasikan dan menganalisis aliran air, tekanan, dan parameter lainnya
+dalam jaringan pipa menggunakan antarmuka yang interaktif dan ramah pengguna.
+Aplikasi ini memungkinkan pengguna untuk memodelkan jaringan air, menjalankan
+simulasi, dan melihat hasilnya dalam bentuk grafik atau peta.
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react/README.md) uses [Babel](https://babeljs.io/) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+## Fitur Utama
 
-## Expanding the ESLint configuration
+- **Pemodelan Jaringan Air**: Buat dan edit jaringan pipa dengan komponen
+  seperti pipa, simpul, pompa, katup, dan tangki.
+- **Simulasi Hidraulik**: Jalankan simulasi untuk menghitung aliran air,
+  tekanan, dan tinggi air dalam tangki.
+- **Visualisasi Interaktif**: Tampilkan hasil simulasi dalam bentuk grafik,
+  tabel, atau peta jaringan.
+- **Antarmuka Berbasis Web**: Akses aplikasi melalui browser tanpa perlu
+  instalasi perangkat lunak tambahan.
+- **Ekspor Hasil**: Simpan hasil simulasi dalam format seperti CSV atau JSON
+  untuk analisis lebih lanjut.
 
-If you are developing a production application, we recommend updating the configuration to enable type aware lint rules:
+## Teknologi yang Digunakan
 
-- Configure the top-level `parserOptions` property like this:
+- **Teknologi**: React + Vite + TypeScript
+- **Simulasi**: Menggunakan Engine buatan sendiri
+- **Penyimpanan Data**: Local storage atau database sederhana
 
-```js
-export default tseslint.config({
-  languageOptions: {
-    // other options...
-    parserOptions: {
-      project: ['./tsconfig.node.json', './tsconfig.app.json'],
-      tsconfigRootDir: import.meta.dirname,
-    },
-  },
-})
+## Prasyarat
+
+Untuk menjalankan proyek ini secara lokal, pastikan Anda memiliki:
+
+- Node.js (versi 16 atau lebih baru)
+- Browser modern (Chrome, Firefox, atau Edge)
+- Git (untuk mengkloning repositori)
+
+## Instalasi
+
+1. **Kloning Repositori**
+
+   ```bash
+   git clone https://github.com/not-xygen/Water-Network-Simulation-Web-App.git
+   cd Water-Network-Simulation-Web-App
+   ```
+
+2. **Instal Dependensi**:
+
+   ```bash
+   npm install
+   ```
+
+3. **Jalankan Aplikasi (mode development)**:
+
+   ```bash
+   npm run dev
+   ```
+   
+4. Buka browser dan akses `http://localhost:5173` (atau port yang sesuai).
+
+## Cara Penggunaan
+
+1. **Buat Jaringan**: Gunakan editor jaringan untuk menambahkan pipa, simpul,
+   dan komponen lainnya.
+2. **Konfigurasi Parameter**: Atur parameter seperti panjang pipa, diameter,
+   atau tekanan awal.
+3. **Jalankan Simulasi**: Klik tombol "Run Simulation" untuk memulai
+   perhitungan.
+4. **Lihat Hasil**: Analisis hasil simulasi melalui grafik, tabel, atau peta
+   yang tersedia.
+5. **Ekspor Data**: Unduh hasil simulasi untuk keperluan laporan atau analisis
+   lebih lanjut.
+
+## Struktur Proyek
+
+```
+Water-Network-Simulation-Web-App/
+├── public/              # File statis
+├── src/                 # Kode sumber
+├── README.md            # File ini
+└── package.json         # Konfigurasi Node.js
 ```
 
-- Replace `tseslint.configs.recommended` to `tseslint.configs.recommendedTypeChecked` or `tseslint.configs.strictTypeChecked`
-- Optionally add `...tseslint.configs.stylisticTypeChecked`
-- Install [eslint-plugin-react](https://github.com/jsx-eslint/eslint-plugin-react) and update the config:
+## Kontribusi
 
-```js
-// eslint.config.js
-import react from 'eslint-plugin-react'
+Proyek ini adalah tugas akhir, tetapi kontribusi tetap diterima! Jika ingin
+berkontribusi:
 
-export default tseslint.config({
-  // Set the react version
-  settings: { react: { version: '18.3' } },
-  plugins: {
-    // Add the react plugin
-    react,
-  },
-  rules: {
-    // other rules...
-    // Enable its recommended rules
-    ...react.configs.recommended.rules,
-    ...react.configs['jsx-runtime'].rules,
-  },
-})
-```
+1. Fork repositori ini.
+2. Buat branch baru (`git checkout -b feature-...`).
+3. Commit perubahan Anda (`git commit -m "feat:..."`).
+4. Push ke branch Anda (`git push origin feature-...`).
+5. Buat Pull Request.
+
+## Lisensi
+
+Proyek ini dilisensikan di bawah [MIT License](LICENSE).
+
+## Kontak
+
+Untuk pertanyaan atau dukungan, hubungi:
+
+- Pemilik Repositori: [not-xygen](https://github.com/not-xygen)
+- Email: [dhaffaagus09@gmail.com]
+
+## Ucapan Terima Kasih
+
+Terima kasih kepada dosen pembimbing, teman-teman, dan komunitas open-source
+yang telah mendukung pengembangan proyek ini!
