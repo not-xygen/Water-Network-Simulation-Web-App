@@ -33,9 +33,110 @@ export const startSimulation = () => {
         }
 
         if (node.type === "pump") {
+          const outgoingEdges = edges.filter((e) => e.sourceId === node.id);
+          const flow = outgoingEdges.reduce(
+            (sum, e) => sum + (e.flowRate || 0),
+            0,
+          );
+
+          const maxFlow = node.capacityMax ?? 0;
+          const clampedFlow = Math.min(flow, maxFlow);
+
+          let head = node.totalHeadMax ?? 0;
+
+          if (
+            node.curveFlow &&
+            node.curveHead &&
+            node.curveFlow.length > 1 &&
+            node.curveFlow.length === node.curveHead.length
+          ) {
+            for (let i = 0; i < node.curveFlow.length - 1; i++) {
+              const f1 = node.curveFlow[i];
+              const f2 = node.curveFlow[i + 1];
+              const h1 = node.curveHead[i];
+              const h2 = node.curveHead[i + 1];
+
+              if (
+                (clampedFlow >= f2 && clampedFlow <= f1) ||
+                (clampedFlow >= f1 && clampedFlow <= f2)
+              ) {
+                const t = (clampedFlow - f1) / (f2 - f1);
+                head = h1 + t * (h2 - h1);
+                break;
+              }
+            }
+          }
+
+          head = Math.min(head, node.totalHeadMax ?? head);
+
+          const pressure = (head * GRAVITY_PRESSURE) / 100;
+
           return {
             ...node,
-            pressure: node.pressure ?? 50000,
+            pressure,
+            flowRate: clampedFlow,
+            head,
+          };
+        }
+
+        if (node.type === "tank") {
+          if (node.diameter <= 0) {
+            return {
+              ...node,
+              pressure: 0,
+              flowRate: 0,
+              currentVolume: 0,
+              currentVolumeHeight: 0,
+              filledPercentage: 0,
+            };
+          }
+
+          const radiusM = node.diameter / 200;
+          const heightM = node.height / 100;
+          const baseArea = Math.PI * radiusM ** 2;
+
+          const volumeM3 = Math.PI * radiusM ** 2 * heightM;
+          const maxVolume = volumeM3 * 1000;
+
+          const incomingFlows = edges
+            .filter((edge) => edge.targetId === node.id)
+            .map((edge) => edge.flowRate || 0);
+          const totalInflow = incomingFlows.reduce((sum, f) => sum + f, 0);
+
+          const outgoingEdges = edges.filter(
+            (edge) => edge.sourceId === node.id,
+          );
+          const totalOutflow = outgoingEdges.reduce((sum, edge) => {
+            const targetNode = nodes.find((n) => n.id === edge.targetId);
+            if (!targetNode || !targetNode.active) return sum;
+            return sum + (edge.flowRate || 0);
+          }, 0);
+
+          const netFlow = totalInflow - totalOutflow;
+          const addedVolume = netFlow * 1000;
+          const updatedVolume = Math.max(
+            0,
+            Math.min(node.currentVolume + addedVolume, maxVolume),
+          );
+
+          const updatedHeight = updatedVolume / 1000 / baseArea;
+          const clampedHeight = Math.min(updatedHeight, heightM);
+
+          const pressure = (clampedHeight * GRAVITY_PRESSURE) / 100;
+
+          const filledPercentage = Math.min(
+            (updatedVolume / maxVolume) * 100,
+            100,
+          );
+
+          return {
+            ...node,
+            maxVolume,
+            currentVolume: updatedVolume,
+            currentVolumeHeight: clampedHeight,
+            pressure,
+            flowRate: netFlow,
+            filledPercentage,
           };
         }
 
@@ -62,21 +163,36 @@ export const startSimulation = () => {
           return { ...edge, flowRate: 0, velocity: 0 };
         }
 
-        let sourcePressure = 0;
         const lengthM = (edge.length * PIXEL_TO_CM) / 100;
         const diameterM = edge.diameter / 100;
         const roughnessC = edge.roughness;
 
+        let sourcePressure = 0;
+        let targetPressure = 0;
+
         if (sourceNode.type === "reservoir")
           sourcePressure = (sourceNode.head * GRAVITY_PRESSURE) / 100;
         else if (sourceNode.type === "tank")
-          sourcePressure = sourceNode.currentVolumeHeight;
+          sourcePressure = sourceNode.currentVolumeHeight ?? 0;
         else if (sourceNode.type === "fitting")
-          sourcePressure = sourceNode.outletPressure || 0;
+          sourcePressure = sourceNode.outletPressure ?? 0;
         else sourcePressure = sourceNode.pressure ?? 0;
 
-        const targetPressure = targetNode.pressure ?? 0;
-        const pressureDiff = sourcePressure - targetPressure;
+        if (targetNode.type === "tank")
+          targetPressure = targetNode.currentVolumeHeight ?? 0;
+        else targetPressure = targetNode.pressure ?? 0;
+
+        let pressureDiff = sourcePressure - targetPressure;
+        if (targetNode.type === "pump") {
+          const suctionHeadMax = targetNode.suctionHeadMax ?? 7;
+          const suctionLimit = (suctionHeadMax * GRAVITY_PRESSURE) / 100;
+
+          if (sourcePressure >= suctionLimit) {
+            pressureDiff = sourcePressure - 0.2;
+          } else {
+            pressureDiff = 0;
+          }
+        }
 
         if (pressureDiff <= 0) {
           return { ...edge, flowRate: 0, velocity: 0 };
@@ -87,25 +203,16 @@ export const startSimulation = () => {
         let flowRate = 0;
         if (sourceNode.type === "fitting") {
           const fittingDiameterM = sourceNode.diameter / 100;
-          const effectiveDiameter = Math.min(fittingDiameterM, diameterM);
-          flowRate =
-            0.849 * roughnessC * effectiveDiameter ** 2.63 * slope ** 0.54;
-          const maxFlow = sourceNode.flowRate || 0;
+          const effDiameter = Math.min(fittingDiameterM, diameterM);
+          flowRate = 0.849 * roughnessC * effDiameter ** 2.63 * slope ** 0.54;
+          const maxFlow = sourceNode.flowRate ?? 0;
           flowRate = Math.min(flowRate, maxFlow);
-
-          if (flowRate < 0.1) {
-            flowRate = maxFlow;
-          }
         } else {
           flowRate = 0.849 * roughnessC * diameterM ** 2.63 * slope ** 0.54;
         }
 
-        if (flowRate <= 0) {
-          return { ...edge, flowRate: 0, velocity: 0 };
-        }
-
         const area = Math.PI * (diameterM / 2) ** 2;
-        const velocity = area === 0 ? 0 : flowRate / 1000 / area;
+        const velocity = area > 0 ? flowRate / 1000 / area : 0;
 
         return {
           ...edge,
@@ -129,13 +236,50 @@ export const startSimulation = () => {
         }
 
         const incomingFlows = edgeByTarget[node.id] ?? [];
-        const totalFlow = incomingFlows.reduce((sum, f) => sum + f, 0);
+        const totalFlow = incomingFlows.reduce(
+          (sum: number, f: number) => sum + f,
+          0,
+        );
 
         if (node.type === "reservoir") {
           return {
             ...node,
             pressure: (node.head * GRAVITY_PRESSURE) / 100,
-            flowRate: totalFlow,
+          };
+        }
+
+        if (node.type === "pump") {
+          const outgoingEdges = edges.filter((e) => e.sourceId === node.id);
+          let flow = 0;
+          if (outgoingEdges.length > 0) {
+            flow = outgoingEdges[0].flowRate || 0;
+          }
+
+          const maxFlow = node.capacityMax || 0;
+          flow = Math.min(flow, maxFlow);
+
+          let head = node.totalHeadMax || 0;
+          if (node.curveFlow && node.curveHead && node.curveFlow.length > 1) {
+            for (let i = 0; i < node.curveFlow.length - 1; i++) {
+              const f1 = node.curveFlow[i];
+              const f2 = node.curveFlow[i + 1];
+              const h1 = node.curveHead[i];
+              const h2 = node.curveHead[i + 1];
+              if ((flow >= f2 && flow <= f1) || (flow >= f1 && flow <= f2)) {
+                const t = (flow - f1) / (f2 - f1);
+                head = h1 + t * (h2 - h1);
+                break;
+              }
+            }
+          }
+          head = Math.min(head, node.totalHeadMax || head);
+
+          const pressure = (head * GRAVITY_PRESSURE) / 100;
+
+          return {
+            ...node,
+            pressure,
+            flowRate: flow,
           };
         }
 
@@ -158,8 +302,7 @@ export const startSimulation = () => {
           const volumeM3 = Math.PI * radiusM ** 2 * heightM;
           const maxVolume = volumeM3 * 1000;
 
-          const incomingFlows = edgeByTarget[node.id] ?? [];
-          const totalInflow = incomingFlows.reduce((sum, f) => sum + f, 0);
+          const totalInflow = totalFlow;
 
           const outgoingEdges = edges.filter(
             (edge) => edge.sourceId === node.id,
@@ -216,16 +359,21 @@ export const startSimulation = () => {
 
           const diameterM = node.diameter / 100;
           const area = Math.PI * (diameterM / 2) ** 2;
+          const totalFlow = incomingFlows.reduce(
+            (sum: number, f: number) => sum + f,
+            0,
+          );
           const velocity =
-            area > 0 && !Number.isNaN(totalFlow) ? totalFlow / area : 0;
+            area > 0 && !Number.isNaN(totalFlow) ? totalFlow / 1000 / area : 0;
 
           let inletPressure = 0;
           const incomingEdges = edges.filter(
             (edge) => edge.targetId === node.id,
           );
           const sourceNodes = incomingEdges
-            .map((edge) => nodeMap.get(edge.sourceId))
+            .map((edge) => nodes.find((n) => n.id === edge.sourceId))
             .filter(Boolean);
+
           if (sourceNodes.length > 0) {
             inletPressure = Math.max(
               ...sourceNodes.map((n) => {
@@ -264,14 +412,6 @@ export const startSimulation = () => {
             0,
             inletPressure - minorLoss - elevationLoss,
           );
-
-          console.log("== Fitting Debug ==", {
-            nodeId: node.id,
-            inletPressure,
-            minorLoss,
-            elevationDiff,
-            outletPressure,
-          });
 
           const demand = Number.isNaN(node.demand) ? 0 : node.demand || 0;
           const adjustedFlow = Math.max(0, totalFlow - demand);
