@@ -89,14 +89,21 @@ const renderEditableProperties = <T extends object>(
     .filter(([key]) => !exclude.includes(key))
     .map(([key, value]) => {
       const isNote = key === "note";
-
+      const label = key.charAt(0).toUpperCase() + key.slice(1);
       return (
         <div
           key={key}
           className={`flex ${
             isNote ? "flex-col" : "items-center justify-between"
-          } gap-2`}>
-          <span className="capitalize">{key}</span>
+          } gap-2 w-full`}>
+          <span className="w-full flex gap-0.5 capitalize">
+            {label}
+            {key === "diameter" || key === "height" ? (
+              <span className="font-mono text-xs text-gray-400 lowercase">
+                (cm)
+              </span>
+            ) : null}
+          </span>
           {renderEditableProperty(key, value, (v) => update(key as keyof T, v))}
         </div>
       );
@@ -112,11 +119,10 @@ const renderReadonlyProperties = <T extends object>(
     .map(([key, value]) => {
       let displayValue = String(value);
 
-      if (key === "elevation" && typeof value === "number") {
-        displayValue = `${value.toFixed()} m`;
-      }
-
-      if (key === "head" && typeof value === "number") {
+      if (
+        (key === "elevation" || key === "head") &&
+        typeof value === "number"
+      ) {
         displayValue = `${value.toFixed()} m`;
       }
 
@@ -124,36 +130,51 @@ const renderReadonlyProperties = <T extends object>(
         displayValue = `${(value * PIXEL_TO_CM).toFixed(1)} cm`;
       }
 
-      if (key === "diameter" && typeof value === "number") {
+      if (
+        (key === "diameter" || key === "height") &&
+        typeof value === "number"
+      ) {
         displayValue = `${value} cm`;
       }
 
-      if (key === "roughness" && typeof value === "number") {
-        displayValue = `${value.toFixed(1)} C`;
-      }
-
       if (key === "flowRate" && typeof value === "number") {
-        displayValue = `${value.toFixed(4)} m³/s`;
+        displayValue = `${(value * 1000).toFixed(4)} L/s`;
       }
 
-      if (key === "pressure" && typeof value === "number") {
+      if (
+        (key === "pressure" ||
+          key === "inletPressure" ||
+          key === "outletPressure") &&
+        typeof value === "number"
+      ) {
         displayValue = `${value.toFixed(4)} bar`;
       }
 
-      if (key === "inletPressure" && typeof value === "number") {
-        displayValue = `${value.toFixed(4)} bar`;
+      if (key === "currentVolume" && typeof value === "number") {
+        displayValue = `${value.toFixed(2)} L`;
       }
 
-      if (key === "outletPressure" && typeof value === "number") {
-        displayValue = `${value.toFixed(4)} bar`;
+      if (key === "currentVolumeHeight" && typeof value === "number") {
+        displayValue = `${value.toFixed(4)} m`;
       }
 
-      if (key === "minorLossCoefficient" && typeof value === "number") {
+      if (key === "maxVolume" && typeof value === "number") {
+        displayValue = `${value.toFixed()} L`;
+      }
+
+      if (key === "filledPercentage" && typeof value === "number") {
+        displayValue = `${value.toFixed(2)} %`;
+      }
+
+      if (
+        (key === "minorLossCoefficient" || key === "roughness") &&
+        typeof value === "number"
+      ) {
         displayValue = `${value} C`;
       }
 
       if (key === "velocity" && typeof value === "number") {
-        displayValue = `${value.toFixed(4)} m/s`;
+        displayValue = `${(value * 1000).toFixed(4)} m/s`;
       }
 
       return (
@@ -334,7 +355,12 @@ export const SidebarRight = () => {
                     "rotation",
                     "active",
                     "pressure",
+                    "flowRate",
                     "note",
+                    "maxVolume",
+                    "currentVolume",
+                    "currentVolumeHeight",
+                    "filledPercentage",
                   ],
                   updateNodeProperty,
                 )}
