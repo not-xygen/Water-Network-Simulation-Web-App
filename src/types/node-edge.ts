@@ -53,6 +53,8 @@ export type PumpNode = NodeBase & {
 export type ValveNode = NodeBase & {
   type: "valve";
   status: "open" | "close";
+  diameter: number;
+  lossCoefficient?: number;
 };
 
 export type Node =
