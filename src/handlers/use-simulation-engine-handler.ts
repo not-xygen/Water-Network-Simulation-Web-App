@@ -427,11 +427,29 @@ export const startSimulation = () => {
           };
         }
 
-        return {
-          ...node,
-          pressure: Math.max(totalFlow, 0),
-          flowRate: totalFlow,
-        };
+        if (node.type === "valve") {
+          const incomingFlows = edgeByTarget[node.id] ?? [];
+          const totalFlow = incomingFlows.reduce((sum, f) => sum + f, 0);
+
+          if (node.status === "close") {
+            return {
+              ...node,
+              flowRate: 0,
+              pressure: 0,
+            };
+          }
+
+          const loss = node.lossCoefficient ?? 0.05;
+          const pressure = Math.max(0, node.pressure - loss);
+
+          return {
+            ...node,
+            flowRate: totalFlow,
+            pressure,
+          };
+        }
+
+        return node;
       });
 
       useNodeEdgeStore.setState({

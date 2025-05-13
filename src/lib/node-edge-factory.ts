@@ -48,7 +48,11 @@ export const createNode = (
       suctionPipeDiameter: 3,
       dischargePipeDiameter: 3,
     }),
-    ...(type === "valve" && { status: "close" }),
+    ...(type === "valve" && {
+      status: "close",
+      diameter: 2,
+      lossCoefficient: 0,
+    }),
     flowRate: 0,
     pressure: 0,
     active: true,
