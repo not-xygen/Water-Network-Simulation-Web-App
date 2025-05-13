@@ -69,7 +69,8 @@ export const startSimulation = () => {
 
         if (sourceNode.type === "reservoir")
           sourcePressure = (sourceNode.head * GRAVITY_PRESSURE) / 100;
-        else if (sourceNode.type === "tank") sourcePressure = sourceNode.level;
+        else if (sourceNode.type === "tank")
+          sourcePressure = sourceNode.currentVolumeHeight;
         else if (sourceNode.type === "fitting")
           sourcePressure = sourceNode.outletPressure || 0;
         else sourcePressure = sourceNode.pressure ?? 0;
@@ -104,7 +105,7 @@ export const startSimulation = () => {
         }
 
         const area = Math.PI * (diameterM / 2) ** 2;
-        const velocity = area === 0 ? 0 : flowRate / area;
+        const velocity = area === 0 ? 0 : flowRate / 1000 / area;
 
         return {
           ...edge,
@@ -139,10 +140,48 @@ export const startSimulation = () => {
         }
 
         if (node.type === "tank") {
+          if (node.diameter <= 0) {
+            return {
+              ...node,
+              pressure: 0,
+              flowRate: 0,
+              currentVolume: 0,
+              currentVolumeHeight: 0,
+              filledPercentage: 0,
+            };
+          }
+
+          const radiusM = node.diameter / 200;
+          const heightM = node.height / 100;
+          const baseArea = Math.PI * radiusM ** 2;
+
+          const volumeM3 = Math.PI * radiusM ** 2 * heightM;
+          const maxVolume = volumeM3 * 1000;
+
+          const addedVolume = totalFlow * 1000;
+          const updatedVolume = Math.min(
+            node.currentVolume + addedVolume,
+            maxVolume,
+          );
+
+          const updatedHeight = updatedVolume / 1000 / baseArea;
+          const clampedHeight = Math.min(updatedHeight, heightM);
+
+          const pressure = (clampedHeight * GRAVITY_PRESSURE) / 100;
+
+          const filledPercentage = Math.min(
+            (updatedVolume / maxVolume) * 100,
+            100,
+          );
+
           return {
             ...node,
-            pressure: node.level * GRAVITY_PRESSURE,
+            maxVolume,
+            currentVolume: updatedVolume,
+            currentVolumeHeight: clampedHeight,
+            pressure,
             flowRate: totalFlow,
+            filledPercentage,
           };
         }
 
@@ -181,7 +220,7 @@ export const startSimulation = () => {
                   return (n.head * GRAVITY_PRESSURE) / 100;
                 }
                 if (n?.type === "tank") {
-                  return n.level;
+                  return n.currentVolumeHeight;
                 }
                 if (n?.type === "fitting") {
                   return n.outletPressure || 0;
@@ -206,7 +245,7 @@ export const startSimulation = () => {
 
           const minorLoss = calculateMinorLoss(velocity, coefficient);
           const elevationDiff = node.elevation || 0;
-          const elevationLoss = (elevationDiff * GRAVITY_PRESSURE) / 100; // dalam bar
+          const elevationLoss = (elevationDiff * GRAVITY_PRESSURE) / 100;
 
           const outletPressure = Math.max(
             0,
