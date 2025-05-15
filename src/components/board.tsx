@@ -1,4 +1,4 @@
-import { RedoDot as LucideRedoDot } from "lucide-react";
+import { RefreshCcwDot as LucideRefreshCcwDot } from "lucide-react";
 import React, { useEffect, useRef, useState } from "react";
 
 import { useBoardHandler } from "@/handlers/use-board-handler";
@@ -11,7 +11,7 @@ import useNodeEdgeStore from "@/store/node-edge";
 import clsx from "clsx";
 import { NodeItem } from "./node-item";
 
-const RedoDot = React.memo(LucideRedoDot);
+const RefreshCcwDot = React.memo(LucideRefreshCcwDot);
 
 type BoardProps = {
   isSpacePressed: boolean;
@@ -305,7 +305,7 @@ export const Board = ({ isSpacePressed }: BoardProps) => {
                     height: `${12 * (zoom / 100)}px`,
                     backgroundColor: "#94B4C1",
                   }}>
-                  <RedoDot className="w-full h-full text-center text-white" />
+                  <RefreshCcwDot className="w-full h-full text-center text-white" />
                 </div>
               );
             })}
