@@ -26,6 +26,7 @@ import {
   DropdownMenuTrigger,
 } from "./ui/dropdown";
 import { Separator } from "./ui/separator";
+import { useImportExportHandler } from "@/handlers/use-import-export-handler";
 
 export const SidebarLeft = () => {
   const {
@@ -39,6 +40,8 @@ export const SidebarLeft = () => {
 
   const [nodeListMenuOpen, setNodeListMenuOpen] = useState(true);
   const [edgeListMenuOpen, setEdgeListMenuOpen] = useState(true);
+
+  const { exportData } = useImportExportHandler();
 
   return (
     <div className="w-full h-full p-2 overflow-y-auto text-xs text-gray-700 border-r">
@@ -70,6 +73,16 @@ export const SidebarLeft = () => {
               <DropdownMenuItem className="flex flex-row items-center gap-2 p-1 text-xs md:text-xs">
                 <Upload className="w-3 h-3" />
                 Load
+              </DropdownMenuItem>
+              <DropdownMenuItem className="flex flex-row items-center gap-2 p-1 text-xs md:text-xs">
+                <Upload className="w-3 h-3" />
+                Import
+              </DropdownMenuItem>
+              <DropdownMenuItem
+                className="flex flex-row items-center gap-2 p-1 text-xs md:text-xs"
+                onClick={() => exportData()}>
+                <Upload className="w-3 h-3" />
+                Export
               </DropdownMenuItem>
             </DropdownMenuGroup>
           </DropdownMenuContent>

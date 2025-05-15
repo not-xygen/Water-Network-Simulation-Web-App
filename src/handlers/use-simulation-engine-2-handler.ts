@@ -87,11 +87,15 @@ export const startSimulation = () => {
 
         if (targetNode.type === "pump") {
           const suctionLimit =
-            (targetNode.suctionHeadMax ?? 7) * GRAVITY_PRESSURE_DIV_100;
+            (targetNode.suctionHeadMax ?? 0) * GRAVITY_PRESSURE_DIV_100;
           const safeSourcePressure =
             sourceNode.type === "fitting"
               ? sourceNode.outletPressure ?? sourceNode.pressure ?? 0
               : sourceNode.pressure ?? 0;
+
+          console.log(
+            `sourcePressure: ${sourcePressure}, targetPressure: ${targetPressure}, suctionLimit: ${suctionLimit}, safeSourcePressure: ${safeSourcePressure}`,
+          );
 
           if (safeSourcePressure + 0.00001 >= suctionLimit) {
             pressureDiff = Math.max(0, safeSourcePressure - 0.2);
