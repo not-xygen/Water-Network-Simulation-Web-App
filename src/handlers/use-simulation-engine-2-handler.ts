@@ -26,11 +26,8 @@ export const startSimulation = () => {
   useSimulationStore.setState({ running: true });
 
   simulationInterval = setInterval(() => {
-
     try {
       const { nodes, edges } = useNodeEdgeStore.getState();
-
-      const nodeMap = new Map(nodes.map((n) => [n.id, n]));
 
       const initialNodes = nodes.map((node) => {
         if (!node.active) return node;
@@ -41,59 +38,6 @@ export const startSimulation = () => {
               ...node,
               pressure: node.head * GRAVITY_PRESSURE_DIV_100,
             };
-
-          case "tank": {
-            if (node.diameter <= 0) {
-              return {
-                ...node,
-                pressure: 0,
-                flowRate: 0,
-                currentVolume: 0,
-                currentVolumeHeight: 0,
-                filledPercentage: 0,
-              };
-            }
-
-            const radiusM = node.diameter / 200;
-            const heightM = node.height / 100;
-            const baseArea = Math.PI * radiusM ** 2;
-            const maxVolume = Math.PI * radiusM ** 2 * heightM * 1000;
-
-            const incomingFlows = edges
-              .filter((edge) => edge.targetId === node.id)
-              .map((edge) => edge.flowRate || 0);
-            const totalInflow = incomingFlows.reduce((sum, f) => sum + f, 0);
-
-            const outgoingEdges = edges.filter(
-              (edge) => edge.sourceId === node.id,
-            );
-            const totalOutflow = outgoingEdges.reduce((sum, edge) => {
-              const targetNode = nodeMap.get(edge.targetId);
-              return sum + (targetNode?.active ? edge.flowRate || 0 : 0);
-            }, 0);
-
-            const netFlow = totalInflow - totalOutflow;
-            const addedVolume = netFlow * 1000;
-            const updatedVolume = Math.max(
-              0,
-              Math.min(node.currentVolume + addedVolume, maxVolume),
-            );
-            const updatedHeight = updatedVolume / 1000 / baseArea;
-            const clampedHeight = Math.min(updatedHeight, heightM);
-
-            return {
-              ...node,
-              maxVolume,
-              currentVolume: updatedVolume,
-              currentVolumeHeight: clampedHeight,
-              pressure: clampedHeight * GRAVITY_PRESSURE_DIV_100,
-              flowRate: netFlow,
-              filledPercentage: Math.min(
-                (updatedVolume / maxVolume) * 100,
-                100,
-              ),
-            };
-          }
 
           default:
             return node;
