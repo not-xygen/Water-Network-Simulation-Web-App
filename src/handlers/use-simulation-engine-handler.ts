@@ -32,53 +32,6 @@ export const startSimulation = () => {
           };
         }
 
-        if (node.type === "pump") {
-          const outgoingEdges = edges.filter((e) => e.sourceId === node.id);
-          const flow = outgoingEdges.reduce(
-            (sum, e) => sum + (e.flowRate || 0),
-            0,
-          );
-
-          const maxFlow = node.capacityMax ?? 0;
-          const clampedFlow = Math.min(flow, maxFlow);
-
-          let head = node.totalHeadMax ?? 0;
-
-          if (
-            node.curveFlow &&
-            node.curveHead &&
-            node.curveFlow.length > 1 &&
-            node.curveFlow.length === node.curveHead.length
-          ) {
-            for (let i = 0; i < node.curveFlow.length - 1; i++) {
-              const f1 = node.curveFlow[i];
-              const f2 = node.curveFlow[i + 1];
-              const h1 = node.curveHead[i];
-              const h2 = node.curveHead[i + 1];
-
-              if (
-                (clampedFlow >= f2 && clampedFlow <= f1) ||
-                (clampedFlow >= f1 && clampedFlow <= f2)
-              ) {
-                const t = (clampedFlow - f1) / (f2 - f1);
-                head = h1 + t * (h2 - h1);
-                break;
-              }
-            }
-          }
-
-          head = Math.min(head, node.totalHeadMax ?? head);
-
-          const pressure = (head * GRAVITY_PRESSURE) / 100;
-
-          return {
-            ...node,
-            pressure,
-            flowRate: clampedFlow,
-            head,
-          };
-        }
-
         if (node.type === "tank") {
           if (node.diameter <= 0) {
             return {
@@ -183,12 +136,19 @@ export const startSimulation = () => {
         else targetPressure = targetNode.pressure ?? 0;
 
         let pressureDiff = sourcePressure - targetPressure;
+
         if (targetNode.type === "pump") {
           const suctionHeadMax = targetNode.suctionHeadMax ?? 7;
           const suctionLimit = (suctionHeadMax * GRAVITY_PRESSURE) / 100;
+          const EPSILON = 0.00001;
 
-          if (sourcePressure >= suctionLimit) {
-            pressureDiff = sourcePressure - 0.2;
+          const safeSourcePressure =
+            sourceNode.type === "fitting"
+              ? sourceNode.outletPressure ?? sourceNode.pressure ?? 0
+              : sourceNode.pressure ?? 0;
+
+          if (safeSourcePressure + EPSILON >= suctionLimit) {
+            pressureDiff = Math.max(0, safeSourcePressure - 0.2);
           } else {
             pressureDiff = 0;
           }
@@ -249,37 +209,48 @@ export const startSimulation = () => {
         }
 
         if (node.type === "pump") {
-          const outgoingEdges = edges.filter((e) => e.sourceId === node.id);
-          let flow = 0;
-          if (outgoingEdges.length > 0) {
-            flow = outgoingEdges[0].flowRate || 0;
-          }
+          const incomingEdges = edges.filter((e) => e.targetId === node.id);
+          const incomingFlow = incomingEdges.reduce(
+            (sum, e) => sum + (e.flowRate || 0),
+            0,
+          );
 
-          const maxFlow = node.capacityMax || 0;
-          flow = Math.min(flow, maxFlow);
+          const maxFlow = node.capacityMax ?? 0;
+          const clampedFlow = Math.min(incomingFlow, maxFlow);
 
-          let head = node.totalHeadMax || 0;
-          if (node.curveFlow && node.curveHead && node.curveFlow.length > 1) {
+          let head = node.totalHeadMax ?? 0;
+
+          if (
+            node.curveFlow &&
+            node.curveHead &&
+            node.curveFlow.length > 1 &&
+            node.curveFlow.length === node.curveHead.length
+          ) {
             for (let i = 0; i < node.curveFlow.length - 1; i++) {
               const f1 = node.curveFlow[i];
               const f2 = node.curveFlow[i + 1];
               const h1 = node.curveHead[i];
               const h2 = node.curveHead[i + 1];
-              if ((flow >= f2 && flow <= f1) || (flow >= f1 && flow <= f2)) {
-                const t = (flow - f1) / (f2 - f1);
+
+              if (
+                (clampedFlow >= f2 && clampedFlow <= f1) ||
+                (clampedFlow >= f1 && clampedFlow <= f2)
+              ) {
+                const t = (clampedFlow - f1) / (f2 - f1);
                 head = h1 + t * (h2 - h1);
                 break;
               }
             }
           }
-          head = Math.min(head, node.totalHeadMax || head);
+
+          head = Math.min(head, node.totalHeadMax ?? head);
 
           const pressure = (head * GRAVITY_PRESSURE) / 100;
 
           return {
             ...node,
             pressure,
-            flowRate: flow,
+            flowRate: clampedFlow,
           };
         }
 
