@@ -13,7 +13,10 @@ export const useImportExportHandler = () => {
     });
     const element = document.createElement("a");
     element.href = URL.createObjectURL(textFile);
-    element.download = "data.json";
+    element.download = `WNS-${new Date().toLocaleDateString()}.json`;
+    element.click();
+    URL.revokeObjectURL(element.href);
+    console.log("Exported data");
   };
 
   const importData = () => {

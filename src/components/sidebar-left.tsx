@@ -2,6 +2,8 @@ import {
   ChevronDown,
   ChevronRight,
   File,
+  FileDown,
+  FileUp,
   MenuIcon,
   Save,
   Upload,
@@ -11,6 +13,9 @@ import { useState } from "react";
 import useNodeEdgeStore from "@/store/node-edge";
 import type { Edge, Node } from "@/types/node-edge";
 
+import { useImportExportHandler } from "@/handlers/use-import-export-handler";
+import { resetSimulation } from "@/handlers/use-simulation-engine-2-handler";
+import { ActionAlertDialog } from "./action-alert-dialog";
 import { Button } from "./ui/button";
 import {
   Collapsible,
@@ -26,7 +31,6 @@ import {
   DropdownMenuTrigger,
 } from "./ui/dropdown";
 import { Separator } from "./ui/separator";
-import { useImportExportHandler } from "@/handlers/use-import-export-handler";
 
 export const SidebarLeft = () => {
   const {
@@ -74,16 +78,28 @@ export const SidebarLeft = () => {
                 <Upload className="w-3 h-3" />
                 Load
               </DropdownMenuItem>
+              <DropdownMenuSeparator />
               <DropdownMenuItem className="flex flex-row items-center gap-2 p-1 text-xs md:text-xs">
-                <Upload className="w-3 h-3" />
+                <FileUp className="w-3 h-3" />
                 Import
               </DropdownMenuItem>
-              <DropdownMenuItem
-                className="flex flex-row items-center gap-2 p-1 text-xs md:text-xs"
-                onClick={() => exportData()}>
-                <Upload className="w-3 h-3" />
-                Export
-              </DropdownMenuItem>
+              <ActionAlertDialog
+                trigger={
+                  <DropdownMenuItem
+                    className="flex flex-row items-center gap-2 p-1 text-xs md:text-xs"
+                    onSelect={(e) => e.preventDefault()}>
+                    <FileDown className="w-3 h-3" />
+                    Export
+                  </DropdownMenuItem>
+                }
+                title="Export Data?"
+                description="Data akan diexport dan simulasi akan direset. Apakah Anda yakin?"
+                actionText="Export"
+                onAction={() => {
+                  exportData();
+                  resetSimulation();
+                }}
+              />
             </DropdownMenuGroup>
           </DropdownMenuContent>
         </DropdownMenu>
