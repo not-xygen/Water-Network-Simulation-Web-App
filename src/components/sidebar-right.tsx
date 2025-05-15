@@ -26,6 +26,13 @@ import { Input } from "./ui/input";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { PIXEL_TO_CM } from "@/constant/globals";
 import { ActionAlertDialog } from "./action-alert-dialog";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "./ui/select";
 import { Separator } from "./ui/separator";
 import { Switch } from "./ui/switch";
 import { Textarea } from "./ui/textarea";
@@ -374,6 +381,28 @@ export const SidebarRight = () => {
                     className="h-4"
                   />
                 </div>
+                {liveSelectedNodes[0].type === "valve" && (
+                  <div className="flex items-center justify-between">
+                    <span>Status</span>
+                    <Select
+                      defaultValue={liveSelectedNodes[0].status}
+                      onValueChange={(value) =>
+                        updateNodeProperty("status", value)
+                      }>
+                      <SelectTrigger className="py-0.5 text-xs w-max h-max">
+                        <SelectValue placeholder="Select a status" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="open" className="text-xs">
+                          Open
+                        </SelectItem>
+                        <SelectItem value="close" className="text-xs">
+                          Close
+                        </SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                )}
               </div>
 
               <Separator className="h-0.5 bg-gray-200 rounded-md" />
@@ -395,6 +424,11 @@ export const SidebarRight = () => {
                     "currentVolume",
                     "currentVolumeHeight",
                     "filledPercentage",
+                    "status",
+                    "velocity",
+                    "inletPressure",
+                    "outletPressure",
+                    "demand",
                   ],
                   updateNodeProperty,
                 )}
@@ -581,6 +615,28 @@ export const SidebarRight = () => {
                       className="h-4"
                     />
                   </div>
+                  {liveSelectedNodes[0].type === "valve" && (
+                    <div className="flex items-center justify-between">
+                      <span>Status</span>
+                      <Select
+                        defaultValue={liveSelectedNodes[0].status}
+                        onValueChange={(value) =>
+                          updateNodeProperty("status", value)
+                        }>
+                        <SelectTrigger className="py-0.5 text-xs w-max h-max">
+                          <SelectValue placeholder="Select a status" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="open" className="text-xs">
+                            Open
+                          </SelectItem>
+                          <SelectItem value="close" className="text-xs">
+                            Close
+                          </SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+                  )}
                 </div>
 
                 <Separator className="h-0.5 bg-gray-200 rounded-md" />
@@ -597,7 +653,11 @@ export const SidebarRight = () => {
                     ...(selectedNodes[0].type === "reservoir"
                       ? ["flowRate"]
                       : selectedNodes[0].type === "valve"
-                      ? ["pressure"]
+                      ? ["pressure", "status"]
+                      : selectedNodes[0].type === "pump"
+                      ? []
+                      : selectedNodes[0].type === "fitting"
+                      ? []
                       : []),
                   ])}
                   <div>
