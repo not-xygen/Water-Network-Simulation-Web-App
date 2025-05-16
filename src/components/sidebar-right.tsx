@@ -6,7 +6,7 @@ import {
   resetSimulation,
   startSimulation,
   stopSimulation,
-} from "@/handlers/use-simulation-engine-2-handler";
+} from "@/handlers/use-simulation-engine-3-handler";
 import { formatElapsedTime } from "@/lib/utils";
 import useGlobalStore from "@/store/globals";
 import useNodeEdgeStore from "@/store/node-edge";

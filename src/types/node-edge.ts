@@ -48,6 +48,9 @@ export type PumpNode = NodeBase & {
   curveFlow: number[];
   suctionPipeDiameter: number;
   dischargePipeDiameter: number;
+  inletPressure?: number;
+  outletPressure?: number;
+  operatingHead?: number;
 };
 
 export type ValveNode = NodeBase & {
