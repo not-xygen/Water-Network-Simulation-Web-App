@@ -9,6 +9,7 @@ import {
   ResizablePanel,
   ResizablePanelGroup,
 } from "@/components/ui/resizable";
+import { Toaster } from "@/components/ui/toaster";
 
 function App() {
   const [isSpacePressed, setIsSpacePressed] = useState(false);
@@ -65,6 +66,8 @@ function App() {
 
       {/* Docks */}
       <DockNodeTools />
+
+      <Toaster />
     </div>
   );
 }

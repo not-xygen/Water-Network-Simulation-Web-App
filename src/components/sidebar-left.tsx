@@ -13,9 +13,10 @@ import { useState } from "react";
 import useNodeEdgeStore from "@/store/node-edge";
 import type { Edge, Node } from "@/types/node-edge";
 
-import { useImportExportHandler } from "@/handlers/use-import-export-handler";
 import { resetSimulation } from "@/handlers/use-engine-v2-handler";
+import { useImportExportHandler } from "@/handlers/use-import-export-handler";
 import { ActionAlertDialog } from "./action-alert-dialog";
+import { DialogImportFile } from "./dialog-import-file";
 import { Button } from "./ui/button";
 import {
   Collapsible,
@@ -45,7 +46,7 @@ export const SidebarLeft = () => {
   const [nodeListMenuOpen, setNodeListMenuOpen] = useState(true);
   const [edgeListMenuOpen, setEdgeListMenuOpen] = useState(true);
 
-  const { exportData } = useImportExportHandler();
+  const { exportData, importData } = useImportExportHandler();
 
   return (
     <div className="w-full h-full p-2 overflow-y-auto text-xs text-gray-700 border-r">
@@ -79,9 +80,19 @@ export const SidebarLeft = () => {
                 Load
               </DropdownMenuItem>
               <DropdownMenuSeparator />
-              <DropdownMenuItem className="flex flex-row items-center gap-2 p-1 text-xs md:text-xs">
-                <FileUp className="w-3 h-3" />
-                Import
+              <DropdownMenuItem
+                className="flex flex-row items-center gap-2 p-1 text-xs md:text-xs"
+                onSelect={(e) => e.preventDefault()}>
+                <DialogImportFile
+                  allowedFileTypes={[".json"]}
+                  maxFileSize={10}
+                  maxFiles={1}
+                  onImport={importData}>
+                  <div className="flex flex-row items-center w-full gap-2">
+                    <FileUp className="w-3 h-3" />
+                    Import
+                  </div>
+                </DialogImportFile>
               </DropdownMenuItem>
               <ActionAlertDialog
                 trigger={

@@ -1,3 +1,4 @@
+import { toast } from "@/components/ui/use-toast";
 import useNodeEdgeStore from "@/store/node-edge";
 
 export const useImportExportHandler = () => {
@@ -16,11 +17,48 @@ export const useImportExportHandler = () => {
     element.download = `WNS-${new Date().toLocaleDateString()}.json`;
     element.click();
     URL.revokeObjectURL(element.href);
-    console.log("Exported data");
+
+    toast({
+      title: "Export Successful",
+      description: "Data has been exported to JSON file",
+    });
   };
 
-  const importData = () => {
-    return console.log("import");
+  const importData = (files: File[]) => {
+    const file = files[0];
+    if (!file) return;
+
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      try {
+        const data = JSON.parse(e.target?.result as string);
+
+        if (!data.nodes || !data.edges) {
+          throw new Error("Invalid file format");
+        }
+
+        useNodeEdgeStore.setState({
+          nodes: data.nodes,
+          edges: data.edges,
+          selectedNodes: [],
+          selectedEdges: [],
+        });
+
+        toast({
+          title: "Import Successful",
+          description: "Data has been imported successfully",
+        });
+      } catch (error) {
+        console.error("Error importing file:", error);
+        toast({
+          title: "Import Failed",
+          description: "Invalid or corrupted file",
+          variant: "destructive",
+        });
+      }
+    };
+
+    reader.readAsText(file);
   };
 
   return { exportData, importData };
