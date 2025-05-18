@@ -6,7 +6,7 @@ import {
   resetSimulation,
   startSimulation,
   stopSimulation,
-} from "@/handlers/use-simulation-engine-3-handler";
+} from "@/handlers/use-engine-v4-handler";
 import { formatElapsedTime } from "@/lib/utils";
 import useGlobalStore from "@/store/globals";
 import useNodeEdgeStore from "@/store/node-edge";
@@ -145,7 +145,7 @@ const renderReadonlyProperties = <T extends object>(
       }
 
       if (key === "flowRate" && typeof value === "number") {
-        displayValue = `${(value * 1000).toFixed(4)} L/s`;
+        displayValue = `${Math.abs(value).toFixed(4)} L/s`;
       }
 
       if (
@@ -181,7 +181,7 @@ const renderReadonlyProperties = <T extends object>(
       }
 
       if (key === "velocity" && typeof value === "number") {
-        displayValue = `${(value * 1000).toFixed(4)} m/s`;
+        displayValue = `${value.toFixed(4)} m/s`;
       }
 
       if (key === "suctionHeadMax" && typeof value === "number") {

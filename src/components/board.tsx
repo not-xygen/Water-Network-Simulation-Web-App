@@ -172,9 +172,8 @@ export const Board = ({ isSpacePressed }: BoardProps) => {
               x2={targetPos.x}
               y2={targetPos.y}
               className={clsx("transition-all duration-300", {
-                "stroke-blue-500": edge.flowRate > 0,
-                "stroke-gray-400": edge.flowRate <= 0,
-                "stroke-dashed": edge.flowRate <= 0,
+                "stroke-blue-500": edge.flowRate !== 0,
+                "stroke-dashed stroke-gray-400": edge.flowRate === 0,
               })}
               strokeWidth={14 * (zoom / 100)}
               strokeLinecap="round"

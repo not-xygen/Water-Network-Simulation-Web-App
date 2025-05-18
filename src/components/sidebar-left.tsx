@@ -14,7 +14,7 @@ import useNodeEdgeStore from "@/store/node-edge";
 import type { Edge, Node } from "@/types/node-edge";
 
 import { useImportExportHandler } from "@/handlers/use-import-export-handler";
-import { resetSimulation } from "@/handlers/use-simulation-engine-2-handler";
+import { resetSimulation } from "@/handlers/use-engine-v2-handler";
 import { ActionAlertDialog } from "./action-alert-dialog";
 import { Button } from "./ui/button";
 import {

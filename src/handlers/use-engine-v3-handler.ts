@@ -19,13 +19,6 @@ const GRAVITY_PRESSURE_DIV_100 = GRAVITY_PRESSURE / 100;
 const PIXEL_TO_METER = PIXEL_TO_CM / 100;
 const SIMULATION_INTERVAL = 1000;
 
-const calculateMinorLoss = (velocity: number, coefficient: number) => {
-  return Math.min(
-    (coefficient * velocity ** 2) / 20000,
-    0.5 * GRAVITY_PRESSURE_DIV_100,
-  );
-};
-
 const calculateVelocity = (flowRate: number, diameter: number): number => {
   const area = Math.PI * (diameter / 200) ** 2;
   return area > 0 ? Math.abs(flowRate) / 1000 / area : 0;
@@ -69,17 +62,8 @@ const updateTank = (
     Math.min(node.currentVolume + deltaVolume, maxVolume),
   );
 
-  const newHeight = Math.min(newVolume / baseArea, heightM);
-
-  console.log("Tank Update:", {
-    diameterM,
-    heightM,
-    baseArea,
-    maxVolume,
-    deltaVolume,
-    newVolume,
-    newHeight,
-  });
+  const newHeight = newVolume / baseArea;
+  const newPressure = newHeight * GRAVITY_PRESSURE_DIV_100;
 
   return {
     ...node,
@@ -87,7 +71,7 @@ const updateTank = (
     currentVolume: newVolume,
     currentVolumeHeight: newHeight,
     filledPercentage: (newVolume / maxVolume) * 100,
-    pressure: newHeight * GRAVITY_PRESSURE_DIV_100,
+    pressure: newPressure,
     flowRate: netFlow,
   };
 };
@@ -129,7 +113,12 @@ const updatePump = (
   };
 };
 
-const updateFitting = (node: FittingNode, netFlow: number): FittingNode => {
+const updateFitting = (
+  node: FittingNode,
+  netFlow: number,
+  allNodes: Node[],
+  edges: Edge[],
+): FittingNode => {
   if (!node.diameter || node.diameter <= 0) {
     return {
       ...node,
@@ -141,20 +130,34 @@ const updateFitting = (node: FittingNode, netFlow: number): FittingNode => {
     };
   }
 
+  const inletEdge = edges.find((e) => e.targetId === node.id);
+
+  const inletNode = inletEdge
+    ? allNodes.find((n) => n.id === inletEdge.sourceId)
+    : null;
+
+  const inletPressure = inletNode?.pressure ?? 0;
+
   const diameterM = node.diameter / 100;
   const area = Math.PI * (diameterM / 2) ** 2;
-  const velocity = area > 0 ? netFlow / 1000 / area : 0;
+  const velocity = area > 0 ? Math.abs(netFlow) / 1000 / area : 0;
+
   const coefficient =
     FITTING_COEFFICIENTS[node.subtype as keyof typeof FITTING_COEFFICIENTS] ||
     FITTING_COEFFICIENTS.default;
-  const minorLoss = calculateMinorLoss(velocity, coefficient);
+
+  const minorLoss = (coefficient * velocity ** 2) / (2 * 9.81);
+
+  const newOutletPressure = Math.max(0, inletPressure - minorLoss);
 
   return {
     ...node,
     flowRate: netFlow,
     velocity,
     minorLossCoefficient: coefficient,
-    outletPressure: Math.max(0, (node.inletPressure ?? 0) - minorLoss),
+    inletPressure,
+    outletPressure: newOutletPressure,
+    pressure: newOutletPressure,
   };
 };
 
@@ -225,19 +228,30 @@ const simulateStep = (
       };
     }
 
-    const pressureDiff = sourceNode.pressure - targetNode.pressure;
-    if (Math.abs(pressureDiff) <= MIN_SLOPE) {
+    const sourcePressure =
+      sourceNode.type === "fitting"
+        ? sourceNode.outletPressure ?? 0
+        : sourceNode.pressure ?? 0;
+
+    const targetPressure = targetNode.pressure ?? 0;
+
+    const pressureDiff = sourcePressure - targetPressure;
+
+    if (Math.abs(pressureDiff) <= MIN_SLOPE || Math.abs(pressureDiff) > 100) {
       return { ...edge, flowRate: 0, velocity: 0 };
     }
 
     const lengthM = edge.length * PIXEL_TO_METER;
     const diameterM = edge.diameter / 100;
     const slope = Math.abs(pressureDiff) / lengthM;
-    let flowRate = 0.849 * edge.roughness * diameterM ** 2.63 * slope ** 0.54;
-    flowRate = pressureDiff >= 0 ? flowRate : -flowRate;
-    const velocity = calculateVelocity(flowRate, edge.diameter);
+    let flowRate = 0.2785 * edge.roughness * diameterM ** 2.63 * slope ** 0.54;
+    flowRate = Math.sign(pressureDiff) * flowRate;
 
-    return { ...edge, flowRate, velocity };
+    return {
+      ...edge,
+      flowRate,
+      velocity: calculateVelocity(flowRate, edge.diameter),
+    };
   });
 
   const finalNodes = nodesWithPumps.map((node) => {
@@ -258,9 +272,9 @@ const simulateStep = (
 
     switch (node.type) {
       case "tank":
-        return updateTank(node, netFlow, SIMULATION_INTERVAL);
+        return updateTank(node, netFlow, SIMULATION_INTERVAL / 1000);
       case "fitting":
-        return updateFitting(node, netFlow);
+        return updateFitting(node, netFlow, nodesWithPumps, updatedEdges);
       case "valve":
         return { ...node, flowRate: netFlow };
       default:
@@ -291,7 +305,7 @@ export const startSimulation = () => {
 
       useSimulationStore.setState((prev) => ({
         step: prev.step + 1,
-        elapsedTime: prev.elapsedTime + SIMULATION_INTERVAL / 1000,
+        elapsedTime: prev.elapsedTime + SIMULATION_INTERVAL,
       }));
     } catch (error) {
       console.error("Simulation error:", error);

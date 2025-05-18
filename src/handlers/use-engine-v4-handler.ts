@@ -1,0 +1,337 @@
+import {
+  FITTING_COEFFICIENTS,
+  GRAVITY_PRESSURE,
+  MIN_SLOPE,
+  PIXEL_TO_CM,
+} from "@/constant/globals";
+import useNodeEdgeStore from "@/store/node-edge";
+import useSimulationStore from "@/store/simulation";
+import type {
+  Node,
+  Edge,
+  TankNode,
+  PumpNode,
+  FittingNode,
+  ReservoirNode,
+  ValveNode,
+} from "@/types/node-edge";
+
+// ────────────────────────────── Variabel global ───────────────────────────
+let simulationInterval: NodeJS.Timeout | null = null;
+
+// ─────────────────────────────── Konstanta ────────────────────────────────
+const SIMULATION_INTERVAL = 1000; // [ms]
+
+// ───────────────────────────── Helper utilitas ────────────────────────────
+const calculateVelocity = (Q: number, D: number): number => {
+  // Q [L/s], D [m] → v [m/s]
+  const area = Math.PI * (D / 100 / 2) ** 2; // [m²]
+  return area > 0 ? Math.abs(Q) / area : 0;
+};
+
+const interpolateFromCurve = (
+  curveFlow: number[],
+  curveHead: number[],
+  currentFlow: number,
+): number => {
+  if (curveFlow.length === 0 || curveHead.length === 0) return 0;
+  if (currentFlow <= curveFlow[0]) return curveHead[0];
+  if (currentFlow >= curveFlow[curveFlow.length - 1])
+    return curveHead[curveHead.length - 1];
+  for (let i = 0; i < curveFlow.length - 1; i++) {
+    if (currentFlow >= curveFlow[i] && currentFlow <= curveFlow[i + 1]) {
+      const t =
+        (currentFlow - curveFlow[i]) / (curveFlow[i + 1] - curveFlow[i]);
+      return curveHead[i] + t * (curveHead[i + 1] - curveHead[i]);
+    }
+  }
+  return 0;
+};
+
+// ───────────────────────────── recalculateEdge() ───────────────────────────────
+const recalculateEdge = (edge: Edge, nodeMap: Map<string, Node>): Edge => {
+  const src = nodeMap.get(edge.sourceId);
+  const dst = nodeMap.get(edge.targetId);
+  if (!src || !dst) return { ...edge, flowRate: 0, velocity: 0 };
+
+  let pSrc =
+    src.type === "fitting"
+      ? src.outletPressure ?? src.pressure ?? 0
+      : src.pressure ?? 0;
+  const pDst =
+    dst.type === "fitting"
+      ? dst.outletPressure ?? dst.pressure ?? 0
+      : dst.pressure ?? 0;
+
+  if (dst.type === "pump") {
+    const limit = (dst.suctionHeadMax ?? 0) * (GRAVITY_PRESSURE / 100000);
+    if (pSrc < limit) return { ...edge, flowRate: 0, velocity: 0 };
+    pSrc = Math.max(0, pSrc - 0.2);
+  }
+
+  const dP = pSrc - pDst;
+  if (Math.abs(dP) < MIN_SLOPE) return { ...edge, flowRate: 0, velocity: 0 };
+
+  // Persamaan Hazen‑Williams
+  const L = edge.length * (PIXEL_TO_CM / 100); // [m]
+  const D = edge.diameter / 100; // [cm→m]
+  const S = Math.abs(dP) / L; // [gradient]
+  let Q = 0.2785 * edge.roughness * D ** 2.63 * S ** 0.54; // L/s
+  Q *= Math.sign(dP);
+
+  if (src.type === "fitting" && src.diameter) {
+    const Dfit = Math.min(src.diameter, edge.diameter) / 100;
+    Q = Math.min(Q, 0.2785 * edge.roughness * Dfit ** 2.63 * S ** 0.54);
+  }
+
+  return {
+    ...edge,
+    flowRate: Q * 1000,
+    velocity: calculateVelocity(Q, edge.diameter),
+  };
+};
+
+// ───────────────────────────── Update node spesifik ───────────────────────
+const updateReservoir = (n: ReservoirNode): ReservoirNode => ({
+  ...n,
+  pressure: n.head * (GRAVITY_PRESSURE / 100),
+  flowRate: 0,
+});
+
+const updateTank = (n: TankNode, netFlow: number, dt: number): TankNode => {
+  const diamM = n.diameter / 100; // [cm→m]
+  const hM = n.height / 100;
+  const rM = diamM / 2;
+  const baseArea = Math.PI * rM ** 2; // [m²]
+  const maxVol = baseArea * hM * 1000; // [L]
+  const dV = netFlow * dt; // [L]
+  const vol = Math.min(Math.max(0, n.currentVolume + dV), maxVol);
+  const h = vol / baseArea / 1000; // [m]
+  const p = h * (GRAVITY_PRESSURE / 100); // [bar]
+
+  return {
+    ...n,
+    maxVolume: maxVol,
+    currentVolume: vol,
+    currentVolumeHeight: h,
+    filledPercentage: (vol / maxVol) * 100,
+    pressure: p,
+    flowRate: netFlow,
+  };
+};
+
+const updatePump = (
+  n: PumpNode,
+  connEdges: Edge[],
+  allNodes: Node[],
+): PumpNode => {
+  const inflowEdge = connEdges.find((e) => e.targetId === n.id);
+  const outflowEdge = connEdges.find((e) => e.sourceId === n.id);
+  if (!inflowEdge || !outflowEdge)
+    return {
+      ...n,
+      flowRate: 0,
+      inletPressure: 0,
+      outletPressure: 0,
+      operatingHead: 0,
+      pressure: 0,
+    };
+
+  const srcNode = allNodes.find((x) => x.id === inflowEdge.sourceId);
+  const inletP = srcNode?.pressure ?? 0; // [bar]
+  const Qabs = inflowEdge.flowRate; // [L/s]
+  const head = interpolateFromCurve(n.curveFlow, n.curveHead, Qabs); // [m]
+  const outletP = inletP + head * (GRAVITY_PRESSURE / 100); // [bar]
+
+  return {
+    ...n,
+    inletPressure: inletP,
+    flowRate: inflowEdge.flowRate,
+    operatingHead: head,
+    outletPressure: outletP,
+    pressure: outletP,
+  };
+};
+
+const updateFitting = (
+  n: FittingNode,
+  netFlow: number,
+  nodes: Node[],
+  edges: Edge[],
+): FittingNode => {
+  if (!n.diameter || n.diameter <= 0)
+    return {
+      ...n,
+      pressure: 0,
+      flowRate: 0,
+      velocity: 0,
+      inletPressure: 0,
+      outletPressure: 0,
+    };
+
+  const inletEdge = edges.find((e) => e.targetId === n.id);
+  const inletNode = inletEdge
+    ? nodes.find((x) => x.id === inletEdge.sourceId)
+    : null;
+  const inletP = inletNode?.pressure ?? 0;
+
+  const D = n.diameter / 100; // [cm→m]
+  const area = Math.PI * (D / 2) ** 2; // [m²]
+  const v = area > 0 ? Math.abs(netFlow) / 1000 / area : 0; // [m/s]
+
+  const C =
+    FITTING_COEFFICIENTS[n.subtype as keyof typeof FITTING_COEFFICIENTS] ||
+    FITTING_COEFFICIENTS.default;
+
+  const headLossM = (C * v ** 2) / (2 * 9.81); // [m]
+  const minorLoss = headLossM * (GRAVITY_PRESSURE / 100000); // [bar]
+  const elevLoss = n.elevation * (GRAVITY_PRESSURE / 100000); // [bar]
+
+  const outletP = Math.max(0, inletP - minorLoss - elevLoss);
+
+  return {
+    ...n,
+    flowRate: netFlow,
+    velocity: v,
+    minorLossCoefficient: C,
+    inletPressure: inletP,
+    outletPressure: outletP,
+    pressure: outletP,
+  };
+};
+
+const updateValve = (n: ValveNode, netFlow: number): ValveNode =>
+  n.status === "close"
+    ? { ...n, flowRate: 0, pressure: 0 }
+    : {
+        ...n,
+        flowRate: netFlow,
+        pressure: Math.max(0, (n.pressure || 0) - (n.lossCoefficient || 0.05)),
+      };
+
+// ──────────────────────────── Satu Step Simulasi ──────────────────────────
+const simulateStep = (nodes: Node[], edges: Edge[]) => {
+  // 1) Update reservoir & inaktif
+  const initNodes = nodes.map((n) => {
+    if (!n.active) return { ...n, flowRate: 0, pressure: 0 };
+    return n.type === "reservoir" ? updateReservoir(n) : n;
+  });
+
+  // 2) Peta node awal
+  const nodeMap = new Map<string, Node>(initNodes.map((n) => [n.id, n]));
+
+  // 3) Pass‑1 edge
+  const passEdges = edges.map((e) => recalculateEdge(e, nodeMap));
+
+  // 4) Perbarui semua pompa
+  const pumpNodes = initNodes
+    .filter((n) => n.type === "pump")
+    .map((p) => updatePump(p as PumpNode, passEdges, initNodes));
+  const pumpMap = new Map(pumpNodes.map((p) => [p.id, p]));
+
+  // 5) Gabungkan map node → mergedMap
+  const mergedMap = new Map(nodeMap);
+  for (const [id, pump] of pumpMap) {
+    mergedMap.set(id, pump);
+  }
+
+  // 6) Pass‑2 edge di sekitar pompa
+  const finalEdges = passEdges.map((e) =>
+    pumpMap.has(e.sourceId) || pumpMap.has(e.targetId)
+      ? recalculateEdge(e, mergedMap)
+      : e,
+  );
+
+  // 7) Node dengan pompa ter‑update
+  const nodesWithPumps = initNodes.map((n) =>
+    n.type === "pump" ? pumpMap.get(n.id) ?? n : n,
+  );
+
+  // 8) Update tank, fitting, valve berdasarkan netFlow menggunakan finalEdges
+  const finalNodes = nodesWithPumps.map((n) => {
+    if (!n.active || n.type === "reservoir") return n;
+
+    const inflow = finalEdges
+      .filter((e) => e.targetId === n.id)
+      .reduce((s, e) => s + e.flowRate, 0);
+    const outflow = finalEdges
+      .filter((e) => e.sourceId === n.id)
+      .reduce((s, e) => s + e.flowRate, 0);
+    const netFlow = inflow - outflow;
+
+    switch (n.type) {
+      case "tank":
+        return updateTank(n, netFlow, SIMULATION_INTERVAL / 1000);
+      case "fitting":
+        return updateFitting(n, netFlow, nodesWithPumps, finalEdges);
+      case "valve":
+        return updateValve(n, netFlow);
+      default:
+        return n;
+    }
+  });
+
+  return { nodes: finalNodes, edges: finalEdges };
+};
+
+// ──────────────────────────── API Store Public ────────────────────────────
+export const startSimulation = () => {
+  if (simulationInterval) return; // sudah jalan
+  useSimulationStore.setState({ running: true, paused: false });
+
+  simulationInterval = setInterval(() => {
+    try {
+      const { nodes, edges } = useNodeEdgeStore.getState();
+      const { nodes: n2, edges: e2 } = simulateStep(nodes, edges);
+
+      useNodeEdgeStore.setState({ nodes: n2, edges: e2 });
+      useSimulationStore.setState((s) => ({
+        step: s.step + 1,
+        elapsedTime: s.elapsedTime + SIMULATION_INTERVAL / 1000,
+      }));
+    } catch (err) {
+      console.error("Simulation error", err);
+      stopSimulation();
+    }
+  }, SIMULATION_INTERVAL);
+};
+
+export const stopSimulation = () => {
+  if (!simulationInterval) return;
+  clearInterval(simulationInterval);
+  simulationInterval = null;
+  useSimulationStore.setState({ running: false, paused: true });
+};
+
+export const resetSimulation = () => {
+  stopSimulation();
+  useNodeEdgeStore.setState((st) => ({
+    nodes: st.nodes.map((n) => ({
+      ...n,
+      flowRate: 0,
+      pressure: 0,
+      ...(n.type === "tank" && {
+        currentVolume: 0,
+        currentVolumeHeight: 0,
+        filledPercentage: 0,
+      }),
+      ...(n.type === "fitting" && {
+        inletPressure: 0,
+        outletPressure: 0,
+        velocity: 0,
+      }),
+      ...(n.type === "pump" && {
+        operatingHead: 0,
+        inletPressure: 0,
+        outletPressure: 0,
+      }),
+    })),
+    edges: st.edges.map((e) => ({ ...e, flowRate: 0, velocity: 0 })),
+  }));
+  useSimulationStore.setState({
+    running: false,
+    paused: false,
+    step: 0,
+    elapsedTime: 0,
+  });
+};

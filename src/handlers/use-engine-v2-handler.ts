@@ -14,10 +14,7 @@ const PIXEL_TO_METER = PIXEL_TO_CM / 100;
 const SIMULATION_INTERVAL = 1000;
 
 const calculateMinorLoss = (velocity: number, coefficient: number) => {
-  return Math.min(
-    (coefficient * velocity ** 2) / 20000,
-    0.5 * GRAVITY_PRESSURE_DIV_100,
-  );
+  return (coefficient * velocity ** 2) / 20000;
 };
 
 export const startSimulation = () => {
