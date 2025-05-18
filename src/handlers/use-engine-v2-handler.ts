@@ -90,10 +90,6 @@ export const startSimulation = () => {
               ? sourceNode.outletPressure ?? sourceNode.pressure ?? 0
               : sourceNode.pressure ?? 0;
 
-          console.log(
-            `sourcePressure: ${sourcePressure}, targetPressure: ${targetPressure}, suctionLimit: ${suctionLimit}, safeSourcePressure: ${safeSourcePressure}`,
-          );
-
           if (safeSourcePressure + 0.00001 >= suctionLimit) {
             pressureDiff = Math.max(0, safeSourcePressure - 0.2);
           } else {
