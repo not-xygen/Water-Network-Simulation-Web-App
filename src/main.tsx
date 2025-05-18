@@ -2,12 +2,12 @@ import "./index.css";
 
 import { StrictMode } from "react";
 import { createRoot } from "react-dom/client";
+import { createBrowserRouter, RouterProvider } from "react-router";
 import { scan } from "react-scan";
 
-import { createBrowserRouter, RouterProvider } from "react-router";
+import SignInPage from "@/page/sign-in.tsx";
+import SimulationPage from "@/page/simulation.tsx";
 import { ClerkProvider } from "@clerk/clerk-react";
-
-import App from "./App.tsx";
 
 const PUBLISHABLE_KEY = import.meta.env.VITE_CLERK_PUBLISHABLE_KEY;
 
@@ -18,7 +18,11 @@ if (!PUBLISHABLE_KEY) {
 const router = createBrowserRouter([
   {
     path: "/",
-    element: <App />,
+    element: <SimulationPage />,
+  },
+  {
+    path: "/sign-in",
+    element: <SignInPage />,
   },
 ]);
 

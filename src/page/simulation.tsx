@@ -11,7 +11,7 @@ import {
 } from "@/components/ui/resizable";
 import { Toaster } from "@/components/ui/toaster";
 
-function App() {
+function SimulationPage() {
   const [isSpacePressed, setIsSpacePressed] = useState(false);
 
   const boardRef = useRef<HTMLDivElement>(null);
@@ -67,9 +67,10 @@ function App() {
       {/* Docks */}
       <DockNodeTools />
 
+      {/* Toaster */}
       <Toaster />
     </div>
   );
 }
 
-export default App;
+export default SimulationPage;

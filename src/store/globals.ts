@@ -12,6 +12,8 @@ export type GlobalState = {
   setOffset: (x: number, y: number) => void;
   mode: Mode;
   setMode: (mode: Mode) => void;
+  preferencesOpen: boolean;
+  setPreferencesOpen: (open: boolean) => void;
 };
 
 const useGlobalStore = create<GlobalState>((set) => ({
@@ -23,6 +25,8 @@ const useGlobalStore = create<GlobalState>((set) => ({
   setOffset: (x, y) => set({ offset: { x, y } }),
   mode: "drag",
   setMode: (mode) => set({ mode }),
+  preferencesOpen: false,
+  setPreferencesOpen: (open) => set({ preferencesOpen: open }),
 }));
 
 export default useGlobalStore;
