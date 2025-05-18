@@ -1,65 +1,74 @@
-import { toast } from "@/components/ui/use-toast";
+import { toast } from "@/handlers/use-toast-handler";
 import useNodeEdgeStore from "@/store/node-edge";
 
 export const useImportExportHandler = () => {
-  const { nodes, edges } = useNodeEdgeStore();
+	const { nodes, edges } = useNodeEdgeStore();
 
-  const exportData = () => {
-    const data = {
-      nodes: nodes,
-      edges: edges,
-    };
-    const textFile = new Blob([JSON.stringify(data)], {
-      type: "application/json",
-    });
-    const element = document.createElement("a");
-    element.href = URL.createObjectURL(textFile);
-    element.download = `WNS-${new Date().toLocaleDateString()}.json`;
-    element.click();
-    URL.revokeObjectURL(element.href);
+	const exportData = () => {
+		if (nodes.length === 0 && edges.length === 0) {
+			toast({
+				title: "Export Failed",
+				description: "Nothing to export. Please add nodes and edges first.",
+				variant: "destructive",
+			});
+			return;
+		}
 
-    toast({
-      title: "Export Successful",
-      description: "Data has been exported to JSON file",
-    });
-  };
+		const data = {
+			nodes: nodes,
+			edges: edges,
+		};
+		const textFile = new Blob([JSON.stringify(data)], {
+			type: "application/json",
+		});
+		const element = document.createElement("a");
+		element.href = URL.createObjectURL(textFile);
+		element.download = `WNS-${new Date().toLocaleDateString()}.json`;
+		element.click();
+		URL.revokeObjectURL(element.href);
 
-  const importData = (files: File[]) => {
-    const file = files[0];
-    if (!file) return;
+		toast({
+			title: "Export Successful",
+			description: "Data has been exported to JSON file",
+		});
+	};
 
-    const reader = new FileReader();
-    reader.onload = (e) => {
-      try {
-        const data = JSON.parse(e.target?.result as string);
+	const importData = (files: File[]) => {
+		const file = files[0];
+		if (!file) return;
 
-        if (!data.nodes || !data.edges) {
-          throw new Error("Invalid file format");
-        }
+		const reader = new FileReader();
+		reader.onload = (e) => {
+			try {
+				const data = JSON.parse(e.target?.result as string);
 
-        useNodeEdgeStore.setState({
-          nodes: data.nodes,
-          edges: data.edges,
-          selectedNodes: [],
-          selectedEdges: [],
-        });
+				if (!data.nodes || !data.edges) {
+					throw new Error("Invalid file format");
+				}
 
-        toast({
-          title: "Import Successful",
-          description: "Data has been imported successfully",
-        });
-      } catch (error) {
-        console.error("Error importing file:", error);
-        toast({
-          title: "Import Failed",
-          description: "Invalid or corrupted file",
-          variant: "destructive",
-        });
-      }
-    };
+				useNodeEdgeStore.setState({
+					nodes: data.nodes,
+					edges: data.edges,
+					selectedNodes: [],
+					selectedEdges: [],
+				});
 
-    reader.readAsText(file);
-  };
+				toast({
+					title: "Import Successful",
+					description: "Data has been imported successfully",
+				});
+			} catch (error) {
+				console.error("Error importing file:", error);
+				toast({
+					title: "Import Failed",
+					description: "Invalid or corrupted file",
+					variant: "destructive",
+				});
+			}
+		};
 
-  return { exportData, importData };
+		reader.readAsText(file);
+	};
+
+	return { exportData, importData };
 };
