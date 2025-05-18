@@ -10,11 +10,16 @@ import {
 } from "lucide-react";
 import { useState } from "react";
 
-import useNodeEdgeStore from "@/store/node-edge";
-import type { Edge, Node } from "@/types/node-edge";
-
 import { resetSimulation } from "@/handlers/use-engine-v2-handler";
 import { useImportExportHandler } from "@/handlers/use-import-export-handler";
+import useNodeEdgeStore from "@/store/node-edge";
+import {
+  SignedIn,
+  SignedOut,
+  SignInButton,
+  UserButton,
+} from "@clerk/clerk-react";
+
 import { ActionAlertDialog } from "./action-alert-dialog";
 import { DialogImportFile } from "./dialog-import-file";
 import { Button } from "./ui/button";
@@ -32,6 +37,8 @@ import {
   DropdownMenuTrigger,
 } from "./ui/dropdown";
 import { Separator } from "./ui/separator";
+
+import type { Edge, Node } from "@/types/node-edge";
 
 export const SidebarLeft = () => {
   const {
@@ -111,6 +118,13 @@ export const SidebarLeft = () => {
                   resetSimulation();
                 }}
               />
+              <DropdownMenuSeparator />
+              <SignedOut>
+                <SignInButton />
+              </SignedOut>
+              <SignedIn>
+                <UserButton />
+              </SignedIn>
             </DropdownMenuGroup>
           </DropdownMenuContent>
         </DropdownMenu>
