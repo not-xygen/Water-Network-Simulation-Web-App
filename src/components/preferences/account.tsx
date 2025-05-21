@@ -1,11 +1,59 @@
+import { DialogProfileImage } from "@/components/dialog-profile-image";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Separator } from "@/components/ui/separator";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { toast } from "@/handlers/use-toast-handler";
+import { useClerk, useUser } from "@clerk/clerk-react";
 import { PencilIcon } from "lucide-react";
+import { useForm } from "react-hook-form";
+
+type FormValues = {
+  firstName: string;
+  lastName: string;
+};
 
 export function AccountPreferences() {
+  const { user } = useUser();
+  const { redirectToUserProfile } = useClerk();
+  const {
+    register,
+    handleSubmit,
+    reset,
+    formState: { errors, isDirty, isSubmitting },
+  } = useForm<FormValues>({
+    defaultValues: {
+      firstName: user?.firstName || "",
+      lastName: user?.lastName || "",
+    },
+  });
+
+  const onSubmit = async (data: FormValues) => {
+    try {
+      if (!user) return;
+
+      await user.update({
+        firstName: data.firstName,
+        lastName: data.lastName,
+      });
+
+      reset(data);
+
+      toast({
+        title: "Profile updated successfully",
+        description: "Your profile changes have been saved",
+      });
+    } catch (err) {
+      console.error("Error updating profile:", err);
+      toast({
+        title: "Failed to update profile",
+        description: "An error occurred while updating your profile",
+        variant: "destructive",
+      });
+    }
+  };
+
   return (
     <div className="space-y-6">
       <div>
@@ -21,74 +69,88 @@ export function AccountPreferences() {
         <div className="relative">
           <Avatar className="w-20 h-20">
             <AvatarImage
-              src="/placeholder.svg?height=80&width=80"
-              alt="Profile"
+              src={user?.imageUrl}
+              alt={user?.fullName || "Profile"}
             />
-            <AvatarFallback>JD</AvatarFallback>
+            <AvatarFallback>
+              {user?.firstName?.[0]}
+              {user?.lastName?.[0]}
+            </AvatarFallback>
           </Avatar>
-          <Button
-            size="icon"
-            variant="secondary"
-            className="absolute bottom-0 right-0 w-6 h-6 rounded-full">
-            <PencilIcon className="w-3 h-3" />
-            <span className="sr-only">Change avatar</span>
-          </Button>
+          <DialogProfileImage>
+            <Button
+              size="icon"
+              variant="secondary"
+              className="absolute bottom-0 right-0 w-6 h-6 rounded-full">
+              <PencilIcon className="w-3 h-3" />
+              <span className="sr-only">Change avatar</span>
+            </Button>
+          </DialogProfileImage>
         </div>
         <div>
-          <h4 className="font-medium">John Doe</h4>
-          <p className="text-sm text-muted-foreground">john.doe@example.com</p>
+          <h4 className="font-medium">{user?.fullName}</h4>
+          <p className="text-sm text-muted-foreground">
+            {user?.primaryEmailAddress?.emailAddress}
+          </p>
         </div>
       </div>
 
       <Separator />
 
-      <div className="space-y-4">
+      <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
         <h4 className="font-medium">Personal Information</h4>
 
         <div className="grid gap-4 sm:grid-cols-2">
           <div className="space-y-2">
-            <Label htmlFor="first-name">First Name</Label>
-            <Input id="first-name" defaultValue="John" />
+            <Label htmlFor="firstName">First Name</Label>
+            <Input
+              id="firstName"
+              {...register("firstName", { required: "First name is required" })}
+            />
+            {errors.firstName && (
+              <p className="text-xs text-red-500">{errors.firstName.message}</p>
+            )}
           </div>
           <div className="space-y-2">
-            <Label htmlFor="last-name">Last Name</Label>
-            <Input id="last-name" defaultValue="Doe" />
+            <Label htmlFor="lastName">Last Name</Label>
+            <Input
+              id="lastName"
+              {...register("lastName", { required: "Last name is required" })}
+            />
+            {errors.lastName && (
+              <p className="text-xs text-red-500">{errors.lastName.message}</p>
+            )}
           </div>
         </div>
 
         <div className="space-y-2">
           <Label htmlFor="email">Email Address</Label>
-          <Input id="email" type="email" defaultValue="john.doe@example.com" />
+          <Input
+            id="email"
+            type="email"
+            value={user?.primaryEmailAddress?.emailAddress || ""}
+            disabled
+          />
         </div>
 
-        <div className="space-y-2">
-          <Label htmlFor="phone">Phone Number</Label>
-          <Input id="phone" type="tel" defaultValue="+1 (555) 123-4567" />
-        </div>
-      </div>
+        <Button type="submit" disabled={!isDirty || isSubmitting}>
+          {isSubmitting ? "Saving..." : "Save Changes"}
+        </Button>
+      </form>
 
       <Separator />
 
       <div className="space-y-4">
         <h4 className="font-medium">Password</h4>
-
-        <div className="space-y-2">
-          <Label htmlFor="current-password">Current Password</Label>
-          <Input id="current-password" type="password" />
-        </div>
-
-        <div className="grid gap-4 sm:grid-cols-2">
-          <div className="space-y-2">
-            <Label htmlFor="new-password">New Password</Label>
-            <Input id="new-password" type="password" />
-          </div>
-          <div className="space-y-2">
-            <Label htmlFor="confirm-password">Confirm New Password</Label>
-            <Input id="confirm-password" type="password" />
-          </div>
-        </div>
-
-        <Button className="mt-2">Update Password</Button>
+        <p className="text-sm text-muted-foreground">
+          To change your password, please visit Clerk security settings.
+        </p>
+        <Button
+          onClick={async () => {
+            await redirectToUserProfile();
+          }}>
+          Open Security Settings
+        </Button>
       </div>
     </div>
   );

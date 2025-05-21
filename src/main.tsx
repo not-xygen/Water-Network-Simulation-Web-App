@@ -6,6 +6,7 @@ import { createBrowserRouter, RouterProvider } from "react-router";
 import { scan } from "react-scan";
 
 import SignInPage from "@/page/sign-in.tsx";
+import SignUpPage from "@/page/sign-up.tsx";
 import SimulationPage from "@/page/simulation.tsx";
 import { ClerkProvider } from "@clerk/clerk-react";
 
@@ -23,6 +24,10 @@ const router = createBrowserRouter([
   {
     path: "/sign-in",
     element: <SignInPage />,
+  },
+  {
+    path: "/sign-up",
+    element: <SignUpPage />,
   },
 ]);
 

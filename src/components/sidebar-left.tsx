@@ -36,7 +36,6 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "./ui/dropdown";
-import { Separator } from "./ui/separator";
 
 import type { Edge, Node } from "@/types/node-edge";
 import { DialogPreferences } from "./dialog-preferences";
@@ -84,7 +83,7 @@ export const SidebarLeft = () => {
           <DropdownMenuContent
             onCloseAutoFocus={(e) => e.preventDefault()}
             align="start"
-            className="p-1 space-y-1 text-xs bg-white border rounded-lg shadow cursor-pointer w-max">
+            className="p-1 space-y-1 text-xs bg-white border rounded-lg shadow cursor-pointer w-[240px]">
             <DropdownMenuGroup className="space-y-1">
               <DropdownMenuItem className="flex flex-row items-center gap-2 p-1 text-xs md:text-xs">
                 <File className="w-3 h-3" />
@@ -202,6 +201,11 @@ export const SidebarLeft = () => {
             )}
           </CollapsibleTrigger>
           <CollapsibleContent className="flex flex-col gap-0.5">
+            {nodes.length === 0 && (
+              <h3 className="px-2 text-xs text-gray-500">
+                No Nodes in the board
+              </h3>
+            )}
             {nodes.length > 0 &&
               nodes.map((n: Node) => (
                 <Button
@@ -222,8 +226,6 @@ export const SidebarLeft = () => {
           </CollapsibleContent>
         </Collapsible>
 
-        <Separator className="h-0.5 bg-gray-200 rounded-md mt-1" />
-
         {/* Edge List */}
         <Collapsible
           open={edgeListMenuOpen}
@@ -238,6 +240,11 @@ export const SidebarLeft = () => {
             )}
           </CollapsibleTrigger>
           <CollapsibleContent className="flex flex-col gap-0.5">
+            {edges.length === 0 && (
+              <h3 className="px-2 text-xs text-gray-500">
+                No Edges in the board
+              </h3>
+            )}
             {edges.length > 0 &&
               edges.map((e: Edge) => (
                 <Button
@@ -265,7 +272,7 @@ export const SidebarLeft = () => {
           <Link to="/sign-in" className="w-full">
             <Button variant="outline" className="w-full">
               <LogIn className="w-4 h-4 mr-2" />
-              Masuk
+              Sign In
             </Button>
           </Link>
         </SignedOut>
@@ -278,14 +285,14 @@ export const SidebarLeft = () => {
             }}
             onKeyDown={(e) => {
               if (e.key === "Enter" || e.key === " ") {
-                setPreferencesSection("account"); 
+                setPreferencesSection("account");
                 setOpenPreferences(true);
               }
             }}>
             <Avatar className="w-8 h-8 rounded-full">
               <AvatarImage
                 src={user?.imageUrl}
-                alt="avatar" 
+                alt="avatar"
                 className="object-cover w-8 h-8 rounded-full"
               />
               <AvatarFallback>

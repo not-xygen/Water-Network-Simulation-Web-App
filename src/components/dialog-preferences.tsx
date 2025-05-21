@@ -102,7 +102,11 @@ export function DialogPreferences({
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent
         className="max-w-4xl p-0 h-[80vh] sm:rounded-e-none"
-        onCloseAutoFocus={(e) => e.preventDefault()}>
+        onCloseAutoFocus={(e) => e.preventDefault()}
+        aria-describedby="preferences-description">
+        <div className="sr-only" id="preferences-description">
+          Application settings to change user preferences
+        </div>
         <div className="flex h-full overflow-hidden">
           <SidebarProvider defaultOpen={true} className="w-64">
             <Sidebar className="w-full border-r" collapsible="none">
@@ -136,7 +140,9 @@ export function DialogPreferences({
           <div className="flex-1 h-full overflow-y-auto">
             <div className="w-full p-6 pt-12 pb-16">{activeComponent}</div>
             <div className="sticky bottom-0 flex justify-end gap-2 p-4 border-t bg-background">
-              <Button>Save Changes</Button>
+              <Button onClick={() => onOpenChange?.(false)}>
+                Save Changes
+              </Button>
             </div>
           </div>
         </div>

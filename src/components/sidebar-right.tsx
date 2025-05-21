@@ -19,6 +19,7 @@ import {
   DropdownMenuGroup,
   DropdownMenuItem,
   DropdownMenuSeparator,
+  DropdownMenuShortcut,
   DropdownMenuTrigger,
 } from "./ui/dropdown";
 import { Input } from "./ui/input";
@@ -294,28 +295,42 @@ export const SidebarRight = () => {
           <DropdownMenuContent
             onCloseAutoFocus={(e) => e.preventDefault()}
             align="end"
-            className="p-1 space-y-1 bg-white border rounded-lg shadow">
+            className="p-1 space-y-1 bg-white border rounded-lg shadow w-[180px]">
             <DropdownMenuGroup className="space-y-1">
-              <DropdownMenuItem onClick={zoomIn} className="text-xs md:text-xs">
-                <ZoomInIcon className="w-3 h-3 mr-2" /> Zoom In
+              <DropdownMenuItem
+                onClick={zoomIn}
+                className="flex flex-row items-center justify-between gap-2 p-1 text-xs md:text-xs">
+                <div className="flex items-center gap-2">
+                  <ZoomInIcon className="w-3 h-3" /> Zoom In
+                </div>
+                <DropdownMenuShortcut>Ctrl++</DropdownMenuShortcut>
               </DropdownMenuItem>
               <DropdownMenuItem
                 onClick={zoomOut}
-                className="text-xs md:text-xs">
-                <ZoomOutIcon className="w-3 h-3 mr-2" /> Zoom Out
+                className="flex flex-row items-center justify-between gap-2 p-1 text-xs md:text-xs">
+                <div className="flex items-center gap-2">
+                  <ZoomOutIcon className="w-3 h-3" /> Zoom Out
+                </div>
+                <DropdownMenuShortcut>Ctrl+-</DropdownMenuShortcut>
               </DropdownMenuItem>
               <DropdownMenuItem
                 onClick={resetZoom}
-                className="text-xs md:text-xs">
-                <RotateCcw className="w-3 h-3 mr-2" /> Reset Zoom
+                className="flex flex-row items-center justify-between gap-2 p-1 text-xs md:text-xs">
+                <div className="flex items-center gap-2">
+                  <RotateCcw className="w-3 h-3" /> Reset Zoom
+                </div>
+                <DropdownMenuShortcut>Ctrl+0</DropdownMenuShortcut>
               </DropdownMenuItem>
             </DropdownMenuGroup>
             <DropdownMenuSeparator />
             <DropdownMenuGroup>
               <DropdownMenuItem
                 onClick={resetPosition}
-                className="text-xs md:text-xs">
-                <RotateCcw className="w-3 h-3 mr-2" /> Reset Position
+                className="flex flex-row items-center justify-between gap-2 p-1 text-xs md:text-xs">
+                <div className="flex items-center gap-2">
+                  <RotateCcw className="w-3 h-3" /> Reset Position
+                </div>
+                <DropdownMenuShortcut>Ctrl+R</DropdownMenuShortcut>
               </DropdownMenuItem>
             </DropdownMenuGroup>
           </DropdownMenuContent>
