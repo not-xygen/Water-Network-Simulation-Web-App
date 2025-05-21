@@ -7,6 +7,7 @@ import {
   FileUp,
   ListRestart,
   LogIn,
+  LogOut,
   MenuIcon,
   Save,
   Upload,
@@ -17,7 +18,7 @@ import { Link } from "react-router";
 import { resetSimulation } from "@/handlers/use-engine-v2-handler";
 import { useImportExportHandler } from "@/handlers/use-import-export-handler";
 import useNodeEdgeStore from "@/store/node-edge";
-import { SignedIn, SignedOut, UserButton, useUser } from "@clerk/clerk-react";
+import { SignedIn, SignedOut, useClerk, useUser } from "@clerk/clerk-react";
 
 import { ActionAlertDialog } from "./action-alert-dialog";
 import { DialogImportFile } from "./dialog-import-file";
@@ -39,8 +40,10 @@ import { Separator } from "./ui/separator";
 
 import type { Edge, Node } from "@/types/node-edge";
 import { DialogPreferences } from "./dialog-preferences";
+import { Avatar, AvatarFallback, AvatarImage } from "./ui/avatar";
 
 export const SidebarLeft = () => {
+  const clerk = useClerk();
   const { user } = useUser();
   const {
     nodes,
@@ -56,103 +59,135 @@ export const SidebarLeft = () => {
 
   const { exportData, importData } = useImportExportHandler();
 
+  const [openPreferences, setOpenPreferences] = useState(false);
+  const [preferencesSection, setPreferencesSection] = useState("general");
+
+  const [dropdownOpen, setDropdownOpen] = useState(false);
+
+  const handleOpenPreferences = (section: string) => {
+    setPreferencesSection(section);
+    setOpenPreferences(true);
+  };
+
   return (
-    <div className="flex flex-col justify-between w-full h-full overflow-y-auto text-xs text-gray-700 border-r">
-      <div className="flex flex-col h-full">
-        <div className="flex items-center justify-between p-2 text-xs font-semibold text-gray-700">
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <Button
-                className="flex flex-row justify-end gap-1 px-3 py-1 space-x-2 max-w-max h-max"
-                variant={"outline"}>
-                <MenuIcon className="p-0" />
-              </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent
-              onCloseAutoFocus={(e) => e.preventDefault()}
-              align="start"
-              className="p-1 space-y-1 text-xs bg-white border rounded-lg shadow cursor-pointer w-max">
-              <DropdownMenuGroup className="space-y-1">
-                <DropdownMenuItem className="flex flex-row items-center gap-2 p-1 text-xs md:text-xs">
-                  <File className="w-3 h-3" />
-                  New
-                </DropdownMenuItem>
-              </DropdownMenuGroup>
-              <DropdownMenuSeparator />
-              <DropdownMenuGroup>
-                <DropdownMenuItem className="flex flex-row items-center gap-2 p-1 text-xs md:text-xs">
-                  <Save className="w-3 h-3" />
-                  Save
-                </DropdownMenuItem>
-                <DropdownMenuItem className="flex flex-row items-center gap-2 p-1 text-xs md:text-xs">
-                  <Upload className="w-3 h-3" />
-                  Load
-                </DropdownMenuItem>
-                <DropdownMenuItem
-                  className="flex flex-row items-center gap-2 p-1 text-xs md:text-xs"
-                  onSelect={(e) => e.preventDefault()}>
-                  <DialogImportFile
-                    allowedFileTypes={[".json"]}
-                    maxFileSize={10}
-                    maxFiles={1}
-                    onImport={importData}>
-                    <div className="flex flex-row items-center w-full gap-2">
-                      <FileUp className="w-3 h-3" />
-                      Import
-                    </div>
-                  </DialogImportFile>
-                </DropdownMenuItem>
-                <ActionAlertDialog
-                  trigger={
-                    <DropdownMenuItem
-                      className="flex flex-row items-center gap-2 p-1 text-xs md:text-xs"
-                      onSelect={(e) => e.preventDefault()}>
-                      <FileDown className="w-3 h-3" />
-                      Export
-                    </DropdownMenuItem>
-                  }
-                  title="Export Data & Reset Simulation?"
-                  description="All data will be exported and the simulation will be reset. Are you sure you want to continue?"
-                  actionText="Export & Reset"
-                  onAction={() => {
-                    exportData();
-                    resetSimulation();
-                  }}
-                />
-                <DropdownMenuSeparator />
-                <ActionAlertDialog
-                  trigger={
-                    <DropdownMenuItem
-                      className="flex flex-row items-center gap-2 p-1 text-xs md:text-xs"
-                      onSelect={(e) => e.preventDefault()}>
-                      <ListRestart className="w-3 h-3" />
-                      Reset Board & Simulation
-                    </DropdownMenuItem>
-                  }
-                  title="Reset Board & Simulation?"
-                  description="All nodes, edges, and simulation data will be cleared. Are you sure you want to reset everything?"
-                  actionText="Reset"
-                  onAction={() => {
-                    resetSimulation();
-                  }}
-                />
-                <DropdownMenuSeparator />
-                <DialogPreferences>
+    <div className="flex flex-col w-full h-full bg-white border-r">
+      {/* Header Sticky */}
+      <div className="sticky top-0 z-10 flex items-center justify-between px-4 py-3 bg-white border-b">
+        <DropdownMenu open={dropdownOpen} onOpenChange={setDropdownOpen}>
+          <DropdownMenuTrigger asChild>
+            <Button
+              className="flex flex-row justify-end gap-1 px-3 py-1 space-x-2 max-w-max h-max"
+              variant={"outline"}>
+              <MenuIcon className="p-0" />
+            </Button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent
+            onCloseAutoFocus={(e) => e.preventDefault()}
+            align="start"
+            className="p-1 space-y-1 text-xs bg-white border rounded-lg shadow cursor-pointer w-max">
+            <DropdownMenuGroup className="space-y-1">
+              <DropdownMenuItem className="flex flex-row items-center gap-2 p-1 text-xs md:text-xs">
+                <File className="w-3 h-3" />
+                New
+              </DropdownMenuItem>
+            </DropdownMenuGroup>
+            <DropdownMenuSeparator />
+            <DropdownMenuGroup>
+              <DropdownMenuItem className="flex flex-row items-center gap-2 p-1 text-xs md:text-xs">
+                <Save className="w-3 h-3" />
+                Save
+              </DropdownMenuItem>
+              <DropdownMenuItem className="flex flex-row items-center gap-2 p-1 text-xs md:text-xs">
+                <Upload className="w-3 h-3" />
+                Load
+              </DropdownMenuItem>
+              <DropdownMenuItem
+                className="flex flex-row items-center gap-2 p-1 text-xs md:text-xs"
+                onSelect={(e) => e.preventDefault()}>
+                <DialogImportFile
+                  allowedFileTypes={[".json"]}
+                  maxFileSize={10}
+                  maxFiles={1}
+                  onImport={importData}>
+                  <div className="flex flex-row items-center w-full gap-2">
+                    <FileUp className="w-3 h-3" />
+                    Import
+                  </div>
+                </DialogImportFile>
+              </DropdownMenuItem>
+              <ActionAlertDialog
+                trigger={
                   <DropdownMenuItem
                     className="flex flex-row items-center gap-2 p-1 text-xs md:text-xs"
                     onSelect={(e) => e.preventDefault()}>
-                    <Cog className="w-4 h-4" />
-                    Preferences
+                    <FileDown className="w-3 h-3" />
+                    Export
                   </DropdownMenuItem>
-                </DialogPreferences>
-              </DropdownMenuGroup>
-            </DropdownMenuContent>
-          </DropdownMenu>
-          <h1 className="text-lg font-bold">WNS</h1>
-        </div>
+                }
+                title="Export Data & Reset Simulation?"
+                description="All data will be exported and the simulation will be reset. Are you sure you want to continue?"
+                actionText="Export & Reset"
+                onAction={() => {
+                  exportData();
+                  resetSimulation();
+                }}
+              />
+              <DropdownMenuSeparator />
+              <ActionAlertDialog
+                trigger={
+                  <DropdownMenuItem
+                    className="flex flex-row items-center gap-2 p-1 text-xs md:text-xs"
+                    onSelect={(e) => e.preventDefault()}>
+                    <ListRestart className="w-3 h-3" />
+                    Reset Board & Simulation
+                  </DropdownMenuItem>
+                }
+                title="Reset Board & Simulation?"
+                description="All nodes, edges, and simulation data will be cleared. Are you sure you want to reset everything?"
+                actionText="Reset"
+                onAction={() => {
+                  resetSimulation();
+                }}
+              />
+              <DropdownMenuSeparator />
+              <DropdownMenuItem
+                className="flex flex-row items-center gap-2 p-1 text-xs md:text-xs"
+                onSelect={(e) => {
+                  e.preventDefault();
+                  setDropdownOpen(false);
+                  setTimeout(() => {
+                    handleOpenPreferences("general");
+                  }, 0);
+                }}>
+                <Cog className="w-4 h-4" />
+                Preferences
+              </DropdownMenuItem>
+              <SignedIn>
+                <ActionAlertDialog
+                  trigger={
+                    <DropdownMenuItem
+                      className="flex flex-row items-center gap-2 p-1 text-xs md:text-xs"
+                      onSelect={(e) => e.preventDefault()}>
+                      <LogOut className="w-3 h-3" />
+                      Sign Out
+                    </DropdownMenuItem>
+                  }
+                  title="Sign Out?"
+                  description="Are you sure you want to sign out from your account?"
+                  actionText="Sign Out"
+                  onAction={() => {
+                    clerk.signOut();
+                  }}
+                />
+              </SignedIn>
+            </DropdownMenuGroup>
+          </DropdownMenuContent>
+        </DropdownMenu>
+        <h1 className="text-lg font-bold">WNS</h1>
+      </div>
 
-        <Separator className="h-0.5 bg-gray-200 rounded-md" />
-
+      {/* Konten Scrollable */}
+      <div className="flex-1 px-2 py-2 overflow-y-auto">
         {/* Node List */}
         <Collapsible
           open={nodeListMenuOpen}
@@ -223,7 +258,9 @@ export const SidebarLeft = () => {
           </CollapsibleContent>
         </Collapsible>
       </div>
-      <div className="flex items-center gap-2 p-2">
+
+      {/* Footer Sticky */}
+      <div className="sticky bottom-0 z-10 bg-white border-t">
         <SignedOut>
           <Link to="/sign-in" className="w-full">
             <Button variant="outline" className="w-full">
@@ -233,18 +270,28 @@ export const SidebarLeft = () => {
           </Link>
         </SignedOut>
         <SignedIn>
-          <div className="flex items-center w-full gap-2 p-3">
-            <UserButton
-              appearance={{
-                elements: {
-                  avatarBox: "h-8 w-8",
-                  userButtonPopoverCard: "shadow-lg",
-                  userButtonPopoverActionButton: "hover:bg-accent",
-                  userButtonPopoverActionButtonText: "text-sm",
-                  userButtonPopoverFooter: "hidden",
-                },
-              }}
-            />
+          <div
+            className="flex items-center w-full gap-2 p-3 rounded cursor-pointer hover:bg-gray-100"
+            onClick={() => {
+              setPreferencesSection("account");
+              setOpenPreferences(true);
+            }}
+            onKeyDown={(e) => {
+              if (e.key === "Enter" || e.key === " ") {
+                setPreferencesSection("account"); 
+                setOpenPreferences(true);
+              }
+            }}>
+            <Avatar className="w-8 h-8 rounded-full">
+              <AvatarImage
+                src={user?.imageUrl}
+                alt="avatar" 
+                className="object-cover w-8 h-8 rounded-full"
+              />
+              <AvatarFallback>
+                {user?.fullName?.[0] ?? user?.username?.[0] ?? "?"}
+              </AvatarFallback>
+            </Avatar>
             <span className="text-sm font-medium truncate">
               {user?.fullName ||
                 user?.username ||
@@ -253,6 +300,13 @@ export const SidebarLeft = () => {
           </div>
         </SignedIn>
       </div>
+
+      {/* Preferences Dialog */}
+      <DialogPreferences
+        open={openPreferences}
+        onOpenChange={setOpenPreferences}
+        initialSection={preferencesSection}
+      />
     </div>
   );
 };
