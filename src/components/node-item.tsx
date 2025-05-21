@@ -8,201 +8,203 @@ import type { NodeBase } from "@/types/node-edge";
 import { Box, Droplet, ToggleRight, Zap } from "lucide-react";
 
 type NodeItemProps = {
-  node: NodeBase;
-  x: number;
-  y: number;
-  zoom: number;
-  isDragged: boolean;
-  isSelected: boolean;
-  onMouseDown: (e: React.MouseEvent, id: string) => void;
-  onMouseUp: (e: React.MouseEvent, id: string) => void;
-  onStartConnect: (
-    e: React.MouseEvent,
-    id: string,
-    position: "left" | "right" | "top" | "bottom",
-  ) => void;
-  onEndConnect: (
-    e: React.MouseEvent,
-    id: string,
-    position: "left" | "right" | "top" | "bottom",
-  ) => void;
+	node: NodeBase;
+	x: number;
+	y: number;
+	zoom: number;
+	isDragged: boolean;
+	isSelected: boolean;
+	onMouseDown: (e: React.MouseEvent, id: string) => void;
+	onMouseUp: (e: React.MouseEvent, id: string) => void;
+	onStartConnect: (
+		e: React.MouseEvent,
+		id: string,
+		position: "left" | "right" | "top" | "bottom",
+	) => void;
+	onEndConnect: (
+		e: React.MouseEvent,
+		id: string,
+		position: "left" | "right" | "top" | "bottom",
+	) => void;
 };
 
 export const NodeItem = React.memo(function NodeItem({
-  node,
-  x,
-  y,
-  zoom,
-  isDragged,
-  isSelected,
-  onMouseDown,
-  onMouseUp,
-  onStartConnect,
-  onEndConnect,
+	node,
+	x,
+	y,
+	zoom,
+	isDragged,
+	isSelected,
+	onMouseDown,
+	onMouseUp,
+	onStartConnect,
+	onEndConnect,
 }: NodeItemProps) {
-  const renderNodeShape = () => {
-    switch (node.type as string) {
-      case "reservoir":
-        return (
-          <div className="flex items-center justify-center w-16 h-16 font-bold text-black bg-blue-500 rounded-full">
-            <Droplet />
-          </div>
-        );
+	const renderNodeShape = () => {
+		switch (node.type as string) {
+			case "reservoir":
+				return (
+					<div className="flex items-center justify-center w-16 h-16 font-bold text-black bg-blue-500 rounded-full">
+						<Droplet />
+					</div>
+				);
 
-      case "tank":
-        return (
-          <div className="flex items-center justify-center w-16 h-16 font-bold text-black bg-orange-500 rounded-md">
-            <Box />
-          </div>
-        );
+			case "tank":
+				return (
+					<div className="flex items-center justify-center w-16 h-16 font-bold text-black bg-orange-500 rounded-md">
+						<Box />
+					</div>
+				);
 
-      case "pump":
-        return (
-          <div className="flex items-center justify-center w-16 h-16 font-bold text-black bg-yellow-400 rounded-full">
-            <Zap />
-          </div>
-        );
+			case "pump":
+				return (
+					<div className="flex items-center justify-center w-16 h-16 font-bold text-black bg-yellow-400 rounded-full">
+						<Zap />
+					</div>
+				);
 
-      case "valve":
-        return (
-          <div className="flex items-center justify-center w-16 h-16 font-bold text-black bg-green-600 rounded-md">
-            <ToggleRight />
-          </div>
-        );
+			case "valve":
+				return (
+					<div className="flex items-center justify-center w-16 h-16 font-bold text-black bg-green-600 rounded-md">
+						<ToggleRight />
+					</div>
+				);
 
-      case "fitting": {
-        const fittingType = node.subtype as string;
-        const hasFlow = node.flowRate && node.flowRate !== 0;
-        const bgColor = hasFlow ? "bg-blue-500" : "bg-gray-300";
-        const transitionClass = "transition-all duration-300";
+			case "fitting": {
+				const fittingType = node.subtype as string;
+				const hasFlow = node.flowRate && node.flowRate !== 0;
+				const bgColor = hasFlow ? "bg-blue-500" : "bg-gray-300";
+				const transitionClass = "transition-all duration-300";
 
-        switch (fittingType) {
-          case "tee":
-            return (
-              <div className="relative flex items-center justify-center w-16 h-16">
-                <div
-                  className={clsx(`w-full h-4 ${bgColor}`, transitionClass)}
-                />
-                <div
-                  className={clsx(
-                    `absolute top-0 w-4 -translate-x-1/2 ${bgColor} h-1/2 left-1/2`,
-                    transitionClass,
-                  )}
-                />
-              </div>
-            );
-          case "elbow":
-            return (
-              <div>
-                <div className="relative flex items-center justify-center w-16 h-16">
-                  <div
-                    className={clsx(
-                      `absolute left-0 w-[62%] h-4 -translate-y-1/2 ${bgColor} top-1/2`,
-                      transitionClass,
-                    )}
-                  />
-                  <div
-                    className={clsx(
-                      `absolute top-0 w-4 h-[62%] -translate-x-1/2 ${bgColor} left-1/2`,
-                      transitionClass,
-                    )}
-                  />
-                </div>
-              </div>
-            );
-          case "cross":
-            return (
-              <div className="relative flex items-center justify-center w-16 h-16">
-                <div
-                  className={clsx(
-                    `absolute left-0 w-full h-4 -translate-y-1/2 ${bgColor} top-1/2`,
-                    transitionClass,
-                  )}
-                />
-                <div
-                  className={clsx(
-                    `absolute top-0 w-4 h-full -translate-x-1/2 ${bgColor} left-1/2`,
-                    transitionClass,
-                  )}
-                />
-              </div>
-            );
-          case "coupling":
-            return (
-              <div className={clsx(`w-16 h-4 ${bgColor}`, transitionClass)} />
-            );
-          default:
-            return (
-              <div
-                className={clsx(
-                  `flex items-center justify-center w-16 h-16 ${bgColor} rounded-md`,
-                  transitionClass,
-                )}>
-                Node
-              </div>
-            );
-        }
-      }
+				switch (fittingType) {
+					case "tee":
+						return (
+							<div className="relative flex items-center justify-center w-16 h-16">
+								<div
+									className={clsx(`w-full h-4 ${bgColor}`, transitionClass)}
+								/>
+								<div
+									className={clsx(
+										`absolute top-0 w-4 -translate-x-1/2 ${bgColor} h-1/2 left-1/2`,
+										transitionClass,
+									)}
+								/>
+							</div>
+						);
+					case "elbow":
+						return (
+							<div>
+								<div className="relative flex items-center justify-center w-16 h-16">
+									<div
+										className={clsx(
+											`absolute left-0 w-[62%] h-4 -translate-y-1/2 ${bgColor} top-1/2`,
+											transitionClass,
+										)}
+									/>
+									<div
+										className={clsx(
+											`absolute top-0 w-4 h-[62%] -translate-x-1/2 ${bgColor} left-1/2`,
+											transitionClass,
+										)}
+									/>
+								</div>
+							</div>
+						);
+					case "cross":
+						return (
+							<div className="relative flex items-center justify-center w-16 h-16">
+								<div
+									className={clsx(
+										`absolute left-0 w-full h-4 -translate-y-1/2 ${bgColor} top-1/2`,
+										transitionClass,
+									)}
+								/>
+								<div
+									className={clsx(
+										`absolute top-0 w-4 h-full -translate-x-1/2 ${bgColor} left-1/2`,
+										transitionClass,
+									)}
+								/>
+							</div>
+						);
+					case "coupling":
+						return (
+							<div className={clsx(`w-16 h-4 ${bgColor}`, transitionClass)} />
+						);
+					default:
+						return (
+							<div
+								className={clsx(
+									`flex items-center justify-center w-16 h-16 ${bgColor} rounded-md`,
+									transitionClass,
+								)}
+							>
+								Node
+							</div>
+						);
+				}
+			}
 
-      default:
-        return (
-          <div className="flex items-center justify-center w-16 h-16 bg-gray-300 rounded-md">
-            {node.label}
-          </div>
-        );
-    }
-  };
+			default:
+				return (
+					<div className="flex items-center justify-center w-16 h-16 bg-gray-300 rounded-md">
+						{node.label}
+					</div>
+				);
+		}
+	};
 
-  const renderHandles = () => {
-    const positions: ("left" | "right" | "top" | "bottom")[] =
-      node.type === "reservoir"
-        ? ["bottom"]
-        : node.type === "fitting" && node.subtype === "cross"
-        ? ["left", "right", "top", "bottom"]
-        : node.subtype === "tee"
-        ? ["left", "right", "top"]
-        : node.subtype === "elbow"
-        ? ["left", "top"]
-        : ["left", "right"];
+	const renderHandles = () => {
+		const positions: ("left" | "right" | "top" | "bottom")[] =
+			node.type === "reservoir"
+				? ["bottom"]
+				: node.type === "fitting" && node.subtype === "cross"
+					? ["left", "right", "top", "bottom"]
+					: node.subtype === "tee"
+						? ["left", "right", "top"]
+						: node.subtype === "elbow"
+							? ["left", "top"]
+							: ["left", "right"];
 
-    return positions.map((pos) => (
-      <EdgeConnectionPoint
-        key={pos}
-        nodeId={node.id}
-        position={pos}
-        data-position={pos}
-        onMouseDown={(e) => onStartConnect(e, node.id, pos)}
-        onMouseUp={(e) => onEndConnect(e, node.id, pos)}
-        data-handle
-      />
-    ));
-  };
+		return positions.map((pos) => (
+			<EdgeConnectionPoint
+				key={pos}
+				nodeId={node.id}
+				position={pos}
+				data-position={pos}
+				onMouseDown={(e) => onStartConnect(e, node.id, pos)}
+				onMouseUp={(e) => onEndConnect(e, node.id, pos)}
+				data-handle
+			/>
+		));
+	};
 
-  return (
-    <div
-      className="absolute transform -translate-x-1/2 -translate-y-1/2 cursor-move"
-      data-node-id={node.id}
-      style={{
-        left: `${x}px`,
-        top: `${y}px`,
-        transform: `translate(-50%, -50%) scale(${zoom / 100}) rotate(${
-          node.rotation ?? 0
-        }deg)`,
-        transformOrigin: "center",
-        boxShadow: isDragged
-          ? "0 0 0 2px white, 0 0 0 4px #3b82f6"
-          : isSelected
-          ? "0 0 0 2px white, 0 0 0 4px #60a5fa"
-          : undefined,
+	return (
+		<div
+			className="absolute transform -translate-x-1/2 -translate-y-1/2 cursor-move"
+			data-node-id={node.id}
+			style={{
+				left: `${x}px`,
+				top: `${y}px`,
+				transform: `translate(-50%, -50%) scale(${zoom / 100}) rotate(${
+					node.rotation ?? 0
+				}deg)`,
+				transformOrigin: "center",
+				boxShadow: isDragged
+					? "0 0 0 2px white, 0 0 0 4px #3b82f6"
+					: isSelected
+						? "0 0 0 2px white, 0 0 0 4px #60a5fa"
+						: undefined,
 
-        zIndex: isDragged ? 100 : 0,
-      }}
-      onMouseDown={(e) => onMouseDown(e, node.id)}
-      onMouseUp={(e) => onMouseUp(e, node.id)}>
-      <div className="relative">
-        {renderNodeShape()}
-        {renderHandles()}
-      </div>
-    </div>
-  );
+				zIndex: isDragged ? 100 : 0,
+			}}
+			onMouseDown={(e) => onMouseDown(e, node.id)}
+			onMouseUp={(e) => onMouseUp(e, node.id)}
+		>
+			<div className="relative">
+				{renderNodeShape()}
+				{renderHandles()}
+			</div>
+		</div>
+	);
 });

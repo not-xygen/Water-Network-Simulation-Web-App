@@ -1,7 +1,3 @@
-/* eslint-disable no-unused-vars */
-import { FileIcon, UploadCloudIcon, XIcon } from "lucide-react";
-import * as React from "react";
-
 import { Button } from "@/components/ui/button";
 import {
 	Dialog,
@@ -14,6 +10,9 @@ import {
 } from "@/components/ui/dialog";
 import { Progress } from "@/components/ui/progress";
 import { toast } from "@/handlers/use-toast-handler";
+import { FileIcon, UploadCloudIcon, XIcon } from "lucide-react";
+/* eslint-disable no-unused-vars */
+import * as React from "react";
 
 interface FileImportDialogProps {
 	allowedFileTypes?: string[];
