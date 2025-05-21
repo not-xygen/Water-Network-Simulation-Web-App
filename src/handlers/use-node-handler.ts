@@ -4,14 +4,10 @@ import useNodeEdgeStore from "@/store/node-edge";
 import type React from "react";
 import { useCallback } from "react";
 
-export const useNodeHandler = ({
-  setRotatingNodeId,
-  setDraggedNode,
-  lastMousePosRef,
-}: {
-  setRotatingNodeId: (id: string | null) => void;
-  setDraggedNode: (id: string | null) => void;
-  lastMousePosRef: React.MutableRefObject<{ x: number; y: number } | null>;
+export const useNodeHandler = (args?: {
+  setRotatingNodeId?: (id: string | null) => void;
+  setDraggedNode?: (id: string | null) => void;
+  lastMousePosRef?: React.MutableRefObject<{ x: number; y: number } | null>;
 }) => {
   const { zoom, offset, mode } = useGlobalStore();
   const {
@@ -31,8 +27,9 @@ export const useNodeHandler = ({
 
       const startX = event.clientX;
       const startY = event.clientY;
-      lastMousePosRef.current = { x: startX, y: startY };
-      setDraggedNode(nodeId);
+      if (args?.lastMousePosRef)
+        args.lastMousePosRef.current = { x: startX, y: startY };
+      if (args?.setDraggedNode) args.setDraggedNode(nodeId);
 
       const clickedNode = nodes.find((n) => n.id === nodeId);
       if (!clickedNode) return;
@@ -72,15 +69,7 @@ export const useNodeHandler = ({
       window.addEventListener("mousemove", handleMouseMove);
       window.addEventListener("mouseup", handleMouseUp);
     },
-    [
-      mode,
-      lastMousePosRef,
-      setDraggedNode,
-      nodes,
-      selectedNodes,
-      setSelectedEdges,
-      setSelectedNodes,
-    ],
+    [mode, args, nodes, selectedNodes, setSelectedEdges, setSelectedNodes],
   );
 
   const handleNodeStartRotate = (e: React.MouseEvent, nodeId: string) => {
@@ -90,7 +79,7 @@ export const useNodeHandler = ({
     const node = nodes.find((n) => n.id === nodeId);
     if (!node) return;
 
-    setRotatingNodeId(nodeId);
+    if (args?.setRotatingNodeId) args.setRotatingNodeId(nodeId);
 
     const centerX =
       window.innerWidth / 2 + node.position.x * (zoom / 100) + offset.x;
@@ -119,7 +108,7 @@ export const useNodeHandler = ({
     };
 
     const rotateEnd = () => {
-      setRotatingNodeId(null);
+      if (args?.setRotatingNodeId) args.setRotatingNodeId(null);
       window.removeEventListener("mousemove", rotateMove);
       window.removeEventListener("mouseup", rotateEnd);
     };

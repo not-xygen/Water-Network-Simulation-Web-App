@@ -31,7 +31,7 @@ export const useHandlePosition = () => {
       if (!node) return null;
 
       const { x, y } = getWorldToScreen(node);
-      const visualOffset = (32 * zoom) / 100;
+      const visualOffset = 25.6;
       const rotationDeg = node.rotation ?? 0;
       const rotationRad = (rotationDeg * Math.PI) / 180;
 
@@ -53,15 +53,15 @@ export const useHandlePosition = () => {
           break;
       }
 
-      const rotatedX = dx * Math.cos(rotationRad) - dy * Math.sin(rotationRad);
-      const rotatedY = dx * Math.sin(rotationRad) + dy * Math.cos(rotationRad);
+      const rotatedX = dx * Math.cos(rotationRad) + dy * Math.sin(rotationRad);
+      const rotatedY = dx * Math.sin(rotationRad) - dy * Math.cos(rotationRad);
 
       return {
         x: x + rotatedX,
         y: y + rotatedY,
       };
     },
-    [nodes, zoom, getWorldToScreen],
+    [nodes, getWorldToScreen],
   );
 
   return { getWorldToScreen, getHandlePosition };
