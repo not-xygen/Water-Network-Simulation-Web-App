@@ -260,6 +260,7 @@ export const Board = ({ isSpacePressed }: BoardProps) => {
             style={{
               left: x,
               top: y,
+              transform: "translate(-50%, -50%)",
             }}>
             <NodeItem
               node={node}

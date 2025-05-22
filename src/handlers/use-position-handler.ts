@@ -31,7 +31,7 @@ export const useHandlePosition = () => {
       if (!node) return null;
 
       const { x, y } = getWorldToScreen(node);
-      const visualOffset = 25.6;
+      const visualOffset = 32 * (zoom / 100);
       const rotationDeg = node.rotation ?? 0;
       const rotationRad = (rotationDeg * Math.PI) / 180;
 
@@ -41,27 +41,31 @@ export const useHandlePosition = () => {
       switch (position) {
         case "left":
           dx = -visualOffset;
+          dy = 0;
           break;
         case "right":
           dx = visualOffset;
+          dy = 0;
           break;
         case "top":
+          dx = 0;
           dy = -visualOffset;
           break;
         case "bottom":
+          dx = 0;
           dy = visualOffset;
           break;
       }
 
-      const rotatedX = dx * Math.cos(rotationRad) + dy * Math.sin(rotationRad);
-      const rotatedY = dx * Math.sin(rotationRad) - dy * Math.cos(rotationRad);
+      const rotatedX = dx * Math.cos(rotationRad) - dy * Math.sin(rotationRad);
+      const rotatedY = dx * Math.sin(rotationRad) + dy * Math.cos(rotationRad);
 
       return {
         x: x + rotatedX,
         y: y + rotatedY,
       };
     },
-    [nodes, getWorldToScreen],
+    [nodes, zoom, getWorldToScreen],
   );
 
   return { getWorldToScreen, getHandlePosition };
