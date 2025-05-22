@@ -7,6 +7,7 @@ import { ReservoirNode } from "./reservoir";
 import { RotateHandle } from "./rotate-handle";
 import { TankNode } from "./tank";
 import { ValveNode } from "./valve";
+
 interface NodeItemProps {
   node: Node;
   isSelected: boolean;
@@ -43,6 +44,7 @@ export const NodeItem = ({
       case "reservoir":
         return (
           <ReservoirNode
+            nodeId={node.id}
             isSelected={isSelected}
             onStartConnect={onStartConnect}
             onEndConnect={onEndConnect}
@@ -51,6 +53,7 @@ export const NodeItem = ({
       case "tank":
         return (
           <TankNode
+            nodeId={node.id}
             isSelected={isSelected}
             onStartConnect={onStartConnect}
             onEndConnect={onEndConnect}
@@ -59,6 +62,7 @@ export const NodeItem = ({
       case "pump":
         return (
           <PumpNode
+            nodeId={node.id}
             isSelected={isSelected}
             onStartConnect={onStartConnect}
             onEndConnect={onEndConnect}
@@ -67,6 +71,7 @@ export const NodeItem = ({
       case "valve":
         return (
           <ValveNode
+            nodeId={node.id}
             isSelected={isSelected}
             onStartConnect={onStartConnect}
             onEndConnect={onEndConnect}
@@ -75,6 +80,7 @@ export const NodeItem = ({
       case "fitting":
         return (
           <FittingNode
+            nodeId={node.id}
             isSelected={isSelected}
             onStartConnect={onStartConnect}
             onEndConnect={onEndConnect}

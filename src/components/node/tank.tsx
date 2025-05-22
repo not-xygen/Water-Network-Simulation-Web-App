@@ -5,6 +5,7 @@ import { ConnectionHandles } from "./connection-handles";
 
 interface TankNodeProps {
   isSelected: boolean;
+  nodeId: string;
   onStartConnect: (
     e: React.MouseEvent,
     position: "left" | "right" | "top" | "bottom",
@@ -17,6 +18,7 @@ interface TankNodeProps {
 
 export const TankNode = ({
   isSelected,
+  nodeId,
   onStartConnect,
   onEndConnect,
 }: TankNodeProps) => {
@@ -30,6 +32,7 @@ export const TankNode = ({
         <Box />
       </div>
       <ConnectionHandles
+        nodeId={nodeId}
         onStartConnect={onStartConnect}
         onEndConnect={onEndConnect}
       />

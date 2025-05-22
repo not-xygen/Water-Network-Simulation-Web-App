@@ -5,6 +5,7 @@ import { ConnectionHandles } from "./connection-handles";
 
 interface ValveNodeProps {
   isSelected: boolean;
+  nodeId: string;
   onStartConnect: (
     e: React.MouseEvent,
     position: "left" | "right" | "top" | "bottom",
@@ -17,6 +18,7 @@ interface ValveNodeProps {
 
 export const ValveNode = ({
   isSelected,
+  nodeId,
   onStartConnect,
   onEndConnect,
 }: ValveNodeProps) => {
@@ -30,6 +32,7 @@ export const ValveNode = ({
         <ToggleRight />
       </div>
       <ConnectionHandles
+        nodeId={nodeId}
         onStartConnect={onStartConnect}
         onEndConnect={onEndConnect}
       />

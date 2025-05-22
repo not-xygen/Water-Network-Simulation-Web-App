@@ -5,6 +5,7 @@ import { ConnectionHandles } from "./connection-handles";
 
 interface PumpNodeProps {
   isSelected: boolean;
+  nodeId: string;
   onStartConnect: (
     e: React.MouseEvent,
     position: "left" | "right" | "top" | "bottom",
@@ -17,6 +18,7 @@ interface PumpNodeProps {
 
 export const PumpNode = ({
   isSelected,
+  nodeId,
   onStartConnect,
   onEndConnect,
 }: PumpNodeProps) => {
@@ -30,6 +32,7 @@ export const PumpNode = ({
         <Zap />
       </div>
       <ConnectionHandles
+        nodeId={nodeId}
         onStartConnect={onStartConnect}
         onEndConnect={onEndConnect}
       />

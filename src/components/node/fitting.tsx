@@ -4,6 +4,7 @@ import { ConnectionHandles } from "./connection-handles";
 
 interface FittingNodeProps {
   isSelected: boolean;
+  nodeId: string;
   onStartConnect: (
     e: React.MouseEvent,
     position: "left" | "right" | "top" | "bottom",
@@ -16,6 +17,7 @@ interface FittingNodeProps {
 
 export const FittingNode = ({
   isSelected,
+  nodeId,
   onStartConnect,
   onEndConnect,
 }: FittingNodeProps) => {
@@ -29,6 +31,7 @@ export const FittingNode = ({
         <div className="w-8 h-8 border-4 border-white rounded-full" />
       </div>
       <ConnectionHandles
+        nodeId={nodeId}
         onStartConnect={onStartConnect}
         onEndConnect={onEndConnect}
       />

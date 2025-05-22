@@ -107,13 +107,15 @@ export const useConnectionHandler = ({
       );
 
       if (edgeExists) {
-        console.warn("Edge sudah ada, tidak bisa membuat koneksi ganda.");
+        console.warn(
+          "Edge already exists, cannot create duplicate connection.",
+        );
       } else {
         const sourceNode = nodes.find((n) => n.id === connecting.sourceId);
         const targetNode = nodes.find((n) => n.id === nodeId);
 
         if (!sourceNode || !targetNode) {
-          console.warn("Node tidak ditemukan");
+          console.warn("Node not found");
           setConnecting(null);
           setMousePos(null);
           return;
@@ -175,11 +177,23 @@ export const useConnectionHandler = ({
           | "bottom";
 
         if (handle && targetId) {
-          updateEdgeConnection(edgeId, {
-            from,
-            newNodeId: targetId,
-            newPosition: pos,
-          });
+          const edge = edges.find((e) => e.id === edgeId);
+          if (!edge) return;
+
+          const isSameNode =
+            from === "source"
+              ? targetId === edge.targetId
+              : targetId === edge.sourceId;
+
+          if (isSameNode) {
+            console.warn("Cannot connect to the same node");
+          } else {
+            updateEdgeConnection(edgeId, {
+              from,
+              newNodeId: targetId,
+              newPosition: pos,
+            });
+          }
         }
 
         setDraggingEdgeHandle(null);
@@ -191,7 +205,7 @@ export const useConnectionHandler = ({
       window.addEventListener("pointermove", handleMouseMove);
       window.addEventListener("pointerup", handleMouseUp);
     },
-    [setDraggingEdgeHandle, setMousePos, updateEdgeConnection],
+    [setDraggingEdgeHandle, setMousePos, updateEdgeConnection, edges],
   );
 
   return {

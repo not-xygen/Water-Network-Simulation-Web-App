@@ -10,11 +10,13 @@ interface ConnectionHandlesProps {
     e: React.MouseEvent,
     position: "left" | "right" | "top" | "bottom",
   ) => void;
+  nodeId: string;
 }
 
 export const ConnectionHandles = React.memo(function ConnectionHandles({
   onStartConnect,
   onEndConnect,
+  nodeId,
 }: ConnectionHandlesProps) {
   return (
     <>
@@ -25,6 +27,7 @@ export const ConnectionHandles = React.memo(function ConnectionHandles({
         onMouseDown={(e) => onStartConnect(e, "left")}
         onMouseUp={(e) => onEndConnect(e, "left")}
         data-handle
+        data-node-id={nodeId}
         data-position="left"
       />
       {/* Right */}
@@ -34,6 +37,7 @@ export const ConnectionHandles = React.memo(function ConnectionHandles({
         onMouseDown={(e) => onStartConnect(e, "right")}
         onMouseUp={(e) => onEndConnect(e, "right")}
         data-handle
+        data-node-id={nodeId}
         data-position="right"
       />
       {/* Top */}
@@ -43,6 +47,7 @@ export const ConnectionHandles = React.memo(function ConnectionHandles({
         onMouseDown={(e) => onStartConnect(e, "top")}
         onMouseUp={(e) => onEndConnect(e, "top")}
         data-handle
+        data-node-id={nodeId}
         data-position="top"
       />
       {/* Bottom */}
@@ -52,6 +57,7 @@ export const ConnectionHandles = React.memo(function ConnectionHandles({
         onMouseDown={(e) => onStartConnect(e, "bottom")}
         onMouseUp={(e) => onEndConnect(e, "bottom")}
         data-handle
+        data-node-id={nodeId}
         data-position="bottom"
       />
     </>

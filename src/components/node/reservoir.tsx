@@ -5,6 +5,7 @@ import { ConnectionHandles } from "./connection-handles";
 
 interface ReservoirNodeProps {
   isSelected: boolean;
+  nodeId: string;
   onStartConnect: (
     e: React.MouseEvent,
     position: "left" | "right" | "top" | "bottom",
@@ -17,6 +18,7 @@ interface ReservoirNodeProps {
 
 export const ReservoirNode = ({
   isSelected,
+  nodeId,
   onStartConnect,
   onEndConnect,
 }: ReservoirNodeProps) => {
@@ -30,6 +32,7 @@ export const ReservoirNode = ({
         <Droplet />
       </div>
       <ConnectionHandles
+        nodeId={nodeId}
         onStartConnect={onStartConnect}
         onEndConnect={onEndConnect}
       />
