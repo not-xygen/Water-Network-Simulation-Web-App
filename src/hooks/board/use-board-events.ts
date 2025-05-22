@@ -1,4 +1,4 @@
-import { useBoardHandler } from "@/hooks/use-board";
+import { useBoardHandler } from "@/hooks/board/use-board";
 import { useConnectionHandler } from "@/hooks/use-connection";
 import { useNodeHandler } from "@/hooks/use-node";
 import useGlobalStore from "@/store/globals";

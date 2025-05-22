@@ -1,21 +1,21 @@
 /* eslint-disable no-unused-vars */
 import type { Node, ValveNode } from "@/types/node-edge";
-import { ActionAlertDialog } from "./action-alert-dialog";
+import { ActionAlertDialog } from "../action-alert-dialog";
 import {
   renderEditableProperties,
   renderReadonlyProperties,
 } from "./property-renderers";
-import { Button } from "./ui/button";
+import { Button } from "../ui/button";
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "./ui/select";
-import { Separator } from "./ui/separator";
-import { Switch } from "./ui/switch";
-import { Textarea } from "./ui/textarea";
+} from "../ui/select";
+import { Separator } from "../ui/separator";
+import { Switch } from "../ui/switch";
+import { Textarea } from "../ui/textarea";
 
 interface NodePropertiesProps {
   node: Node;

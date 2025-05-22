@@ -1,7 +1,7 @@
 import { formatElapsedTime } from "@/lib/utils";
-import { ActionAlertDialog } from "./action-alert-dialog";
-import { Button } from "./ui/button";
-import { Separator } from "./ui/separator";
+import { ActionAlertDialog } from "../action-alert-dialog";
+import { Button } from "../ui/button";
+import { Separator } from "../ui/separator";
 
 interface SimulationControlsProps {
 	running: boolean;

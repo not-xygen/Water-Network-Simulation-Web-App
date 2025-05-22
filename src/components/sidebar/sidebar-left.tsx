@@ -19,16 +19,16 @@ import {
 } from "lucide-react";
 import { useState } from "react";
 import { Link } from "react-router";
-import { ActionAlertDialog } from "./action-alert-dialog";
-import { DialogImportFile } from "./dialog-import-file";
-import { DialogPreferences } from "./dialog-preferences";
-import { Avatar, AvatarFallback, AvatarImage } from "./ui/avatar";
-import { Button } from "./ui/button";
+import { ActionAlertDialog } from "../action-alert-dialog";
+import { DialogImportFile } from "../dialog-import-file";
+import { DialogPreferences } from "../preferences/dialog-preferences";
+import { Avatar, AvatarFallback, AvatarImage } from "../ui/avatar";
+import { Button } from "../ui/button";
 import {
 	Collapsible,
 	CollapsibleContent,
 	CollapsibleTrigger,
-} from "./ui/collapsible";
+} from "../ui/collapsible";
 import {
 	DropdownMenu,
 	DropdownMenuContent,
@@ -36,7 +36,7 @@ import {
 	DropdownMenuItem,
 	DropdownMenuSeparator,
 	DropdownMenuTrigger,
-} from "./ui/dropdown";
+} from "../ui/dropdown";
 
 export const SidebarLeft = () => {
 	const clerk = useClerk();

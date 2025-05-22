@@ -1,5 +1,5 @@
 import { ChevronDown, RotateCcw, ZoomInIcon, ZoomOutIcon } from "lucide-react";
-import { Button } from "./ui/button";
+import { Button } from "../ui/button";
 import {
 	DropdownMenu,
 	DropdownMenuContent,
@@ -8,8 +8,8 @@ import {
 	DropdownMenuSeparator,
 	DropdownMenuShortcut,
 	DropdownMenuTrigger,
-} from "./ui/dropdown";
-import { Separator } from "./ui/separator";
+} from "../ui/dropdown";
+import { Separator } from "../ui/separator";
 
 interface ViewControlsProps {
 	zoom: number;

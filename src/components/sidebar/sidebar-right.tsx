@@ -5,8 +5,8 @@ import useNodeEdgeStore from "@/store/node-edge";
 import useSimulationStore from "@/store/simulation";
 import type { Edge, Node } from "@/types/node-edge";
 
-import { EdgeProperties } from "./edge-properties";
-import { NodeProperties } from "./node-properties";
+import { EdgeProperties } from "../properties/edge-properties";
+import { NodeProperties } from "../properties/node-properties";
 import { SimulationControls } from "./simulation-controls";
 import { ViewControls } from "./view-controls";
 
