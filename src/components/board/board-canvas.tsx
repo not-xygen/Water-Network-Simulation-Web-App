@@ -1,5 +1,5 @@
 /* eslint-disable no-unused-vars */
-import { useHandlePosition } from "@/handlers/use-position-handler";
+import { useHandlePosition } from "@/hooks/use-position";
 import type { Edge } from "@/types/node-edge";
 import clsx from "clsx";
 

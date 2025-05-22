@@ -9,7 +9,7 @@ import {
 	DialogTrigger,
 } from "@/components/ui/dialog";
 import { Progress } from "@/components/ui/progress";
-import { toast } from "@/handlers/use-toast-handler";
+import { toast } from "@/hooks/use-toast";
 import { FileIcon, UploadCloudIcon, XIcon } from "lucide-react";
 /* eslint-disable no-unused-vars */
 import * as React from "react";
