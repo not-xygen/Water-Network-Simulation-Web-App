@@ -1,119 +1,76 @@
+"use client";
+
+import { DialogProfileImage } from "@/components/dialog-profile-image";
 import { Button } from "@/components/ui/button";
-import {
-	Form,
-	FormControl,
-	FormField,
-	FormItem,
-	FormLabel,
-	FormMessage,
-} from "@/components/ui/form";
-import { Input } from "@/components/ui/input";
+import { Form } from "@/components/ui/form";
+import { NameFields } from "@/components/ui/form-fields";
+import { useAccountForm } from "@/hooks/use-account-form";
 import { useUser } from "@clerk/clerk-react";
-import { zodResolver } from "@hookform/resolvers/zod";
-import { useState } from "react";
-import { useForm } from "react-hook-form";
-import * as z from "zod";
-import { DialogProfileImage } from "../dialog-profile-image";
+import { Pencil, RotateCcw } from "lucide-react";
 
-const accountSchema = z.object({
-	firstName: z.string().min(1, "Nama depan harus diisi"),
-	lastName: z.string().min(1, "Nama belakang harus diisi"),
-});
+export function AccountPreferences() {
+  const { user } = useUser();
+  const { form, error, isLoading, onSubmit } = useAccountForm();
+  const isDirty = form.formState.isDirty;
 
-type AccountFormValues = z.infer<typeof accountSchema>;
+  const handleReset = () => {
+    form.reset({
+      firstName: user?.firstName || "",
+      lastName: user?.lastName || "",
+    });
+  };
 
-export function AccountForm() {
-	const { user } = useUser();
-	const [isLoading, setIsLoading] = useState(false);
-	const [error, setError] = useState("");
+  return (
+    <div className="flex flex-col h-full">
+      <div className="flex items-center gap-4 mb-6">
+        <DialogProfileImage>
+          <div className="relative w-20 h-20 overflow-hidden rounded-full cursor-pointer group">
+            <img
+              src={user?.imageUrl}
+              alt={user?.fullName || "Profile"}
+              className="object-cover w-full h-full"
+            />
+            <div className="absolute inset-0 flex items-center justify-center transition-opacity opacity-0 bg-black/50 group-hover:opacity-100">
+              <Pencil className="w-4 h-4 text-white" />
+            </div>
+          </div>
+        </DialogProfileImage>
+        <div>
+          <h3 className="text-lg font-medium">Profile Picture</h3>
+          <p className="text-sm text-gray-500">Upload a new profile picture</p>
+        </div>
+      </div>
 
-	const form = useForm<AccountFormValues>({
-		resolver: zodResolver(accountSchema),
-		defaultValues: {
-			firstName: user?.firstName || "",
-			lastName: user?.lastName || "",
-		},
-	});
+      <div className="flex flex-col justify-center flex-1">
+        <Form {...form}>
+          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+            <NameFields
+              control={form.control}
+              firstNameName="firstName"
+              lastNameName="lastName"
+            />
 
-	const onSubmit = async (data: AccountFormValues) => {
-		if (!user) return;
-		setError("");
+            {error && <div className="text-sm text-red-600">{error}</div>}
 
-		try {
-			setIsLoading(true);
-			await user.update({
-				firstName: data.firstName,
-				lastName: data.lastName,
-			});
-		} catch (err: unknown) {
-			const error = err as { errors?: Array<{ message: string }> };
-			setError(
-				error.errors?.[0]?.message ||
-					"An error occurred while updating profile",
-			);
-		} finally {
-			setIsLoading(false);
-		}
-	};
-
-	return (
-		<div className="space-y-6">
-			<div>
-				<h3 className="text-lg font-medium">Profile</h3>
-				<p className="text-sm text-muted-foreground">
-					This is how others will see you on the site.
-				</p>
-			</div>
-			<Form {...form}>
-				<form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
-					<div className="flex items-center gap-4">
-						<div className="relative w-20 h-20 overflow-hidden rounded-full">
-							<img
-								src={user?.imageUrl}
-								alt={user?.fullName || "Profile"}
-								className="object-cover w-full h-full"
-							/>
-						</div>
-						<DialogProfileImage>
-							<Button variant="outline" size="sm">
-								Change avatar
-							</Button>
-						</DialogProfileImage>
-					</div>
-					{error && <div className="text-sm text-red-500">{error}</div>}
-					<div className="grid grid-cols-2 gap-4">
-						<FormField
-							control={form.control}
-							name="firstName"
-							render={({ field }) => (
-								<FormItem>
-									<FormLabel>First Name</FormLabel>
-									<FormControl>
-										<Input type="text" {...field} />
-									</FormControl>
-									<FormMessage />
-								</FormItem>
-							)}
-						/>
-						<FormField
-							control={form.control}
-							name="lastName"
-							render={({ field }) => (
-								<FormItem>
-									<FormLabel>Last Name</FormLabel>
-									<FormControl>
-										<Input type="text" {...field} />
-									</FormControl>
-									<FormMessage />
-								</FormItem>
-							)}
-						/>
-					</div>
-					<Button type="submit" disabled={isLoading}>
-						{isLoading ? "Saving..." : "Save changes"}
-					</Button>
-				</form>
-			</Form>
-		</div>
-	);
+            <div className="flex items-center gap-2">
+              <Button type="submit" disabled={isLoading || !isDirty}>
+                {isLoading ? "Saving..." : "Save changes"}
+              </Button>
+              {isDirty && (
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="icon"
+                  onClick={handleReset}
+                  disabled={isLoading}>
+                  <RotateCcw className="w-4 h-4" />
+                  <span className="sr-only">Reset form</span>
+                </Button>
+              )}
+            </div>
+          </form>
+        </Form>
+      </div>
+    </div>
+  );
 }

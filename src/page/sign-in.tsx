@@ -1,80 +1,14 @@
-"use client";
-
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
-import {
-  Form,
-  FormControl,
-  FormField,
-  FormItem,
-  FormLabel,
-  FormMessage,
-} from "@/components/ui/form";
-import { Input } from "@/components/ui/input";
+import { Form } from "@/components/ui/form";
+import { PasswordField, TextField } from "@/components/ui/form-fields";
+import { useSignInForm } from "@/hooks/use-auth-form";
 import { cn } from "@/lib/utils";
-import { useSignIn } from "@clerk/clerk-react";
-import { zodResolver } from "@hookform/resolvers/zod";
-import { useState } from "react";
-import { useForm } from "react-hook-form";
 import { Link } from "react-router";
-import * as z from "zod";
 
-const signInSchema = z.object({
-  email: z.string().email("Email tidak valid"),
-  password: z.string().min(8, "Password minimal 8 karakter"),
-});
-
-type SignInFormValues = z.infer<typeof signInSchema>;
-
-export default function SignInPage() {
-  const { signIn, isLoaded, setActive } = useSignIn();
-  const [error, setError] = useState("");
-  const [loading, setLoading] = useState(false);
-
-  const form = useForm<SignInFormValues>({
-    resolver: zodResolver(signInSchema),
-    defaultValues: {
-      email: "",
-      password: "",
-    },
-  });
-
-  async function onSubmit(data: SignInFormValues) {
-    setError("");
-    setLoading(true);
-    if (!isLoaded) return;
-    try {
-      const result = await signIn.create({
-        identifier: data.email,
-        password: data.password,
-      });
-      if (result.status === "complete") {
-        await setActive({ session: result.createdSessionId });
-        window.location.href = "/";
-      } else {
-        setError("Authentication failed. Please try again.");
-      }
-    } catch (err: unknown) {
-      const error = err as { errors?: Array<{ message: string }> };
-      setError(error.errors?.[0]?.message || "Incorrect email or password.");
-    } finally {
-      setLoading(false);
-    }
-  }
-
-  async function handleGoogleSignIn() {
-    if (!isLoaded) return;
-    try {
-      await signIn.authenticateWithRedirect({
-        strategy: "oauth_google",
-        redirectUrl: "",
-        redirectUrlComplete: "/",
-      });
-    } catch (error: unknown) {
-      console.error("Google sign in error:", error);
-      setError("Failed to sign in with Google.");
-    }
-  }
+export default function SignIn() {
+  const { form, error, isLoading, onSubmit, handleGoogleSignIn } =
+    useSignInForm();
 
   return (
     <div className="flex items-center justify-center w-full min-h-screen bg-gradient-to-b from-purple-50 via-white to-blue-100">
@@ -93,70 +27,48 @@ export default function SignInPage() {
                         Sign in to your WNS account
                       </p>
                     </div>
+
                     {error && (
                       <div className="text-sm text-center text-red-500">
                         {error}
                       </div>
                     )}
-                    <FormField
+
+                    <TextField
                       control={form.control}
                       name="email"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>Email</FormLabel>
-                          <FormControl>
-                            <Input
-                              placeholder="m@example.com"
-                              type="email"
-                              autoComplete="username"
-                              {...field}
-                            />
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
+                      label="Email"
+                      type="email"
+                      autoComplete="email"
                     />
-                    <FormField
+
+                    <PasswordField
                       control={form.control}
                       name="password"
-                      render={({ field }) => (
-                        <FormItem>
-                          <div className="flex items-center">
-                            <FormLabel>Password</FormLabel>
-                            <Link
-                              to="/forgot-password"
-                              className="ml-auto text-sm underline-offset-2 hover:underline">
-                              Forgot password?
-                            </Link>
-                          </div>
-                          <FormControl>
-                            <Input
-                              type="password"
-                              autoComplete="current-password"
-                              {...field}
-                            />
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
+                      label="Password"
+                      autoComplete="current-password"
                     />
+
                     <Button
                       type="submit"
                       className="w-full transition-all duration-300 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700"
-                      disabled={loading}>
-                      {loading ? "Processing..." : "Sign In"}
+                      disabled={isLoading}>
+                      {isLoading ? "Signing in..." : "Sign in"}
                     </Button>
+
                     <div className="relative text-sm text-center after:absolute after:inset-0 after:top-1/2 after:z-0 after:flex after:items-center after:border-t after:border-border">
                       <span className="relative z-10 px-2 bg-background text-muted-foreground">
                         Or continue with
                       </span>
                     </div>
+
                     <div className="w-full">
                       <Button
                         variant="outline"
                         className="w-full transition-all duration-300 border border-gray-200 hover:bg-gray-50"
                         type="button"
-                        onClick={handleGoogleSignIn}>
+                        onClick={handleGoogleSignIn}
+                        disabled={isLoading}>
                         <svg
                           xmlns="http://www.w3.org/2000/svg"
                           viewBox="0 0 24 24"
@@ -169,11 +81,12 @@ export default function SignInPage() {
                         <span>Sign in with Google</span>
                       </Button>
                     </div>
+
                     <div className="text-sm text-center">
                       Don't have an account?{" "}
                       <Link
                         to="/sign-up"
-                        className="underline underline-offset-4">
+                        className="font-semibold text-blue-600 hover:text-blue-500">
                         Sign up
                       </Link>
                     </div>
