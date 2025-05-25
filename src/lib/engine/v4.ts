@@ -17,13 +17,13 @@ import type {
 
 const MIN_SLOPE = 0.00001;
 
-// ────────────────────────────── Variabel global ───────────────────────────
+// ────────────────────────────── Global Variables ───────────────────────────
 let simulationInterval: NodeJS.Timeout | null = null;
 
-// ─────────────────────────────── Konstanta ────────────────────────────────
+// ─────────────────────────────── Constants ────────────────────────────────
 const SIMULATION_INTERVAL = 1000; // [ms]
 
-// ───────────────────────────── Helper utilitas ────────────────────────────
+// ───────────────────────────── Helper Utilities ────────────────────────────
 const calculateVelocity = (Q: number, D: number): number => {
 	// Q [L/s], D [m] → v [m/s]
 	const area = Math.PI * (D / 100 / 2) ** 2; // [m²]
@@ -210,45 +210,45 @@ const updateValve = (n: ValveNode, netFlow: number): ValveNode =>
 				pressure: Math.max(0, (n.pressure || 0) - (n.lossCoefficient || 0.05)),
 			};
 
-// ──────────────────────────── Satu Step Simulasi ──────────────────────────
+// ──────────────────────────── Single Simulation Step ──────────────────────────
 const simulateStep = (nodes: Node[], edges: Edge[]) => {
-	// 1) Update reservoir & inaktif
+	// 1) Update reservoir & inactive nodes
 	const initNodes = nodes.map((n) => {
 		if (!n.active) return { ...n, flowRate: 0, pressure: 0 };
 		return n.type === "reservoir" ? updateReservoir(n) : n;
 	});
 
-	// 2) Peta node awal
+	// 2) Initial node map
 	const nodeMap = new Map<string, Node>(initNodes.map((n) => [n.id, n]));
 
-	// 3) Pass‑1 edge
+	// 3) Pass-1 edges
 	const passEdges = edges.map((e) => recalculateEdge(e, nodeMap));
 
-	// 4) Perbarui semua pompa
+	// 4) Update all pumps
 	const pumpNodes = initNodes
 		.filter((n) => n.type === "pump")
 		.map((p) => updatePump(p as PumpNode, passEdges, initNodes));
 	const pumpMap = new Map(pumpNodes.map((p) => [p.id, p]));
 
-	// 5) Gabungkan map node → mergedMap
+	// 5) Merge node maps → mergedMap
 	const mergedMap = new Map(nodeMap);
 	for (const [id, pump] of pumpMap) {
 		mergedMap.set(id, pump);
 	}
 
-	// 6) Pass‑2 edge di sekitar pompa
+	// 6) Pass-2 edges around pumps
 	const finalEdges = passEdges.map((e) =>
 		pumpMap.has(e.sourceId) || pumpMap.has(e.targetId)
 			? recalculateEdge(e, mergedMap)
 			: e,
 	);
 
-	// 7) Node dengan pompa ter‑update
+	// 7) Nodes with updated pumps
 	const nodesWithPumps = initNodes.map((n) =>
 		n.type === "pump" ? (pumpMap.get(n.id) ?? n) : n,
 	);
 
-	// 8) Update tank, fitting, valve berdasarkan netFlow menggunakan finalEdges
+	// 8) Update tank, fitting, valve based on netFlow using finalEdges
 	const finalNodes = nodesWithPumps.map((n) => {
 		if (!n.active || n.type === "reservoir") return n;
 
@@ -275,9 +275,9 @@ const simulateStep = (nodes: Node[], edges: Edge[]) => {
 	return { nodes: finalNodes, edges: finalEdges };
 };
 
-// ──────────────────────────── API Store Public ────────────────────────────
+// ──────────────────────────── Public Store API ────────────────────────────
 export const startSimulation = () => {
-	if (simulationInterval) return; // sudah jalan
+	if (simulationInterval) return; // already running
 	useSimulationStore.setState({ running: true, paused: false });
 
 	simulationInterval = setInterval(() => {

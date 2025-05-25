@@ -27,7 +27,7 @@ export const AlertDialogAction = ({
 	trigger,
 	title,
 	description,
-	cancelText = "Batal",
+	cancelText = "Cancel",
 	actionText,
 	onAction,
 	variant = "default",
