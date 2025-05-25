@@ -4,11 +4,13 @@ import { Form } from "@/components/ui/form";
 import { PasswordField, TextField } from "@/components/ui/form-fields";
 import { useSignInForm } from "@/hooks/use-auth-form";
 import { cn } from "@/lib/utils";
+import { useState } from "react";
 import { Link } from "react-router";
 
 export default function SignIn() {
   const { form, error, isLoading, onSubmit, handleGoogleSignIn } =
     useSignInForm();
+  const [showPassword, setShowPassword] = useState(false);
 
   return (
     <div className="flex items-center justify-center w-full min-h-screen bg-gradient-to-b from-purple-50 via-white to-blue-100">
@@ -47,6 +49,8 @@ export default function SignIn() {
                       name="password"
                       label="Password"
                       autoComplete="current-password"
+                      showPassword={showPassword}
+                      onTogglePassword={() => setShowPassword(!showPassword)}
                     />
 
                     <Button
