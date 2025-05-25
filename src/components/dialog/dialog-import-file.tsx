@@ -136,7 +136,7 @@ export function DialogImportFile({
   open,
   onOpenChange,
   allowedFileTypes = [".csv", ".xlsx", ".xls", ".json"],
-  maxFileSize = 10, // 10MB
+  maxFileSize = 10, // [MB]
   maxFiles = 5,
   onImport,
 }: FileImportDialogProps) {

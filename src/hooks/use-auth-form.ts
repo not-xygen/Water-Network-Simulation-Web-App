@@ -1,5 +1,3 @@
-// use-auth-form.ts - Complete fix for Google OAuth issues
-
 import { useToast } from "@/hooks/use-toast";
 import {
   type SignInFormValues,
@@ -16,7 +14,7 @@ import { useForm } from "react-hook-form";
 import { useNavigate } from "react-router";
 
 export function useSignInForm() {
-  const { signIn, isLoaded, setActive } = useSignIn();
+  const { signIn, isLoaded } = useSignIn();
   const [error, setError] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const navigate = useNavigate();
@@ -42,43 +40,24 @@ export function useSignInForm() {
       });
 
       if (result.status === "complete") {
-        await setActive({ session: result.createdSessionId });
         toast({
           title: "Success",
           description: "Successfully signed in!",
         });
         navigate("/");
       } else {
-        const message = "Authentication failed. Please try again.";
-        setError(message);
-        toast({
-          variant: "destructive",
-          title: "Error",
-          description: message,
-        });
+        setError("Authentication failed. Please try again.");
       }
     } catch (err: unknown) {
       const error = err as { errors?: Array<{ message: string }> };
-      const errorMessage = error.errors?.[0]?.message || "";
-
-      if (errorMessage.toLowerCase().includes("verification strategy")) {
-        const message =
-          "This account is registered with Google. Please sign in with Google.";
-        setError(message);
-        toast({
-          variant: "destructive",
-          title: "Error",
-          description: message,
-        });
-      } else {
-        const message = errorMessage || "Invalid email or password.";
-        setError(message);
-        toast({
-          variant: "destructive",
-          title: "Error",
-          description: message,
-        });
-      }
+      const message =
+        error.errors?.[0]?.message || "Invalid email or password.";
+      setError(message);
+      toast({
+        variant: "destructive",
+        title: "Error",
+        description: message,
+      });
     } finally {
       setIsLoading(false);
     }
@@ -91,11 +70,6 @@ export function useSignInForm() {
       setIsLoading(true);
       setError("");
 
-      console.log("Starting Google OAuth sign in with:", {
-        origin: window.location.origin,
-        currentPath: window.location.pathname,
-      });
-
       await signIn.authenticateWithRedirect({
         strategy: "oauth_google",
         redirectUrl: `${window.location.origin}/sso-callback`,
@@ -103,44 +77,15 @@ export function useSignInForm() {
       });
     } catch (error: unknown) {
       console.error("Google sign in error:", error);
-
-      const err = error as {
-        errors?: Array<{ message: string; code?: string }>;
-      };
-      let message = "Failed to sign in with Google. Please try again.";
-
-      if (err.errors?.[0]) {
-        const errorCode = err.errors[0].code;
-        const errorMessage = err.errors[0].message;
-
-        console.log("OAuth Error Details:", { errorCode, errorMessage });
-
-        switch (errorCode) {
-          case "oauth_access_denied":
-            message = "Google sign-in was cancelled.";
-            break;
-          case "oauth_callback_url_mismatch":
-            message =
-              "OAuth redirect URL mismatch. Check your Clerk dashboard settings.";
-            break;
-          case "oauth_application_suspended":
-            message = "OAuth application is suspended. Contact support.";
-            break;
-          case "oauth_email_domain_reserved_by_saml":
-            message =
-              "This email domain uses SAML. Contact your administrator.";
-            break;
-          default:
-            message = errorMessage || message;
-        }
-      }
-
+      const err = error as { errors?: Array<{ message: string }> };
+      const message =
+        err.errors?.[0]?.message || "Failed to sign in with Google.";
+      setError(message);
       toast({
         variant: "destructive",
-        title: "Google Sign-In Error",
+        title: "Error",
         description: message,
       });
-      setError(message);
     } finally {
       setIsLoading(false);
     }
@@ -156,7 +101,7 @@ export function useSignInForm() {
 }
 
 export function useSignUpForm() {
-  const { isLoaded, signUp, setActive } = useSignUp();
+  const { signUp, isLoaded } = useSignUp();
   const navigate = useNavigate();
   const [error, setError] = useState("");
   const [isLoading, setIsLoading] = useState(false);
@@ -196,7 +141,6 @@ export function useSignUpForm() {
       });
 
       if (result.status === "complete") {
-        await setActive({ session: result.createdSessionId });
         toast({
           title: "Success",
           description: "Successfully signed up!",
@@ -237,20 +181,13 @@ export function useSignUpForm() {
       });
 
       if (result.status === "complete") {
-        await setActive({ session: result.createdSessionId });
         toast({
           title: "Success",
           description: "Email verified successfully!",
         });
         navigate("/");
       } else {
-        const message = "Verification failed. Please try again.";
-        setError(message);
-        toast({
-          variant: "destructive",
-          title: "Error",
-          description: message,
-        });
+        setError("Verification failed. Please try again.");
       }
     } catch (err: unknown) {
       const error = err as { errors?: Array<{ message: string }> };
@@ -300,11 +237,6 @@ export function useSignUpForm() {
       setIsLoading(true);
       setError("");
 
-      console.log("Starting Google OAuth sign up with:", {
-        origin: window.location.origin,
-        currentPath: window.location.pathname,
-      });
-
       await signUp.authenticateWithRedirect({
         strategy: "oauth_google",
         redirectUrl: `${window.location.origin}/sso-callback`,
@@ -312,44 +244,15 @@ export function useSignUpForm() {
       });
     } catch (error: unknown) {
       console.error("Google sign up error:", error);
-
-      const err = error as {
-        errors?: Array<{ message: string; code?: string }>;
-      };
-      let message = "Failed to sign up with Google. Please try again.";
-
-      if (err.errors?.[0]) {
-        const errorCode = err.errors[0].code;
-        const errorMessage = err.errors[0].message;
-
-        console.log("OAuth Signup Error:", { errorCode, errorMessage });
-
-        switch (errorCode) {
-          case "oauth_access_denied":
-            message = "Google sign-up was cancelled.";
-            break;
-          case "oauth_callback_url_mismatch":
-            message =
-              "OAuth redirect URL mismatch. Check your Clerk dashboard.";
-            break;
-          case "oauth_email_domain_reserved_by_saml":
-            message = "This email domain uses SAML authentication.";
-            break;
-          case "identifier_already_exists":
-            message =
-              "An account with this email already exists. Try signing in instead.";
-            break;
-          default:
-            message = errorMessage || message;
-        }
-      }
-
+      const err = error as { errors?: Array<{ message: string }> };
+      const message =
+        err.errors?.[0]?.message || "Failed to sign up with Google.";
+      setError(message);
       toast({
         variant: "destructive",
-        title: "Google Sign-Up Error",
+        title: "Error",
         description: message,
       });
-      setError(message);
     } finally {
       setIsLoading(false);
     }

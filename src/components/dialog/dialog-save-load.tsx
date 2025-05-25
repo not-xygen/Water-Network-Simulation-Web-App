@@ -149,15 +149,12 @@ export function DialogSaveLoad({
         const screenshot = await captureBoardAsBlob();
         const saveData = prepareSaveData(saveName, screenshot);
 
-        // Check if this is an overwrite (selectedSlot is an existing save ID)
         const existingSave = saves.find((save) => save.id === selectedSlot);
         let saved: SimulationSave | null;
 
         if (existingSave) {
-          // Update existing save
           saved = await updateSimulation(existingSave.id, saveData);
         } else {
-          // Create new save
           saved = await saveSimulation(saveData);
         }
 
