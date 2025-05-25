@@ -1,5 +1,5 @@
 import { formatElapsedTime } from "@/lib/utils";
-import { ActionAlertDialog } from "../action-alert-dialog";
+import { AlertDialogAction } from "../alert-dialog-action";
 import { Button } from "../ui/button";
 import { Separator } from "../ui/separator";
 
@@ -58,7 +58,7 @@ export const SimulationControls = ({
 							Continue Simulation
 						</Button>
 
-						<ActionAlertDialog
+						<AlertDialogAction
 							trigger={
 								<Button className="w-full" variant="destructive">
 									Reset Simulation

@@ -1,7 +1,7 @@
 /* eslint-disable no-unused-vars */
 import { PIXEL_TO_CM } from "@/constant/globals";
 import type { Edge } from "@/types/node-edge";
-import { ActionAlertDialog } from "../action-alert-dialog";
+import { AlertDialogAction } from "../alert-dialog-action";
 import { Button } from "../ui/button";
 import { Separator } from "../ui/separator";
 import {
@@ -81,7 +81,7 @@ export const EdgeProperties = ({
 			</div>
 
 			{!isSimulation && (
-				<ActionAlertDialog
+				<AlertDialogAction
 					trigger={
 						<Button variant="destructive" className="w-full">
 							Delete Edge
