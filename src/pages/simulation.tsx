@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 
-import { Board } from "@/components/board/board";
+import { Board } from "@/components/board/v1/board";
 import { DockNodeTools } from "@/components/dock/dock-node-tools";
 import { SidebarLeft } from "@/components/sidebar/sidebar-left";
 import { SidebarRight } from "@/components/sidebar/sidebar-right";

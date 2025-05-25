@@ -5,6 +5,25 @@ import type { Node } from "@/types/node-edge";
 import { useCallback, useRef } from "react";
 import type React from "react";
 
+type UseBoardHandlerProps = {
+  draggedNode: string | null;
+  setDraggedNode: (id: string | null) => void;
+  isDraggingBoardRef: React.MutableRefObject<boolean>;
+  lastMousePosRef: React.MutableRefObject<{ x: number; y: number } | null>;
+  isSpacePressed: boolean;
+  selectionStart: { x: number; y: number } | null;
+  setSelectionStart: (pos: { x: number; y: number } | null) => void;
+  selectionEnd: { x: number; y: number } | null;
+  setSelectionEnd: (pos: { x: number; y: number } | null) => void;
+  setConnecting: React.Dispatch<
+    React.SetStateAction<{
+      sourceId: string;
+      sourcePosition: "left" | "right" | "top" | "bottom";
+    } | null>
+  >;
+  setMousePos: (value: { x: number; y: number } | null) => void;
+};
+
 export const useBoardHandler = ({
   draggedNode,
   setDraggedNode,
@@ -15,17 +34,9 @@ export const useBoardHandler = ({
   setSelectionStart,
   selectionEnd,
   setSelectionEnd,
-}: {
-  draggedNode: string | null;
-  setDraggedNode: (id: string | null) => void;
-  isDraggingBoardRef: React.MutableRefObject<boolean>;
-  lastMousePosRef: React.MutableRefObject<{ x: number; y: number } | null>;
-  isSpacePressed: boolean;
-  selectionStart: { x: number; y: number } | null;
-  setSelectionStart: (pos: { x: number; y: number } | null) => void;
-  selectionEnd: { x: number; y: number } | null;
-  setSelectionEnd: (pos: { x: number; y: number } | null) => void;
-}) => {
+  setConnecting,
+  setMousePos,
+}: UseBoardHandlerProps) => {
   const { zoom, zoomIn, zoomOut, offset, setOffset } = useGlobalStore();
 
   const {
@@ -104,6 +115,9 @@ export const useBoardHandler = ({
         setDraggedNode(null);
       }
 
+      if (typeof setConnecting === "function") setConnecting(null);
+      if (typeof setMousePos === "function") setMousePos(null);
+
       if (selectionStart && selectionEnd) {
         const isNodeInSelectionBox = (
           node: Node,
@@ -171,6 +185,8 @@ export const useBoardHandler = ({
       zoom,
       offset,
       selectedNodes,
+      setConnecting,
+      setMousePos,
     ],
   );
 

@@ -2,7 +2,8 @@ import { useBoardEvents } from "@/hooks/board/use-board-events";
 import { useHandlePosition } from "@/hooks/use-position";
 import useNodeEdgeStore from "@/store/node-edge";
 import type { Edge } from "@/types/node-edge";
-import { NodeItem } from "../node/node-item";
+import type { MouseEvent } from "react";
+import NodeItem from "../../node/node-item";
 import { BoardCanvas } from "./board-canvas";
 import { BoardGrid } from "./board-grid";
 
@@ -83,13 +84,21 @@ export const Board = ({ isSpacePressed }: BoardProps) => {
 							zoom={zoom}
 							isSelected={selectedNodes.some((n) => n.id === node.id)}
 							isDragged={draggedNode === node.id}
-							onMouseDown={(e) => handleNodeMouseDown(e, node.id)}
-							onMouseUp={handleBoardMouseUp}
-							onStartConnect={(e, pos) =>
-								handleConnectionStart(e, node.id, pos)
+							onMouseDown={(e: React.MouseEvent) =>
+								handleNodeMouseDown(e, node.id)
 							}
-							onEndConnect={(e, pos) => handleConnectionEnd(e, node.id, pos)}
-							onRotateStart={(e) => handleNodeStartRotate(e, node.id)}
+							onMouseUp={handleBoardMouseUp}
+							onStartConnect={(
+								e: React.MouseEvent,
+								pos: "left" | "right" | "top" | "bottom",
+							) => handleConnectionStart(e, node.id, pos)}
+							onEndConnect={(
+								e: MouseEvent,
+								pos: "left" | "right" | "top" | "bottom",
+							) => handleConnectionEnd(e, node.id, pos)}
+							onRotateStart={(e: React.MouseEvent) =>
+								handleNodeStartRotate(e, node.id)
+							}
 							onRotateEnd={handleBoardMouseUp}
 						/>
 					</div>
@@ -98,7 +107,7 @@ export const Board = ({ isSpacePressed }: BoardProps) => {
 
 			{selectionStart && selectionEnd && (
 				<div
-					className="absolute border-2 border-primary bg-primary/10 pointer-events-none"
+					className="absolute border-2 pointer-events-none border-primary bg-primary/10"
 					style={{
 						left: Math.min(selectionStart.x, selectionEnd.x),
 						top: Math.min(selectionStart.y, selectionEnd.y),

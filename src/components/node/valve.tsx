@@ -31,7 +31,8 @@ export const ValveNode = ({
         <img
           src="/src/assets/valve.svg"
           alt="Valve"
-          className="w-8 h-8 select-none"
+          className="w-8 h-8 pointer-events-none select-none"
+          draggable={false}
         />
       </div>
       <ConnectionHandles

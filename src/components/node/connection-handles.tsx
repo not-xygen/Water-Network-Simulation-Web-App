@@ -23,25 +23,25 @@ export const ConnectionHandles = React.memo(function ConnectionHandles({
   const handleProps = {
     left: {
       className:
-        "absolute left-0 w-3 h-3 bg-blue-200 border border-blue-400 rounded-full top-1/2 cursor-crosshair",
+        "absolute left-0 w-4 h-4 bg-blue-200 border border-blue-400 rounded-full top-1/2 cursor-crosshair z-[70]",
       style: { transform: "translate(-50%, -50%)" },
       dataPosition: "left",
     },
     right: {
       className:
-        "absolute right-0 w-3 h-3 bg-blue-200 border border-blue-400 rounded-full top-1/2 cursor-crosshair",
+        "absolute right-0 w-4 h-4 bg-blue-200 border border-blue-400 rounded-full top-1/2 cursor-crosshair z-[70]",
       style: { transform: "translate(50%, -50%)" },
       dataPosition: "right",
     },
     top: {
       className:
-        "absolute top-0 w-3 h-3 bg-blue-200 border border-blue-400 rounded-full left-1/2 cursor-crosshair",
+        "absolute top-0 w-4 h-4 bg-blue-200 border border-blue-400 rounded-full left-1/2 cursor-crosshair z-[70]",
       style: { transform: "translate(-50%, -50%)" },
       dataPosition: "top",
     },
     bottom: {
       className:
-        "absolute bottom-0 w-3 h-3 bg-blue-200 border border-blue-400 rounded-full left-1/2 cursor-crosshair",
+        "absolute bottom-0 w-4 h-4 bg-blue-200 border border-blue-400 rounded-full left-1/2 cursor-crosshair z-[70]",
       style: { transform: "translate(-50%, 50%)" },
       dataPosition: "bottom",
     },
@@ -52,10 +52,16 @@ export const ConnectionHandles = React.memo(function ConnectionHandles({
       {positions.map((position) => (
         <div
           key={position}
-          className={handleProps[position].className}
+          className={`${handleProps[position].className} select-none`}
           style={handleProps[position].style}
-          onMouseDown={(e) => onStartConnect(e, position)}
-          onMouseUp={(e) => onEndConnect(e, position)}
+          onMouseDown={(e) => {
+            e.stopPropagation();
+            onStartConnect(e, position);
+          }}
+          onMouseUp={(e) => {
+            e.stopPropagation();
+            onEndConnect(e, position);
+          }}
           data-handle
           data-node-id={nodeId}
           data-position={handleProps[position].dataPosition}

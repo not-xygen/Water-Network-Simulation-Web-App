@@ -57,7 +57,8 @@ export function DialogSaveLoad({
     prepareSaveData,
   } = useSimulationSave();
 
-  const { setSelectedNodes, setSelectedEdges } = useNodeEdgeStore();
+  const { setSelectedNodes, setSelectedEdges, nodes, edges } =
+    useNodeEdgeStore();
 
   React.useEffect(() => {
     if (open) {
@@ -94,6 +95,15 @@ export function DialogSaveLoad({
 
   const handleSave = async () => {
     if (selectedSlot && saveName.trim()) {
+      if (nodes.length === 0 && edges.length === 0) {
+        toast({
+          title: "Cannot save",
+          description: "No nodes or edges to save",
+          variant: "destructive",
+        });
+        return;
+      }
+
       try {
         const saveData = prepareSaveData(
           saveName,
@@ -185,8 +195,8 @@ export function DialogSaveLoad({
     return (
       <Card
         key={slotNumber}
-        className={`cursor-pointer transition-all hover:shadow-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary ${
-          isSelected ? "ring-2 ring-inset ring-primary" : ""
+        className={`cursor-pointer transition-all hover:shadow-md focus-visible:outline-none ${
+          isSelected ? "" : ""
         } ${isEmpty ? "border-dashed" : ""}`}
         onClick={() => {
           if (isLoadMode && save) {
@@ -282,7 +292,7 @@ export function DialogSaveLoad({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-4xl max-h-[80vh] overflow-hidden">
+      <DialogContent className="max-w-4xl max-h-[80vh] overflow-hidden focus-visible:outline-none focus-visible:ring-0 focus-visible:ring-transparent">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2 text-xl font-semibold">
             <Save className="w-5 h-5" />
@@ -302,7 +312,9 @@ export function DialogSaveLoad({
             <TabsTrigger value="load">Load Simulation</TabsTrigger>
           </TabsList>
 
-          <TabsContent value="save" className="space-y-4">
+          <TabsContent
+            value="save"
+            className="space-y-4 focus-visible:outline-none focus-visible:ring-0 focus-visible:ring-transparent">
             <div className="space-y-2">
               <Label htmlFor="save-name">Save Name</Label>
               <Input
@@ -349,7 +361,12 @@ export function DialogSaveLoad({
                 </Button>
                 <Button
                   onClick={handleSave}
-                  disabled={!selectedSlot || !saveName.trim() || loading}>
+                  disabled={
+                    !selectedSlot ||
+                    !saveName.trim() ||
+                    loading ||
+                    (nodes.length === 0 && edges.length === 0)
+                  }>
                   <Save className="w-4 h-4 mr-2" />
                   {loading ? "Saving..." : "Save Simulation"}
                 </Button>
@@ -357,7 +374,9 @@ export function DialogSaveLoad({
             </div>
           </TabsContent>
 
-          <TabsContent value="load" className="space-y-4">
+          <TabsContent
+            value="load"
+            className="space-y-4 focus-visible:outline-none focus-visible:ring-0 focus-visible:ring-transparent">
             <div className="relative">
               <Search className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
               <Input

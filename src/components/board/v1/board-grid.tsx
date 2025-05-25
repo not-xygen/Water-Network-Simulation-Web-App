@@ -16,8 +16,10 @@ export const BoardGrid = ({
       className="absolute inset-0 board-background z-[-10]"
       style={{
         backgroundSize: `${30 * (zoom / 100)}px ${30 * (zoom / 100)}px`,
-        backgroundImage:
-          "radial-gradient(circle, #b8b8b8bf 1px, transparent 1px)",
+        backgroundImage: `
+          linear-gradient(to right, #b8b8b880 1px, transparent 1px),
+          linear-gradient(to bottom, #b8b8b880 1px, transparent 1px)
+        `,
         backgroundPosition: `${offset.x % (30 * (zoom / 100))}px ${
           offset.y % (30 * (zoom / 100))
         }px`,

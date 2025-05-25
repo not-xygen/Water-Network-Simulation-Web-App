@@ -31,7 +31,8 @@ export const PumpNode = ({
         <img
           src="/src/assets/pump.svg"
           alt="Pump"
-          className="w-8 h-8 select-none"
+          className="w-8 h-8 pointer-events-none select-none"
+          draggable={false}
         />
       </div>
       <ConnectionHandles

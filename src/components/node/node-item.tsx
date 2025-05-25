@@ -1,6 +1,7 @@
-/* eslint-disable no-unused-vars */
 import { cn } from "@/lib/utils";
 import type { Node } from "@/types/node-edge";
+/* eslint-disable no-unused-vars */
+import React from "react";
 import { FittingNode } from "./fitting";
 import { PumpNode } from "./pump";
 import { ReservoirNode } from "./reservoir";
@@ -27,7 +28,7 @@ interface NodeItemProps {
   onRotateEnd: (e: React.MouseEvent) => void;
 }
 
-export const NodeItem = ({
+const NodeItem: React.FC<NodeItemProps> = ({
   node,
   isSelected,
   zoom,
@@ -38,7 +39,7 @@ export const NodeItem = ({
   onEndConnect,
   onRotateStart,
   onRotateEnd,
-}: NodeItemProps) => {
+}) => {
   const renderNodeShape = (node: Node) => {
     switch (node.type) {
       case "reservoir":
@@ -96,10 +97,13 @@ export const NodeItem = ({
   return (
     <div
       className={cn(
-        "relative w-16 h-16 group",
+        "relative w-16 h-16 group select-none",
         isDragged && "pointer-events-none",
       )}
-      onMouseDown={onMouseDown}
+      onMouseDown={(e) => {
+        e.stopPropagation();
+        onMouseDown(e);
+      }}
       onMouseUp={onMouseUp}
       style={{
         transform: `scale(${zoom / 100}) rotate(${node.rotation ?? 0}deg)`,
@@ -148,3 +152,5 @@ export const NodeItem = ({
     </div>
   );
 };
+
+export default React.memo(NodeItem);

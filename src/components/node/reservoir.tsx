@@ -31,7 +31,8 @@ export const ReservoirNode = ({
         <img
           src="/src/assets/reservoir.svg"
           alt="Reservoir"
-          className="w-8 h-8 select-none"
+          className="w-8 h-8 pointer-events-none select-none"
+          draggable={false}
         />
       </div>
       <ConnectionHandles

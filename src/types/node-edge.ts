@@ -12,6 +12,7 @@ export type NodeBase = {
   pressure: number;
   active: boolean;
   note?: string;
+  path?: Path2D;
 };
 
 export type FittingNode = NodeBase & {
@@ -80,4 +81,5 @@ export type Edge = {
   roughness: number;
   flowRate: number;
   velocity: number;
+  path?: Path2D;
 };
