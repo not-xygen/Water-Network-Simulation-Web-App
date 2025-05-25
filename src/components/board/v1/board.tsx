@@ -8,6 +8,7 @@ import type { MouseEvent } from "react";
 import NodeItem from "../../node/node-item";
 import { BoardCanvas } from "./board-canvas";
 import { BoardGrid } from "./board-grid";
+import { Minimap } from "./minimap";
 
 type BoardProps = {
   isSpacePressed: boolean;
@@ -162,6 +163,8 @@ export const Board = ({ isSpacePressed }: BoardProps) => {
           }}
         />
       )}
+
+      <Minimap zoom={zoom} offset={offset} />
     </div>
   );
 };
