@@ -1,3 +1,4 @@
+/* eslint-disable no-unused-vars */
 import { Button } from "@/components/ui/button";
 import {
 	Dialog,
@@ -17,6 +18,115 @@ import { Progress } from "./ui/progress";
 interface DialogProfileImageProps {
 	children: React.ReactNode;
 }
+
+interface ImageDropZoneProps {
+	isDragging: boolean;
+	previewImage: string | null;
+	onDragEnter: (e: React.DragEvent) => void;
+	onDragLeave: (e: React.DragEvent) => void;
+	onDragOver: (e: React.DragEvent) => void;
+	onDrop: (e: React.DragEvent) => void;
+	onClick: () => void;
+	fileInputRef: React.RefObject<HTMLInputElement>;
+	onFileInputChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
+}
+
+const ImageDropZone = ({
+	isDragging,
+	previewImage,
+	onDragEnter,
+	onDragLeave,
+	onDragOver,
+	onDrop,
+	onClick,
+	fileInputRef,
+	onFileInputChange,
+}: ImageDropZoneProps) => (
+	<div
+		className={`w-full border-2 border-dashed rounded-lg p-6 text-center cursor-pointer transition-colors
+      ${isDragging ? "border-primary bg-primary/5" : "border-gray-300 hover:border-primary/50"}`}
+		onDragEnter={onDragEnter}
+		onDragLeave={onDragLeave}
+		onDragOver={onDragOver}
+		onDrop={onDrop}
+		onClick={onClick}
+		onKeyDown={(e) => {
+			if (e.key === "Enter" || e.key === " ") {
+				onClick();
+			}
+		}}
+	>
+		<input
+			type="file"
+			ref={fileInputRef}
+			className="hidden"
+			accept="image/*"
+			onChange={onFileInputChange}
+		/>
+		{previewImage ? (
+			<div className="flex flex-col items-center gap-4">
+				<img
+					src={previewImage}
+					alt="Preview"
+					className="object-cover w-32 h-32 rounded-full"
+				/>
+				<p className="text-sm text-muted-foreground">
+					Click or drag a new photo to replace
+				</p>
+			</div>
+		) : (
+			<div className="flex flex-col items-center gap-2">
+				<Upload className="w-8 h-8 text-gray-400" />
+				<p className="text-sm font-medium">
+					{isDragging ? "Drop photo here" : "Click or drag photo here"}
+				</p>
+				<p className="text-xs text-muted-foreground">Maximum file size 5MB</p>
+			</div>
+		)}
+	</div>
+);
+
+interface DialogFooterProps {
+	isLoading: boolean;
+	progress: number;
+	hasExistingImage: boolean;
+	hasSelectedFile: boolean;
+	onDelete: () => void;
+	onSave: () => void;
+}
+
+const DialogFooterContent = ({
+	isLoading,
+	progress,
+	hasExistingImage,
+	hasSelectedFile,
+	onDelete,
+	onSave,
+}: DialogFooterProps) => {
+	if (isLoading) {
+		return (
+			<div className="flex flex-col items-center justify-center w-full gap-2">
+				<Progress value={progress} className="w-full" />
+				<p className="text-sm text-muted-foreground">Processing...</p>
+			</div>
+		);
+	}
+
+	return (
+		<>
+			<Button
+				variant="destructive"
+				onClick={onDelete}
+				disabled={!hasExistingImage}
+			>
+				Delete Photo
+			</Button>
+			<Button onClick={onSave} disabled={!hasSelectedFile}>
+				Save Changes
+			</Button>
+		</>
+	);
+};
 
 export function DialogProfileImage({ children }: DialogProfileImageProps) {
 	const { user } = useUser();
@@ -164,76 +274,28 @@ export function DialogProfileImage({ children }: DialogProfileImageProps) {
 					</DialogDescription>
 				</DialogHeader>
 				<div className="flex flex-col items-center justify-center gap-4 py-4">
-					<div
-						className={`w-full border-2 border-dashed rounded-lg p-6 text-center cursor-pointer transition-colors
-              ${
-								isDragging
-									? "border-primary bg-primary/5"
-									: "border-gray-300 hover:border-primary/50"
-							}`}
+					<ImageDropZone
+						isDragging={isDragging}
+						previewImage={previewImage}
 						onDragEnter={handleDragEnter}
 						onDragLeave={handleDragLeave}
 						onDragOver={handleDragOver}
 						onDrop={handleDrop}
 						onClick={() => fileInputRef.current?.click()}
-						onKeyDown={(e) => {
-							if (e.key === "Enter" || e.key === " ") {
-								fileInputRef.current?.click();
-							}
-						}}
-					>
-						<input
-							type="file"
-							ref={fileInputRef}
-							className="hidden"
-							accept="image/*"
-							onChange={handleFileInputChange}
-						/>
-						{previewImage ? (
-							<div className="flex flex-col items-center gap-4">
-								<img
-									src={previewImage}
-									alt="Preview"
-									className="object-cover w-32 h-32 rounded-full"
-								/>
-								<p className="text-sm text-muted-foreground">
-									Click or drag a new photo to replace
-								</p>
-							</div>
-						) : (
-							<div className="flex flex-col items-center gap-2">
-								<Upload className="w-8 h-8 text-gray-400" />
-								<p className="text-sm font-medium">
-									{isDragging ? "Drop photo here" : "Click or drag photo here"}
-								</p>
-								<p className="text-xs text-muted-foreground">
-									Maximum file size 5MB
-								</p>
-							</div>
-						)}
-					</div>
+						fileInputRef={fileInputRef}
+						onFileInputChange={handleFileInputChange}
+					/>
 				</div>
 
 				<DialogFooter className="flex justify-between">
-					{isLoading ? (
-						<div className="flex flex-col items-center justify-center w-full gap-2">
-							<Progress value={progress} className="w-full" />
-							<p className="text-sm text-muted-foreground">Processing...</p>
-						</div>
-					) : (
-						<>
-							<Button
-								variant="destructive"
-								onClick={handleDelete}
-								disabled={!user?.imageUrl}
-							>
-								Delete Photo
-							</Button>
-							<Button onClick={handleSave} disabled={!selectedFile}>
-								Save Changes
-							</Button>
-						</>
-					)}
+					<DialogFooterContent
+						isLoading={isLoading}
+						progress={progress}
+						hasExistingImage={!!user?.imageUrl}
+						hasSelectedFile={!!selectedFile}
+						onDelete={handleDelete}
+						onSave={handleSave}
+					/>
 				</DialogFooter>
 			</DialogContent>
 		</Dialog>

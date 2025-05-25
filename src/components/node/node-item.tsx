@@ -81,6 +81,8 @@ export const NodeItem = ({
         return (
           <FittingNode
             nodeId={node.id}
+            nodeSubType={node.subtype}
+            flowRate={node.flowRate}
             isSelected={isSelected}
             onStartConnect={onStartConnect}
             onEndConnect={onEndConnect}
@@ -93,7 +95,10 @@ export const NodeItem = ({
 
   return (
     <div
-      className={cn("relative w-16 h-16", isDragged && "pointer-events-none")}
+      className={cn(
+        "relative w-16 h-16 group",
+        isDragged && "pointer-events-none",
+      )}
       onMouseDown={onMouseDown}
       onMouseUp={onMouseUp}
       style={{
@@ -106,38 +111,40 @@ export const NodeItem = ({
         )}>
         {renderNodeShape(node)}
       </div>
-      {["topLeft", "topRight", "bottomLeft", "bottomRight"].map((pos) => {
-        const styleMap: Record<string, React.CSSProperties> = {
-          topLeft: {
-            top: -8,
-            left: -8,
-            transform: `scale(${100 / zoom})`,
-          },
-          topRight: {
-            top: -8,
-            right: -8,
-            transform: `scale(${100 / zoom})`,
-          },
-          bottomLeft: {
-            bottom: -8,
-            left: -8,
-            transform: `scale(${100 / zoom})`,
-          },
-          bottomRight: {
-            bottom: -8,
-            right: -8,
-            transform: `scale(${100 / zoom})`,
-          },
-        };
-        return (
-          <RotateHandle
-            key={pos}
-            onRotateStart={onRotateStart}
-            onRotateEnd={onRotateEnd}
-            style={styleMap[pos]}
-          />
-        );
-      })}
+      <div className="absolute inset-0 transition-opacity opacity-0 group-hover:opacity-100">
+        {["topLeft", "topRight", "bottomLeft", "bottomRight"].map((pos) => {
+          const styleMap: Record<string, React.CSSProperties> = {
+            topLeft: {
+              top: -8,
+              left: -8,
+              transform: `scale(${100 / zoom})`,
+            },
+            topRight: {
+              top: -8,
+              right: -8,
+              transform: `scale(${100 / zoom})`,
+            },
+            bottomLeft: {
+              bottom: -8,
+              left: -8,
+              transform: `scale(${100 / zoom})`,
+            },
+            bottomRight: {
+              bottom: -8,
+              right: -8,
+              transform: `scale(${100 / zoom})`,
+            },
+          };
+          return (
+            <RotateHandle
+              key={pos}
+              onRotateStart={onRotateStart}
+              onRotateEnd={onRotateEnd}
+              style={styleMap[pos]}
+            />
+          );
+        })}
+      </div>
     </div>
   );
 };

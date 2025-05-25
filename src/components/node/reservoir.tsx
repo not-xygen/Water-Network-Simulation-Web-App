@@ -1,6 +1,5 @@
 /* eslint-disable no-unused-vars */
 import { cn } from "@/lib/utils";
-import { Droplet } from "lucide-react";
 import { ConnectionHandles } from "./connection-handles";
 
 interface ReservoirNodeProps {
@@ -29,12 +28,17 @@ export const ReservoirNode = ({
           "flex items-center justify-center w-16 h-16 font-bold text-black bg-blue-500 rounded-full",
           isSelected && "ring-2 ring-blue-500",
         )}>
-        <Droplet />
+        <img
+          src="/src/assets/reservoir.svg"
+          alt="Reservoir"
+          className="w-8 h-8 select-none"
+        />
       </div>
       <ConnectionHandles
         nodeId={nodeId}
         onStartConnect={onStartConnect}
         onEndConnect={onEndConnect}
+        positions={["bottom"]}
       />
     </div>
   );

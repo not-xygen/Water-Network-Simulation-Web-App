@@ -12,7 +12,6 @@ export const createNode = (
   return {
     id: `${type.charAt(0)}-${nanoid(12)}`,
     type,
-    subtype,
     label,
     position: {
       x: -offset.x / (zoom / 100),
@@ -21,6 +20,7 @@ export const createNode = (
     rotation: 0,
     elevation: 1,
     ...(type === "fitting" && {
+      subtype,
       demand: 0,
       diameter: 2,
       inletPressure: 0,

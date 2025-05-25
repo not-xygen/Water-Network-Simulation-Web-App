@@ -1,296 +1,359 @@
+/* eslint-disable no-unused-vars */
 import { Button } from "@/components/ui/button";
 import {
-	Dialog,
-	DialogContent,
-	DialogDescription,
-	DialogFooter,
-	DialogHeader,
-	DialogTitle,
-	DialogTrigger,
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
 } from "@/components/ui/dialog";
-import { Progress } from "@/components/ui/progress";
 import { toast } from "@/hooks/use-toast";
-import { FileIcon, UploadCloudIcon, XIcon } from "lucide-react";
-/* eslint-disable no-unused-vars */
+import { UploadCloudIcon } from "lucide-react";
 import * as React from "react";
 
 interface FileImportDialogProps {
-	allowedFileTypes?: string[];
-	maxFileSize?: number; // in MB
-	maxFiles?: number;
-	onImport?: (files: File[]) => void;
-	children?: React.ReactNode;
+  allowedFileTypes?: string[];
+  maxFileSize?: number;
+  maxFiles?: number;
+  onImport?: (files: File[]) => void;
+  children?: React.ReactNode;
 }
 
+interface FileDropZoneProps {
+  isDragging: boolean;
+  onDragEnter: (e: React.DragEvent<HTMLDivElement>) => void;
+  onDragLeave: (e: React.DragEvent<HTMLDivElement>) => void;
+  onDragOver: (e: React.DragEvent<HTMLDivElement>) => void;
+  onDrop: (e: React.DragEvent<HTMLDivElement>) => void;
+  onClick: () => void;
+  maxFiles: number;
+  maxFileSize: number;
+  fileInputRef: React.RefObject<HTMLInputElement>;
+  allowedFileTypes: string[];
+  onFileInputChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
+}
+
+const FileDropZone = ({
+  isDragging,
+  onDragEnter,
+  onDragLeave,
+  onDragOver,
+  onDrop,
+  onClick,
+  maxFiles,
+  maxFileSize,
+  fileInputRef,
+  allowedFileTypes,
+  onFileInputChange,
+}: FileDropZoneProps) => (
+  <div
+    className={`mt-4 flex min-h-[200px] cursor-pointer flex-col items-center justify-center rounded-lg border-2 border-dashed p-6 transition-colors ${
+      isDragging ? "border-primary bg-primary/10" : "border-border"
+    }`}
+    onDragEnter={onDragEnter}
+    onDragLeave={onDragLeave}
+    onDragOver={onDragOver}
+    onDrop={onDrop}
+    onClick={onClick}
+    onKeyDown={(e) => {
+      if (e.key === "Enter" || e.key === " ") {
+        onClick();
+      }
+    }}>
+    <input
+      type="file"
+      ref={fileInputRef}
+      className="hidden"
+      multiple
+      onChange={onFileInputChange}
+      accept={allowedFileTypes.join(",")}
+    />
+    <UploadCloudIcon className="w-12 h-12 mb-4 text-muted-foreground" />
+    <p className="mb-2 text-sm font-medium">
+      <span className="font-semibold text-primary">Click to upload</span> or
+      drag and drop
+    </p>
+    <p className="text-xs text-muted-foreground">
+      Max {maxFiles} files, up to {maxFileSize}MB each
+    </p>
+  </div>
+);
+
+interface FileListProps {
+  files: File[];
+  onRemoveFile: (index: number) => void;
+  formatFileSize: (bytes: number) => string;
+}
+
+const FileList = ({ files, onRemoveFile, formatFileSize }: FileListProps) => (
+  <div className="mt-4 space-y-2">
+    {files.map((file, index) => (
+      <div
+        key={`${file.name}-${index}`}
+        className="flex items-center justify-between p-2 border rounded-lg">
+        <div className="flex items-center space-x-2">
+          <span className="text-sm font-medium">{file.name}</span>
+          <span className="text-xs text-muted-foreground">
+            ({formatFileSize(file.size)})
+          </span>
+        </div>
+        <Button
+          variant="ghost"
+          size="sm"
+          onClick={() => onRemoveFile(index)}
+          className="w-8 h-8 p-0">
+          <span className="sr-only">Remove file</span>
+          {/* biome-ignore lint/a11y/noSvgWithoutTitle: <intended> */}
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            width="24"
+            height="24"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="2"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            className="w-4 h-4">
+            <path d="M18 6 6 18" />
+            <path d="m6 6 12 12" />
+          </svg>
+        </Button>
+      </div>
+    ))}
+  </div>
+);
+
 export function DialogImportFile({
-	allowedFileTypes = [".csv", ".xlsx", ".xls", ".json"],
-	maxFileSize = 10, // 10MB
-	maxFiles = 5,
-	onImport,
-	children,
+  allowedFileTypes = [".csv", ".xlsx", ".xls", ".json"],
+  maxFileSize = 10, // 10MB
+  maxFiles = 5,
+  onImport,
+  children,
 }: FileImportDialogProps) {
-	const [open, setOpen] = React.useState(false);
-	const [files, setFiles] = React.useState<File[]>([]);
-	const [isDragging, setIsDragging] = React.useState(false);
-	const [isUploading, setIsUploading] = React.useState(false);
-	const [uploadProgress, setUploadProgress] = React.useState(0);
-	const fileInputRef = React.useRef<HTMLInputElement>(null);
+  const [open, setOpen] = React.useState(false);
+  const [files, setFiles] = React.useState<File[]>([]);
+  const [isDragging, setIsDragging] = React.useState(false);
+  const [isUploading, setIsUploading] = React.useState(false);
+  const [uploadProgress, setUploadProgress] = React.useState(0);
+  const fileInputRef = React.useRef<HTMLInputElement>(null);
 
-	const handleDragEnter = (e: React.DragEvent<HTMLDivElement>) => {
-		e.preventDefault();
-		e.stopPropagation();
-		setIsDragging(true);
-	};
+  const handleDragEnter = (e: React.DragEvent<HTMLDivElement>) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setIsDragging(true);
+  };
 
-	const handleDragLeave = (e: React.DragEvent<HTMLDivElement>) => {
-		e.preventDefault();
-		e.stopPropagation();
-		setIsDragging(false);
-	};
+  const handleDragLeave = (e: React.DragEvent<HTMLDivElement>) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setIsDragging(false);
+  };
 
-	const handleDragOver = (e: React.DragEvent<HTMLDivElement>) => {
-		e.preventDefault();
-		e.stopPropagation();
-	};
+  const handleDragOver = (e: React.DragEvent<HTMLDivElement>) => {
+    e.preventDefault();
+    e.stopPropagation();
+  };
 
-	const validateFile = (file: File) => {
-		// Check file type
-		const fileExtension = `.${file.name.split(".").pop()?.toLowerCase()}`;
-		if (
-			!allowedFileTypes.includes(fileExtension) &&
-			!allowedFileTypes.includes("*")
-		) {
-			toast({
-				title: "File type not supported",
-				description: `File ${
-					file.name
-				} is not a supported file type. Allowed types: ${allowedFileTypes.join(
-					", ",
-				)}`,
-				variant: "destructive",
-			});
-			return false;
-		}
+  const validateFile = (file: File) => {
+    const fileExtension = `.${file.name.split(".").pop()?.toLowerCase()}`;
+    if (
+      !allowedFileTypes.includes(fileExtension) &&
+      !allowedFileTypes.includes("*")
+    ) {
+      toast({
+        title: "File type not supported",
+        description: `File ${
+          file.name
+        } is not a supported file type. Allowed types: ${allowedFileTypes.join(
+          ", ",
+        )}`,
+        variant: "destructive",
+      });
+      return false;
+    }
 
-		// Check file size
-		if (file.size > maxFileSize * 1024 * 1024) {
-			toast({
-				title: "File too large",
-				description: `File ${file.name} exceeds the maximum file size of ${maxFileSize}MB`,
-				variant: "destructive",
-			});
-			return false;
-		}
+    if (file.size > maxFileSize * 1024 * 1024) {
+      toast({
+        title: "File too large",
+        description: `File ${file.name} exceeds the maximum file size of ${maxFileSize}MB`,
+        variant: "destructive",
+      });
+      return false;
+    }
 
-		return true;
-	};
+    return true;
+  };
 
-	const handleDrop = (e: React.DragEvent<HTMLDivElement>) => {
-		e.preventDefault();
-		e.stopPropagation();
-		setIsDragging(false);
+  const handleDrop = (e: React.DragEvent<HTMLDivElement>) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setIsDragging(false);
 
-		const droppedFiles = Array.from(e.dataTransfer.files);
+    const droppedFiles = Array.from(e.dataTransfer.files);
 
-		if (files.length + droppedFiles.length > maxFiles) {
-			toast({
-				title: "Too many files",
-				description: `You can only upload a maximum of ${maxFiles} files at once`,
-				variant: "destructive",
-			});
-			return;
-		}
+    if (files.length + droppedFiles.length > maxFiles) {
+      toast({
+        title: "Too many files",
+        description: `You can only upload a maximum of ${maxFiles} files at once`,
+        variant: "destructive",
+      });
+      return;
+    }
 
-		const validFiles = droppedFiles.filter(validateFile);
-		setFiles((prevFiles) => [...prevFiles, ...validFiles]);
-	};
+    const validFiles = droppedFiles.filter(validateFile);
+    setFiles((prevFiles) => [...prevFiles, ...validFiles]);
+  };
 
-	const handleFileInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-		if (!e.target.files?.length) return;
+  const handleFileInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (!e.target.files?.length) return;
 
-		const selectedFiles = Array.from(e.target.files);
+    const selectedFiles = Array.from(e.target.files);
 
-		if (files.length + selectedFiles.length > maxFiles) {
-			toast({
-				title: "Too many files",
-				description: `You can only upload a maximum of ${maxFiles} files at once`,
-				variant: "destructive",
-			});
-			return;
-		}
+    if (files.length + selectedFiles.length > maxFiles) {
+      toast({
+        title: "Too many files",
+        description: `You can only upload a maximum of ${maxFiles} files at once`,
+        variant: "destructive",
+      });
+      return;
+    }
 
-		const validFiles = selectedFiles.filter(validateFile);
-		setFiles((prevFiles) => [...prevFiles, ...validFiles]);
+    const validFiles = selectedFiles.filter(validateFile);
+    setFiles((prevFiles) => [...prevFiles, ...validFiles]);
 
-		// Reset the input value so the same file can be selected again
-		if (fileInputRef.current) {
-			fileInputRef.current.value = "";
-		}
-	};
+    if (fileInputRef.current) {
+      fileInputRef.current.value = "";
+    }
+  };
 
-	const removeFile = (index: number) => {
-		setFiles((prevFiles) => prevFiles.filter((_, i) => i !== index));
-	};
+  const removeFile = (index: number) => {
+    setFiles((prevFiles) => prevFiles.filter((_, i) => i !== index));
+  };
 
-	const handleImport = () => {
-		if (!files.length) {
-			toast({
-				title: "No files selected",
-				description: "Please select at least one file to import",
-				variant: "destructive",
-			});
-			return;
-		}
+  const handleImport = () => {
+    if (!files.length) {
+      toast({
+        title: "No files selected",
+        description: "Please select at least one file to import",
+        variant: "destructive",
+      });
+      return;
+    }
 
-		setIsUploading(true);
+    setIsUploading(true);
 
-		// Simulate upload progress
-		let progress = 0;
-		const interval = setInterval(() => {
-			progress += 5;
-			setUploadProgress(progress);
+    let progress = 0;
+    const interval = setInterval(() => {
+      progress += 5;
+      setUploadProgress(progress);
 
-			if (progress >= 100) {
-				clearInterval(interval);
-				setIsUploading(false);
-				setUploadProgress(0);
+      if (progress >= 100) {
+        clearInterval(interval);
+        setIsUploading(false);
+        setUploadProgress(0);
 
-				if (onImport) {
-					onImport(files);
-				}
+        if (onImport) {
+          onImport(files);
+        }
 
-				toast({
-					title: "Files imported successfully",
-					description: `${files.length} file${
-						files.length > 1 ? "s" : ""
-					} imported successfully`,
-				});
+        toast({
+          title: "Files imported successfully",
+          description: `${files.length} file${
+            files.length > 1 ? "s" : ""
+          } imported successfully`,
+        });
 
-				setFiles([]);
-				setOpen(false);
-			}
-		}, 100);
-	};
+        setFiles([]);
+        setOpen(false);
+      }
+    }, 100);
+  };
 
-	const formatFileSize = (bytes: number) => {
-		if (bytes < 1024) return `${bytes} B`;
-		if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(1)} KB`;
-		return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
-	};
+  const formatFileSize = (bytes: number) => {
+    if (bytes < 1024) return `${bytes} B`;
+    if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(1)} KB`;
+    return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
+  };
 
-	return (
-		<Dialog open={open} onOpenChange={setOpen}>
-			<DialogTrigger asChild>
-				{children || <Button>Import Files</Button>}
-			</DialogTrigger>
-			<DialogContent className="sm:max-w-[500px]">
-				<DialogHeader>
-					<DialogTitle>Import Files</DialogTitle>
-					<DialogDescription>
-						Drag and drop files here or click to browse. Supported file types:{" "}
-						{allowedFileTypes.join(", ")}
-					</DialogDescription>
-				</DialogHeader>
-				{files.length === 0 && (
-					<div
-						className={`mt-4 flex min-h-[200px] cursor-pointer flex-col items-center justify-center rounded-lg border-2 border-dashed p-6 transition-colors ${
-							isDragging ? "border-primary bg-primary/10" : "border-border"
-						}`}
-						onDragEnter={handleDragEnter}
-						onDragLeave={handleDragLeave}
-						onDragOver={handleDragOver}
-						onDrop={handleDrop}
-						onClick={() => fileInputRef.current?.click()}
-						onKeyDown={(e) => {
-							if (e.key === "Enter" || e.key === " ") {
-								fileInputRef.current?.click();
-							}
-						}}
-					>
-						<input
-							type="file"
-							ref={fileInputRef}
-							className="hidden"
-							multiple
-							onChange={handleFileInputChange}
-							accept={allowedFileTypes.join(",")}
-						/>
-						<UploadCloudIcon className="w-12 h-12 mb-4 text-muted-foreground" />
-						<p className="mb-2 text-sm font-medium">
-							<span className="font-semibold text-primary">
-								Click to upload
-							</span>{" "}
-							or drag and drop
-						</p>
-						<p className="text-xs text-muted-foreground">
-							Max {maxFiles} files, up to {maxFileSize}MB each
-						</p>
-					</div>
-				)}
-
-				{files.length > 0 && (
-					<div className="mt-4 space-y-2">
-						<p className="text-sm font-medium">
-							Selected Files ({files.length}/{maxFiles})
-						</p>
-						<div className="max-h-[200px] overflow-y-auto rounded-lg border">
-							{files.map((file, index) => (
-								<div
-									key={`${file.name}-${index}`}
-									className="flex items-center justify-between p-3 border-b last:border-b-0"
-								>
-									<div className="flex items-center space-x-3">
-										<FileIcon className="w-5 h-5 text-muted-foreground" />
-										<div>
-											<p className="text-sm font-medium">{file.name}</p>
-											<p className="text-xs text-muted-foreground">
-												{formatFileSize(file.size)}
-											</p>
-										</div>
-									</div>
-									<Button
-										variant="ghost"
-										size="icon"
-										onClick={(e) => {
-											e.stopPropagation();
-											removeFile(index);
-										}}
-										aria-label={`Remove ${file.name}`}
-									>
-										<XIcon className="w-4 h-4" />
-									</Button>
-								</div>
-							))}
-						</div>
-					</div>
-				)}
-
-				{isUploading && (
-					<div className="mt-4 space-y-2">
-						<div className="flex items-center justify-between">
-							<p className="text-sm font-medium">Uploading...</p>
-							<p className="text-sm font-medium">{uploadProgress}%</p>
-						</div>
-						<Progress value={uploadProgress} className="h-2" />
-					</div>
-				)}
-
-				<DialogFooter className="mt-4">
-					<Button
-						variant="outline"
-						onClick={() => setOpen(false)}
-						disabled={isUploading}
-					>
-						Cancel
-					</Button>
-					<Button
-						onClick={handleImport}
-						disabled={files.length === 0 || isUploading}
-					>
-						{isUploading ? "Importing..." : "Import"}
-					</Button>
-				</DialogFooter>
-			</DialogContent>
-		</Dialog>
-	);
+  return (
+    <Dialog open={open} onOpenChange={setOpen}>
+      <DialogTrigger asChild>
+        {children || <Button>Import Files</Button>}
+      </DialogTrigger>
+      <DialogContent className="sm:max-w-[500px]">
+        <DialogHeader>
+          <DialogTitle>Import Files</DialogTitle>
+          <DialogDescription>
+            Drag and drop files here or click to browse. Supported file types:{" "}
+            {allowedFileTypes.join(", ")}
+          </DialogDescription>
+        </DialogHeader>
+        {files.length === 0 && (
+          <FileDropZone
+            isDragging={isDragging}
+            onDragEnter={handleDragEnter}
+            onDragLeave={handleDragLeave}
+            onDragOver={handleDragOver}
+            onDrop={handleDrop}
+            onClick={() => fileInputRef.current?.click()}
+            maxFiles={maxFiles}
+            maxFileSize={maxFileSize}
+            fileInputRef={fileInputRef}
+            allowedFileTypes={allowedFileTypes}
+            onFileInputChange={handleFileInputChange}
+          />
+        )}
+        {files.length > 0 && (
+          <>
+            <FileList
+              files={files}
+              onRemoveFile={removeFile}
+              formatFileSize={formatFileSize}
+            />
+            <div className="flex justify-end mt-4 space-x-2">
+              <Button
+                variant="outline"
+                onClick={() => {
+                  setFiles([]);
+                  setOpen(false);
+                }}>
+                Cancel
+              </Button>
+              <Button onClick={handleImport} disabled={isUploading}>
+                {isUploading ? (
+                  <>
+                    {/* biome-ignore lint/a11y/noSvgWithoutTitle: <inteded> */}
+                    <svg
+                      className="w-4 h-4 mr-2 animate-spin"
+                      xmlns="http://www.w3.org/2000/svg"
+                      fill="none"
+                      viewBox="0 0 24 24">
+                      <circle
+                        className="opacity-25"
+                        cx="12"
+                        cy="12"
+                        r="10"
+                        stroke="currentColor"
+                        strokeWidth="4"
+                      />
+                      <path
+                        className="opacity-75"
+                        fill="currentColor"
+                        d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                      />
+                    </svg>
+                    Importing... {uploadProgress}%
+                  </>
+                ) : (
+                  "Import"
+                )}
+              </Button>
+            </div>
+          </>
+        )}
+      </DialogContent>
+    </Dialog>
+  );
 }
