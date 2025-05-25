@@ -16,6 +16,7 @@ export function useSignInForm() {
   const { signIn, isLoaded, setActive } = useSignIn();
   const [error, setError] = useState("");
   const [isLoading, setIsLoading] = useState(false);
+  const navigate = useNavigate();
 
   const form = useForm<SignInFormValues>({
     resolver: zodResolver(signInSchema),
@@ -38,13 +39,22 @@ export function useSignInForm() {
 
       if (result.status === "complete") {
         await setActive({ session: result.createdSessionId });
-        window.location.href = "/";
+        navigate("/");
       } else {
         setError("Authentication failed. Please try again.");
       }
     } catch (err: unknown) {
       const error = err as { errors?: Array<{ message: string }> };
-      setError(error.errors?.[0]?.message || "Incorrect email or password.");
+      const errorMessage = error.errors?.[0]?.message || "";
+
+      // Cek apakah error terkait dengan strategi verifikasi
+      if (errorMessage.toLowerCase().includes("verification strategy")) {
+        setError(
+          "Akun ini terdaftar menggunakan Google. Silakan login menggunakan Google.",
+        );
+      } else {
+        setError(errorMessage || "Email atau password salah.");
+      }
     } finally {
       setIsLoading(false);
     }
