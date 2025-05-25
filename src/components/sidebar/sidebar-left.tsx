@@ -18,7 +18,7 @@ import {
   Save,
 } from "lucide-react";
 import { useState } from "react";
-import { Link } from "react-router";
+import { Link, useNavigate } from "react-router";
 import { ActionAlertDialog } from "../action-alert-dialog";
 import { DialogImportFile } from "../dialog-import-file";
 import { DialogSaveLoad } from "../dialog-save-load";
@@ -50,6 +50,7 @@ export const SidebarLeft = () => {
     selectedEdges,
     setSelectedEdges,
   } = useNodeEdgeStore();
+  const navigate = useNavigate();
 
   const [nodeListMenuOpen, setNodeListMenuOpen] = useState(true);
   const [edgeListMenuOpen, setEdgeListMenuOpen] = useState(true);
@@ -77,6 +78,11 @@ export const SidebarLeft = () => {
     });
   };
 
+  const handleNew = () => {
+    window.open(window.location.href, "_blank");
+    setDropdownOpen(false);
+  };
+
   return (
     <div className="flex flex-col w-full h-full bg-white border-r">
       {/* Header Sticky */}
@@ -94,39 +100,76 @@ export const SidebarLeft = () => {
             align="start"
             className="p-1 space-y-1 text-xs bg-white border rounded-lg shadow cursor-pointer w-[240px]">
             <DropdownMenuGroup className="space-y-1">
-              <DropdownMenuItem className="flex flex-row items-center gap-2 p-1 text-xs md:text-xs">
+              <DropdownMenuItem
+                className="flex flex-row items-center gap-2 p-1 text-xs md:text-xs"
+                onSelect={(e) => {
+                  e.preventDefault();
+                  handleNew();
+                }}>
                 <File className="w-3 h-3" />
-                New
+                New Board
               </DropdownMenuItem>
             </DropdownMenuGroup>
             <DropdownMenuSeparator />
             <DropdownMenuGroup>
-              <DropdownMenuItem
-                className="flex flex-row items-center gap-2 p-1 text-xs md:text-xs"
-                onSelect={(e) => {
-                  e.preventDefault();
-                  setDropdownOpen(false);
-                  setSaveLoadTab("save");
-                  setTimeout(() => {
-                    setOpenSaveLoad(true);
-                  }, 0);
-                }}>
-                <Save className="w-3 h-3" />
-                Save
-              </DropdownMenuItem>
-              <DropdownMenuItem
-                className="flex flex-row items-center gap-2 p-1 text-xs md:text-xs"
-                onSelect={(e) => {
-                  e.preventDefault();
-                  setDropdownOpen(false);
-                  setSaveLoadTab("load");
-                  setTimeout(() => {
-                    setOpenSaveLoad(true);
-                  }, 0);
-                }}>
-                <FileText className="w-3 h-3" />
-                Load
-              </DropdownMenuItem>
+              <SignedIn>
+                <DropdownMenuItem
+                  className="flex flex-row items-center gap-2 p-1 text-xs md:text-xs"
+                  onSelect={(e) => {
+                    e.preventDefault();
+                    setDropdownOpen(false);
+                    setSaveLoadTab("save");
+                    setTimeout(() => {
+                      setOpenSaveLoad(true);
+                    }, 0);
+                  }}>
+                  <Save className="w-3 h-3" />
+                  Save
+                </DropdownMenuItem>
+                <DropdownMenuItem
+                  className="flex flex-row items-center gap-2 p-1 text-xs md:text-xs"
+                  onSelect={(e) => {
+                    e.preventDefault();
+                    setDropdownOpen(false);
+                    setSaveLoadTab("load");
+                    setTimeout(() => {
+                      setOpenSaveLoad(true);
+                    }, 0);
+                  }}>
+                  <FileText className="w-3 h-3" />
+                  Load
+                </DropdownMenuItem>
+              </SignedIn>
+              <SignedOut>
+                <ActionAlertDialog
+                  trigger={
+                    <DropdownMenuItem
+                      onSelect={(e) => e.preventDefault()}
+                      className="flex flex-row items-center gap-2 p-1 text-xs md:text-xs">
+                      <Save className="w-3 h-3" />
+                      Save
+                    </DropdownMenuItem>
+                  }
+                  title="You need to sign in to save or load your simulation"
+                  description="Please sign in to save or load your simulation"
+                  actionText="Sign In"
+                  onAction={() => navigate("/sign-in")}
+                />
+                <ActionAlertDialog
+                  trigger={
+                    <DropdownMenuItem
+                      onSelect={(e) => e.preventDefault()}
+                      className="flex flex-row items-center gap-2 p-1 text-xs md:text-xs">
+                      <FileText className="w-3 h-3" />
+                      Load
+                    </DropdownMenuItem>
+                  }
+                  title="You need to sign in to save or load your simulation"
+                  description="Please sign in to save or load your simulation"
+                  actionText="Sign In"
+                  onAction={() => navigate("/sign-in")}
+                />
+              </SignedOut>
               <DropdownMenuItem
                 className="flex flex-row items-center gap-2 p-1 text-xs md:text-xs"
                 onSelect={(e) => e.preventDefault()}>
