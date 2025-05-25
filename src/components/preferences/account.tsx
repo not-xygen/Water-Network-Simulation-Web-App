@@ -1,5 +1,3 @@
-"use client";
-
 import { DialogProfileImage } from "@/components/dialog-profile-image";
 import { Button } from "@/components/ui/button";
 import { Form } from "@/components/ui/form";

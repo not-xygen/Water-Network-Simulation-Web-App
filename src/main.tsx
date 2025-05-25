@@ -1,7 +1,7 @@
 import "./index.css";
-import SignInPage from "@/page/sign-in.tsx";
-import SignUpPage from "@/page/sign-up.tsx";
-import SimulationPage from "@/page/simulation.tsx";
+import SignInPage from "@/pages/sign-in";
+import SignUpPage from "@/pages/sign-up";
+import SimulationPage from "@/pages/simulation";
 import { ClerkProvider } from "@clerk/clerk-react";
 import { StrictMode } from "react";
 import { createRoot } from "react-dom/client";

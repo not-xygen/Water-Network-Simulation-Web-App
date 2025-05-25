@@ -1,6 +1,5 @@
 /* eslint-disable no-unused-vars */
 /* eslint-disable react-refresh/only-export-components */
-"use client";
 
 import * as React from "react";
 import { Slot } from "@radix-ui/react-slot";
