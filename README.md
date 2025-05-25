@@ -75,7 +75,7 @@ Untuk menjalankan proyek ini secara lokal, pastikan Anda memiliki:
 
 ## Struktur Proyek
 
-```
+```text
 Water-Network-Simulation-Web-App/
 ├── public/              # File statis
 ├── src/                 # Kode sumber
