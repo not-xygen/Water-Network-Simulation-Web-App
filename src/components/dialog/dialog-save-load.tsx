@@ -4,6 +4,7 @@ import {
   Calendar,
   Clock,
   FileText,
+  Loader2,
   Plus,
   Save,
   Search,
@@ -419,8 +420,17 @@ export function DialogSaveLoad({
                     loading ||
                     (nodes.length === 0 && edges.length === 0)
                   }>
-                  <Save className="w-4 h-4 mr-2" />
-                  {loading ? "Saving..." : "Save Simulation"}
+                  {loading ? (
+                    <>
+                      <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                      Menyimpan...
+                    </>
+                  ) : (
+                    <>
+                      <Save className="w-4 h-4 mr-2" />
+                      Simpan Simulasi
+                    </>
+                  )}
                 </Button>
               </div>
             </div>
@@ -489,8 +499,15 @@ export function DialogSaveLoad({
                     onClick={() =>
                       selectedLoadSave && handleLoad(selectedLoadSave)
                     }
-                    disabled={!selectedLoadSave}>
-                    Load Simulation
+                    disabled={!selectedLoadSave || loading}>
+                    {loading ? (
+                      <>
+                        <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                        Memuat...
+                      </>
+                    ) : (
+                      "Muat Simulasi"
+                    )}
                   </Button>
                 </div>
               </div>
