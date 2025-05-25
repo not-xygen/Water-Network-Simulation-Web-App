@@ -49,15 +49,15 @@ Untuk menjalankan proyek ini secara lokal, pastikan Anda memiliki:
 2. **Instal Dependensi**:
 
    ```bash
-   npm install
+   pnpm install
    ```
 
 3. **Jalankan Aplikasi (mode development)**:
 
    ```bash
-   npm run dev
+   pnpm run dev
    ```
-   
+
 4. Buka browser dan akses `http://localhost:5173` (atau port yang sesuai).
 
 ## Cara Penggunaan
