@@ -15,27 +15,23 @@ const tools = [
     id: "reservoir",
     name: "Reservoir",
     icon: (
-      <img
-        src="/src/assets/reservoir.svg"
-        alt="Reservoir"
-        className="w-5 h-5"
-      />
+      <img src="/assets/reservoir.svg" alt="Reservoir" className="w-5 h-5" />
     ),
   },
   {
     id: "tank",
     name: "Tank",
-    icon: <img src="/src/assets/tank.svg" alt="Tank" className="w-5 h-5" />,
+    icon: <img src="/assets/tank.svg" alt="Tank" className="w-5 h-5" />,
   },
   {
     id: "valve",
     name: "Valve",
-    icon: <img src="/src/assets/valve.svg" alt="Valve" className="w-5 h-5" />,
+    icon: <img src="/assets/valve.svg" alt="Valve" className="w-5 h-5" />,
   },
   {
     id: "pump",
     name: "Pump",
-    icon: <img src="/src/assets/pump.svg" alt="Pump" className="w-5 h-5" />,
+    icon: <img src="/assets/pump.svg" alt="Pump" className="w-5 h-5" />,
   },
 ];
 

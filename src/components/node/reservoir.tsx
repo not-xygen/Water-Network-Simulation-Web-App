@@ -29,7 +29,7 @@ export const ReservoirNode = ({
           isSelected && "ring-2 ring-blue-500",
         )}>
         <img
-          src="/src/assets/reservoir.svg"
+          src="/assets/reservoir.svg"
           alt="Reservoir"
           className="w-8 h-8 pointer-events-none select-none"
           draggable={false}

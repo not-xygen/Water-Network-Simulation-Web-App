@@ -29,7 +29,7 @@ export const PumpNode = ({
           isSelected && "ring-2 ring-blue-500",
         )}>
         <img
-          src="/src/assets/pump.svg"
+          src="/assets/pump.svg"
           alt="Pump"
           className="w-8 h-8 pointer-events-none select-none"
           draggable={false}
