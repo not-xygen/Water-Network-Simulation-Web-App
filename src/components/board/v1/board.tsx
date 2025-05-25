@@ -164,7 +164,7 @@ export const Board = ({ isSpacePressed }: BoardProps) => {
         />
       )}
 
-      <Minimap zoom={zoom} offset={offset} />
+      <Minimap />
     </div>
   );
 };
