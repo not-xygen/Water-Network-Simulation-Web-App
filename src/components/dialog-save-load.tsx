@@ -8,7 +8,6 @@ import {
   Search,
   Trash2,
 } from "lucide-react";
-import * as React from "react";
 
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -27,6 +26,7 @@ import { useSimulationSave } from "@/hooks/use-save-load";
 import { toast } from "@/hooks/use-toast";
 import useNodeEdgeStore from "@/store/node-edge";
 import type { SimulationSave } from "@/types/save-load";
+import { useEffect, useMemo, useState } from "react";
 
 type TabValue = "save" | "load";
 
@@ -41,12 +41,12 @@ export function DialogSaveLoad({
   onOpenChange?: (open: boolean) => void;
   initialTab?: TabValue;
 }) {
-  const [selectedSlot, setSelectedSlot] = React.useState<string | null>(null);
-  const [saveName, setSaveName] = React.useState("");
-  const [saves, setSaves] = React.useState<SimulationSave[]>([]);
-  const [activeTab, setActiveTab] = React.useState<TabValue>(initialTab);
-  const [currentPage, setCurrentPage] = React.useState(1);
-  const [searchQuery, setSearchQuery] = React.useState("");
+  const [selectedSlot, setSelectedSlot] = useState<string | null>(null);
+  const [saveName, setSaveName] = useState("");
+  const [saves, setSaves] = useState<SimulationSave[]>([]);
+  const [activeTab, setActiveTab] = useState<TabValue>(initialTab);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [searchQuery, setSearchQuery] = useState("");
 
   const {
     loading,
@@ -60,13 +60,14 @@ export function DialogSaveLoad({
   const { setSelectedNodes, setSelectedEdges, nodes, edges } =
     useNodeEdgeStore();
 
-  React.useEffect(() => {
+  useEffect(() => {
     if (open) {
       setActiveTab(initialTab);
       setCurrentPage(1);
       setSearchQuery("");
       loadSaves();
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [open, initialTab]);
 
   const loadSaves = async () => {
@@ -80,14 +81,14 @@ export function DialogSaveLoad({
     setSearchQuery("");
   };
 
-  const filteredSaves = React.useMemo(() => {
+  const filteredSaves = useMemo(() => {
     return saves.filter((save) =>
       save.name.toLowerCase().includes(searchQuery.toLowerCase()),
     );
   }, [saves, searchQuery]);
 
   const totalPages = Math.ceil((filteredSaves.length + 1) / SLOTS_PER_PAGE);
-  const currentSaves = React.useMemo(() => {
+  const currentSaves = useMemo(() => {
     const start = (currentPage - 1) * SLOTS_PER_PAGE;
     const end = start + SLOTS_PER_PAGE;
     return filteredSaves.slice(start, end);

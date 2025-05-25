@@ -10,28 +10,35 @@ import {
 } from "@/components/ui/dialog";
 import { toast } from "@/hooks/use-toast";
 import { UploadCloudIcon } from "lucide-react";
-import * as React from "react";
+import {
+  type ReactNode,
+  type RefObject,
+  type ChangeEvent,
+  type DragEvent,
+  useState,
+  useRef,
+} from "react";
 
 interface FileImportDialogProps {
   allowedFileTypes?: string[];
   maxFileSize?: number;
   maxFiles?: number;
   onImport?: (files: File[]) => void;
-  children?: React.ReactNode;
+  children?: ReactNode;
 }
 
 interface FileDropZoneProps {
   isDragging: boolean;
-  onDragEnter: (e: React.DragEvent<HTMLDivElement>) => void;
-  onDragLeave: (e: React.DragEvent<HTMLDivElement>) => void;
-  onDragOver: (e: React.DragEvent<HTMLDivElement>) => void;
-  onDrop: (e: React.DragEvent<HTMLDivElement>) => void;
+  onDragEnter: (e: DragEvent<HTMLDivElement>) => void;
+  onDragLeave: (e: DragEvent<HTMLDivElement>) => void;
+  onDragOver: (e: DragEvent<HTMLDivElement>) => void;
+  onDrop: (e: DragEvent<HTMLDivElement>) => void;
   onClick: () => void;
   maxFiles: number;
   maxFileSize: number;
-  fileInputRef: React.RefObject<HTMLInputElement>;
+  fileInputRef: RefObject<HTMLInputElement>;
   allowedFileTypes: string[];
-  onFileInputChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
+  onFileInputChange: (e: ChangeEvent<HTMLInputElement>) => void;
 }
 
 const FileDropZone = ({
@@ -132,26 +139,26 @@ export function DialogImportFile({
   onImport,
   children,
 }: FileImportDialogProps) {
-  const [open, setOpen] = React.useState(false);
-  const [files, setFiles] = React.useState<File[]>([]);
-  const [isDragging, setIsDragging] = React.useState(false);
-  const [isUploading, setIsUploading] = React.useState(false);
-  const [uploadProgress, setUploadProgress] = React.useState(0);
-  const fileInputRef = React.useRef<HTMLInputElement>(null);
+  const [open, setOpen] = useState(false);
+  const [files, setFiles] = useState<File[]>([]);
+  const [isDragging, setIsDragging] = useState(false);
+  const [isUploading, setIsUploading] = useState(false);
+  const [uploadProgress, setUploadProgress] = useState(0);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
-  const handleDragEnter = (e: React.DragEvent<HTMLDivElement>) => {
+  const handleDragEnter = (e: DragEvent<HTMLDivElement>) => {
     e.preventDefault();
     e.stopPropagation();
     setIsDragging(true);
   };
 
-  const handleDragLeave = (e: React.DragEvent<HTMLDivElement>) => {
+  const handleDragLeave = (e: DragEvent<HTMLDivElement>) => {
     e.preventDefault();
     e.stopPropagation();
     setIsDragging(false);
   };
 
-  const handleDragOver = (e: React.DragEvent<HTMLDivElement>) => {
+  const handleDragOver = (e: DragEvent<HTMLDivElement>) => {
     e.preventDefault();
     e.stopPropagation();
   };
@@ -186,7 +193,7 @@ export function DialogImportFile({
     return true;
   };
 
-  const handleDrop = (e: React.DragEvent<HTMLDivElement>) => {
+  const handleDrop = (e: DragEvent<HTMLDivElement>) => {
     e.preventDefault();
     e.stopPropagation();
     setIsDragging(false);
@@ -206,7 +213,7 @@ export function DialogImportFile({
     setFiles((prevFiles) => [...prevFiles, ...validFiles]);
   };
 
-  const handleFileInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleFileInputChange = (e: ChangeEvent<HTMLInputElement>) => {
     if (!e.target.files?.length) return;
 
     const selectedFiles = Array.from(e.target.files);
