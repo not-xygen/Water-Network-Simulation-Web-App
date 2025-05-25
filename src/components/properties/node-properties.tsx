@@ -1,6 +1,6 @@
 /* eslint-disable no-unused-vars */
 import type { Node, ValveNode } from "@/types/node-edge";
-import { AlertDialogAction } from "../alert-dialog-action";
+import { AlertDialogAction } from "../dialog/alert-dialog-action";
 import { Button } from "../ui/button";
 import {
 	Select,

@@ -1,7 +1,7 @@
 /* eslint-disable no-unused-vars */
 import { PIXEL_TO_CM } from "@/constant/globals";
 import type { Edge } from "@/types/node-edge";
-import { AlertDialogAction } from "../alert-dialog-action";
+import { AlertDialogAction } from "../dialog/alert-dialog-action";
 import { Button } from "../ui/button";
 import { Separator } from "../ui/separator";
 import {

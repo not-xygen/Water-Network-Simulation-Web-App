@@ -13,7 +13,7 @@ import { toast } from "@/hooks/use-toast";
 import { useUser } from "@clerk/clerk-react";
 import { Upload } from "lucide-react";
 import { useRef, useState } from "react";
-import { Progress } from "./ui/progress";
+import { Progress } from "../ui/progress";
 
 interface DialogProfileImageProps {
 	children: React.ReactNode;

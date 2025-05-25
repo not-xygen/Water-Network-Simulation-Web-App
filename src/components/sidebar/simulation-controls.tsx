@@ -1,5 +1,5 @@
 import { formatElapsedTime } from "@/lib/utils";
-import { AlertDialogAction } from "../alert-dialog-action";
+import { AlertDialogAction } from "../dialog/alert-dialog-action";
 import { Button } from "../ui/button";
 import { Separator } from "../ui/separator";
 

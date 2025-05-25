@@ -6,25 +6,24 @@ import {
   DialogDescription,
   DialogHeader,
   DialogTitle,
-  DialogTrigger,
 } from "@/components/ui/dialog";
 import { toast } from "@/hooks/use-toast";
 import { UploadCloudIcon } from "lucide-react";
 import {
-  type ReactNode,
-  type RefObject,
   type ChangeEvent,
   type DragEvent,
-  useState,
+  type RefObject,
   useRef,
+  useState,
 } from "react";
 
 interface FileImportDialogProps {
+  open?: boolean;
+  onOpenChange?: (open: boolean) => void;
   allowedFileTypes?: string[];
   maxFileSize?: number;
   maxFiles?: number;
   onImport?: (files: File[]) => void;
-  children?: ReactNode;
 }
 
 interface FileDropZoneProps {
@@ -122,7 +121,8 @@ const FileList = ({ files, onRemoveFile, formatFileSize }: FileListProps) => (
             strokeWidth="2"
             strokeLinecap="round"
             strokeLinejoin="round"
-            className="w-4 h-4">
+            className="w-4 h-4"
+            aria-label="Remove file">
             <path d="M18 6 6 18" />
             <path d="m6 6 12 12" />
           </svg>
@@ -133,13 +133,13 @@ const FileList = ({ files, onRemoveFile, formatFileSize }: FileListProps) => (
 );
 
 export function DialogImportFile({
+  open,
+  onOpenChange,
   allowedFileTypes = [".csv", ".xlsx", ".xls", ".json"],
   maxFileSize = 10, // 10MB
   maxFiles = 5,
   onImport,
-  children,
 }: FileImportDialogProps) {
-  const [open, setOpen] = useState(false);
   const [files, setFiles] = useState<File[]>([]);
   const [isDragging, setIsDragging] = useState(false);
   const [isUploading, setIsUploading] = useState(false);
@@ -273,7 +273,7 @@ export function DialogImportFile({
         });
 
         setFiles([]);
-        setOpen(false);
+        onOpenChange?.(false);
       }
     }, 100);
   };
@@ -285,10 +285,7 @@ export function DialogImportFile({
   };
 
   return (
-    <Dialog open={open} onOpenChange={setOpen}>
-      <DialogTrigger asChild>
-        {children || <Button>Import Files</Button>}
-      </DialogTrigger>
+    <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-[500px]">
         <DialogHeader>
           <DialogTitle>Import Files</DialogTitle>
@@ -324,19 +321,20 @@ export function DialogImportFile({
                 variant="outline"
                 onClick={() => {
                   setFiles([]);
-                  setOpen(false);
+                  onOpenChange?.(false);
                 }}>
                 Cancel
               </Button>
               <Button onClick={handleImport} disabled={isUploading}>
                 {isUploading ? (
                   <>
-                    {/* biome-ignore lint/a11y/noSvgWithoutTitle: <inteded> */}
+                    {/* biome-ignore lint/a11y/noSvgWithoutTitle: <intended> */}
                     <svg
                       className="w-4 h-4 mr-2 animate-spin"
                       xmlns="http://www.w3.org/2000/svg"
                       fill="none"
-                      viewBox="0 0 24 24">
+                      viewBox="0 0 24 24"
+                      aria-label="Loading spinner">
                       <circle
                         className="opacity-25"
                         cx="12"
