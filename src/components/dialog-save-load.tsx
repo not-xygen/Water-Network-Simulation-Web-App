@@ -1,3 +1,4 @@
+import html2canvas from "html2canvas";
 /* eslint-disable no-unused-vars */
 import {
   Calendar,
@@ -47,6 +48,8 @@ export function DialogSaveLoad({
   const [activeTab, setActiveTab] = useState<TabValue>(initialTab);
   const [currentPage, setCurrentPage] = useState(1);
   const [searchQuery, setSearchQuery] = useState("");
+  const [selectedLoadSave, setSelectedLoadSave] =
+    useState<SimulationSave | null>(null);
 
   const {
     loading,
@@ -55,6 +58,7 @@ export function DialogSaveLoad({
     saveSimulation,
     removeSimulationSave,
     prepareSaveData,
+    updateSimulation,
   } = useSimulationSave();
 
   const { setSelectedNodes, setSelectedEdges, nodes, edges } =
@@ -94,6 +98,41 @@ export function DialogSaveLoad({
     return filteredSaves.slice(start, end);
   }, [filteredSaves, currentPage]);
 
+  const captureBoardAsBlob = async (): Promise<string> => {
+    try {
+      const board = document.getElementById("board");
+      if (!board) {
+        return "/placeholder.svg?height=120&width=200";
+      }
+
+      const canvas = await html2canvas(board, {
+        backgroundColor: null,
+        scale: 1,
+        logging: false,
+        useCORS: true,
+        allowTaint: true,
+      });
+
+      return new Promise((resolve) => {
+        canvas.toBlob((blob) => {
+          if (!blob) {
+            resolve("/placeholder.svg?height=120&width=200");
+            return;
+          }
+
+          const reader = new FileReader();
+          reader.onloadend = () => {
+            resolve(reader.result as string);
+          };
+          reader.readAsDataURL(blob);
+        }, "image/png");
+      });
+    } catch (err) {
+      console.error("Error capturing board:", err);
+      return "/placeholder.svg?height=120&width=200";
+    }
+  };
+
   const handleSave = async () => {
     if (selectedSlot && saveName.trim()) {
       if (nodes.length === 0 && edges.length === 0) {
@@ -106,16 +145,27 @@ export function DialogSaveLoad({
       }
 
       try {
-        const saveData = prepareSaveData(
-          saveName,
-          "/placeholder.svg?height=120&width=200",
-        );
-        const saved = await saveSimulation(saveData);
+        const screenshot = await captureBoardAsBlob();
+        const saveData = prepareSaveData(saveName, screenshot);
+
+        // Check if this is an overwrite (selectedSlot is an existing save ID)
+        const existingSave = saves.find((save) => save.id === selectedSlot);
+        let saved: SimulationSave | null;
+
+        if (existingSave) {
+          // Update existing save
+          saved = await updateSimulation(existingSave.id, saveData);
+        } else {
+          // Create new save
+          saved = await saveSimulation(saveData);
+        }
 
         if (saved) {
           toast({
             title: "Simulation saved successfully",
-            description: "Simulation data has been saved successfully",
+            description: existingSave
+              ? "Simulation has been updated"
+              : "Simulation has been saved",
           });
           await loadSaves();
           setSaveName("");
@@ -192,16 +242,17 @@ export function DialogSaveLoad({
     const isEmpty = !save;
     const slotId = isEmpty ? `new-${slotNumber}` : save.id;
     const isSelected = selectedSlot === slotId;
+    const isLoadSelected = isLoadMode && selectedLoadSave?.id === save?.id;
 
     return (
       <Card
         key={slotNumber}
-        className={`cursor-pointer transition-all hover:shadow-md focus-visible:outline-none ${
-          isSelected ? "" : ""
+        className={`cursor-pointer transition-all hover:shadow-md focus-visible:outline-none ring-inset ${
+          isSelected || isLoadSelected ? "ring-2 ring-primary" : ""
         } ${isEmpty ? "border-dashed" : ""}`}
         onClick={() => {
           if (isLoadMode && save) {
-            handleLoad(save);
+            setSelectedLoadSave(save);
           } else if (!isLoadMode) {
             setSelectedSlot(slotId);
             setSaveName(save?.name || `Save ${slotNumber}`);
@@ -218,7 +269,7 @@ export function DialogSaveLoad({
           if (e.key === "Enter" || e.key === " ") {
             e.preventDefault();
             if (isLoadMode && save) {
-              handleLoad(save);
+              setSelectedLoadSave(save);
             } else if (!isLoadMode) {
               setSelectedSlot(slotId);
               setSaveName(save?.name || `Save ${slotNumber}`);
@@ -240,18 +291,18 @@ export function DialogSaveLoad({
                   alt={save.name}
                   className="object-cover w-full h-20 rounded-md bg-muted"
                 />
-                <Badge
-                  variant="secondary"
-                  className="absolute text-xs top-1 right-1">
-                  {save.metadata.nodes.length} Node
-                </Badge>
+                <div className="absolute flex gap-1 top-1 right-1">
+                  <Badge variant="secondary" className="text-xs">
+                    {save.metadata.nodes.length} Node
+                  </Badge>
+                  <Badge variant="secondary" className="text-xs">
+                    {save.metadata.edges.length} Edge
+                  </Badge>
+                </div>
               </div>
 
               <div className="space-y-1">
                 <h4 className="text-sm font-medium truncate">{save.name}</h4>
-                <p className="text-xs text-muted-foreground">
-                  {save.metadata.edges.length} Edge
-                </p>
               </div>
 
               <div className="flex items-center justify-between text-xs text-muted-foreground">
@@ -327,11 +378,11 @@ export function DialogSaveLoad({
             </div>
 
             <div className="grid grid-cols-2 gap-4 overflow-y-auto md:grid-cols-3 lg:grid-cols-4 max-h-96">
+              {currentSaves.length < SLOTS_PER_PAGE &&
+                renderSaveSlot(saves.length + 1)}
               {currentSaves.map((save, index) =>
                 renderSaveSlot(index + 1, save),
               )}
-              {currentSaves.length < SLOTS_PER_PAGE &&
-                renderSaveSlot(saves.length + 1)}
             </div>
 
             <div className="flex items-center justify-between pt-4 border-t">
@@ -389,9 +440,6 @@ export function DialogSaveLoad({
             </div>
 
             <div className="grid grid-cols-2 gap-4 overflow-y-auto md:grid-cols-3 lg:grid-cols-4 max-h-96">
-              {currentSaves.map((save, index) =>
-                renderSaveSlot(index + 1, save, true),
-              )}
               {filteredSaves.length === 0 && (
                 <div className="flex flex-col items-center justify-center py-12 col-span-full text-muted-foreground">
                   <FileText className="w-12 h-12 mb-4" />
@@ -402,6 +450,9 @@ export function DialogSaveLoad({
                       : "Create a save first to load it here"}
                   </p>
                 </div>
+              )}
+              {currentSaves.map((save, index) =>
+                renderSaveSlot(index + 1, save, true),
               )}
             </div>
 
@@ -428,9 +479,20 @@ export function DialogSaveLoad({
                     Next
                   </Button>
                 </div>
-                <Button variant="outline" onClick={() => onOpenChange?.(false)}>
-                  Cancel
-                </Button>
+                <div className="flex gap-2">
+                  <Button
+                    variant="outline"
+                    onClick={() => onOpenChange?.(false)}>
+                    Cancel
+                  </Button>
+                  <Button
+                    onClick={() =>
+                      selectedLoadSave && handleLoad(selectedLoadSave)
+                    }
+                    disabled={!selectedLoadSave}>
+                    Load Simulation
+                  </Button>
+                </div>
               </div>
             )}
           </TabsContent>
