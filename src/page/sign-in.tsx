@@ -6,23 +6,41 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { cn } from "@/lib/utils";
 import { useSignIn } from "@clerk/clerk-react";
+import { zodResolver } from "@hookform/resolvers/zod";
 import { useState } from "react";
+import { useForm } from "react-hook-form";
 import { Link } from "react-router";
+import * as z from "zod";
+
+const signInSchema = z.object({
+	email: z.string().email("Email tidak valid"),
+	password: z.string().min(8, "Password minimal 8 karakter"),
+});
+
+type SignInFormValues = z.infer<typeof signInSchema>;
 
 export default function SignInPage() {
 	const { signIn, isLoaded, setActive } = useSignIn();
-	const [email, setEmail] = useState("");
-	const [password, setPassword] = useState("");
 	const [error, setError] = useState("");
 	const [loading, setLoading] = useState(false);
 
-	async function onSubmit(e: React.FormEvent) {
-		e.preventDefault();
+	const {
+		register,
+		handleSubmit,
+		formState: { errors },
+	} = useForm<SignInFormValues>({
+		resolver: zodResolver(signInSchema),
+	});
+
+	async function onSubmit(data: SignInFormValues) {
 		setError("");
 		setLoading(true);
 		if (!isLoaded) return;
 		try {
-			const result = await signIn.create({ identifier: email, password });
+			const result = await signIn.create({
+				identifier: data.email,
+				password: data.password,
+			});
 			if (result.status === "complete") {
 				await setActive({ session: result.createdSessionId });
 				window.location.href = "/";
@@ -59,7 +77,7 @@ export default function SignInPage() {
 						<CardContent className="grid p-0 md:grid-cols-2">
 							<form
 								className="p-6 md:p-8 bg-gradient-to-b from-white to-slate-50"
-								onSubmit={onSubmit}
+								onSubmit={handleSubmit(onSubmit)}
 							>
 								<div className="flex flex-col gap-6">
 									<div className="flex flex-col items-center text-center">
@@ -79,11 +97,14 @@ export default function SignInPage() {
 											id="email"
 											type="email"
 											placeholder="m@example.com"
-											required
-											value={email}
-											onChange={(e) => setEmail(e.target.value)}
+											{...register("email")}
 											autoComplete="username"
 										/>
+										{errors.email && (
+											<p className="text-xs text-red-500">
+												{errors.email.message}
+											</p>
+										)}
 									</div>
 									<div className="grid gap-2">
 										<div className="flex items-center">
@@ -98,11 +119,14 @@ export default function SignInPage() {
 										<Input
 											id="password"
 											type="password"
-											required
-											value={password}
-											onChange={(e) => setPassword(e.target.value)}
+											{...register("password")}
 											autoComplete="current-password"
 										/>
+										{errors.password && (
+											<p className="text-xs text-red-500">
+												{errors.password.message}
+											</p>
+										)}
 									</div>
 									<Button
 										type="submit"

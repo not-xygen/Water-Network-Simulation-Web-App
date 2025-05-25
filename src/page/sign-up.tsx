@@ -9,22 +9,38 @@ import {
 import { Label } from "@/components/ui/label";
 import { cn } from "@/lib/utils";
 import { useSignUp } from "@clerk/clerk-react";
+import { zodResolver } from "@hookform/resolvers/zod";
 import { EyeIcon, EyeOffIcon } from "lucide-react";
 import { useState } from "react";
 import { Controller, useForm } from "react-hook-form";
 import { Link, useNavigate } from "react-router";
+import * as z from "zod";
 
-type FormData = {
-	firstName: string;
-	lastName: string;
-	email: string;
-	password: string;
-	confirmPassword: string;
-};
+const signUpSchema = z
+	.object({
+		firstName: z.string().min(1, "Nama depan harus diisi"),
+		lastName: z.string().min(1, "Nama belakang harus diisi"),
+		email: z.string().email("Email tidak valid"),
+		password: z
+			.string()
+			.min(8, "Password minimal 8 karakter")
+			.regex(
+				/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)/,
+				"Password harus mengandung huruf besar, huruf kecil, dan angka",
+			),
+		confirmPassword: z.string(),
+	})
+	.refine((data) => data.password === data.confirmPassword, {
+		message: "Password tidak cocok",
+		path: ["confirmPassword"],
+	});
 
-type VerificationData = {
-	code: string;
-};
+const verificationSchema = z.object({
+	code: z.string().length(6, "Kode verifikasi harus 6 digit"),
+});
+
+type SignUpFormValues = z.infer<typeof signUpSchema>;
+type VerificationFormValues = z.infer<typeof verificationSchema>;
 
 export default function SignUp() {
 	const { isLoaded, signUp, setActive } = useSignUp();
@@ -39,28 +55,25 @@ export default function SignUp() {
 	const {
 		register,
 		handleSubmit,
-		watch,
 		formState: { errors },
-	} = useForm<FormData>();
+	} = useForm<SignUpFormValues>({
+		resolver: zodResolver(signUpSchema),
+	});
 
 	const {
 		control,
 		handleSubmit: handleVerificationSubmit,
 		formState: { errors: verificationErrors },
-	} = useForm<VerificationData>({
+	} = useForm<VerificationFormValues>({
+		resolver: zodResolver(verificationSchema),
 		defaultValues: {
 			code: "",
 		},
 	});
 
-	const onSubmit = async (data: FormData) => {
+	const onSubmit = async (data: SignUpFormValues) => {
 		if (!isLoaded) return;
 		setError("");
-
-		if (data.password !== data.confirmPassword) {
-			setError("Passwords do not match");
-			return;
-		}
 
 		try {
 			setIsLoading(true);
@@ -89,7 +102,7 @@ export default function SignUp() {
 		}
 	};
 
-	const onVerificationSubmit = async (data: VerificationData) => {
+	const onVerificationSubmit = async (data: VerificationFormValues) => {
 		if (!isLoaded) return;
 		setError("");
 
@@ -107,7 +120,9 @@ export default function SignUp() {
 			}
 		} catch (err: unknown) {
 			const error = err as { errors?: Array<{ message: string }> };
-			setError(error.errors?.[0]?.message || "Verification failed");
+			setError(
+				error.errors?.[0]?.message || "An error occurred during verification",
+			);
 		} finally {
 			setIsLoading(false);
 		}
@@ -115,16 +130,26 @@ export default function SignUp() {
 
 	const resendCode = async () => {
 		if (!isLoaded) return;
+		setError("");
+
 		try {
+			setIsLoading(true);
 			await signUp.prepareEmailAddressVerification();
-			setError("");
+			// toast({
+			// 	title: "Verification code sent",
+			// 	description: "Please check your email for the new code",
+			// });
 		} catch (err: unknown) {
 			const error = err as { errors?: Array<{ message: string }> };
-			setError(error.errors?.[0]?.message || "Failed to resend code");
+			setError(
+				error.errors?.[0]?.message || "Failed to resend verification code",
+			);
+		} finally {
+			setIsLoading(false);
 		}
 	};
 
-	async function handleGoogleSignUp() {
+	const handleGoogleSignUp = async () => {
 		if (!isLoaded) return;
 		try {
 			await signUp.authenticateWithRedirect({
@@ -136,7 +161,7 @@ export default function SignUp() {
 			console.error("Google sign up error:", error);
 			setError("Failed to sign up with Google.");
 		}
-	}
+	};
 
 	return (
 		<div className="flex items-center justify-center w-full min-h-screen bg-gradient-to-b from-purple-50 via-white to-blue-100">
@@ -166,9 +191,7 @@ export default function SignUp() {
 												<Label htmlFor="firstName">First Name</Label>
 												<Input
 													id="firstName"
-													{...register("firstName", {
-														required: "First name is required",
-													})}
+													{...register("firstName")}
 													type="text"
 												/>
 												{errors.firstName && (
@@ -181,9 +204,7 @@ export default function SignUp() {
 												<Label htmlFor="lastName">Last Name</Label>
 												<Input
 													id="lastName"
-													{...register("lastName", {
-														required: "Last name is required",
-													})}
+													{...register("lastName")}
 													type="text"
 												/>
 												{errors.lastName && (
@@ -199,13 +220,7 @@ export default function SignUp() {
 												id="email"
 												type="email"
 												placeholder="m@example.com"
-												{...register("email", {
-													required: "Email is required",
-													pattern: {
-														value: /^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}$/i,
-														message: "Invalid email format",
-													},
-												})}
+												{...register("email")}
 											/>
 											{errors.email && (
 												<p className="text-xs text-red-500">
@@ -219,13 +234,7 @@ export default function SignUp() {
 												<Input
 													id="password"
 													type={showPassword ? "text" : "password"}
-													{...register("password", {
-														required: "Password is required",
-														minLength: {
-															value: 8,
-															message: "Password must be at least 8 characters",
-														},
-													})}
+													{...register("password")}
 												/>
 												<Button
 													type="button"
@@ -256,14 +265,7 @@ export default function SignUp() {
 												<Input
 													id="confirmPassword"
 													type={showConfirmPassword ? "text" : "password"}
-													{...register("confirmPassword", {
-														required: "Confirm password is required",
-														validate: (val: string) => {
-															if (watch("password") !== val) {
-																return "Passwords do not match";
-															}
-														},
-													})}
+													{...register("confirmPassword")}
 												/>
 												<Button
 													type="button"
@@ -358,7 +360,6 @@ export default function SignUp() {
 											<Controller
 												control={control}
 												name="code"
-												rules={{ required: "Verification code is required" }}
 												render={({ field: { onChange, value } }) => (
 													<div className="flex flex-col items-center">
 														<InputOTP
