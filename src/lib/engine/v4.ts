@@ -56,9 +56,13 @@ const recalculateEdge = (e: Edge, nodeMap: Map<string, Node>): Edge => {
   }
 
   const sourcePressure =
-    sourceNode.pressure + sourceNode.elevation * GRAVITY_PRESSURE;
+    sourceNode.type === "reservoir"
+      ? sourceNode.head * (GRAVITY_PRESSURE / 100)
+      : sourceNode.pressure + sourceNode.elevation * GRAVITY_PRESSURE;
   const targetPressure =
-    targetNode.pressure + targetNode.elevation * GRAVITY_PRESSURE;
+    targetNode.type === "reservoir"
+      ? targetNode.head * (GRAVITY_PRESSURE / 100)
+      : targetNode.pressure + targetNode.elevation * GRAVITY_PRESSURE;
 
   const pressureDiff = sourcePressure - targetPressure;
 
