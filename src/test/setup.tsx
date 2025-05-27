@@ -87,6 +87,7 @@ vi.mock("@radix-ui/react-dropdown-menu", () => {
       disabled?: boolean;
     }) => (
       <div
+        // biome-ignore lint/a11y/useSemanticElements: <intended>
         role="button"
         tabIndex={0}
         onClick={onClick}
@@ -229,6 +230,7 @@ vi.mock("@radix-ui/react-alert-dialog", () => {
       disabled?: boolean;
     }) => (
       <div
+        // biome-ignore lint/a11y/useSemanticElements: <intended>
         role="button"
         tabIndex={0}
         onClick={onClick}
