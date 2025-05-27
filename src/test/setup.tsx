@@ -53,7 +53,7 @@ vi.mock("@radix-ui/react-dropdown-menu", () => {
       open?: boolean;
     }) => <div data-state={open ? "open" : "closed"}>{children}</div>,
     Trigger: ({ children }: { children: React.ReactNode }) => (
-      <button type="button">{children}</button>
+      <div>{children}</div>
     ),
     Portal: ({ children }: { children: React.ReactNode }) => (
       <div>{children}</div>
@@ -63,7 +63,7 @@ vi.mock("@radix-ui/react-dropdown-menu", () => {
     ),
     Sub: ({ children }: { children: React.ReactNode }) => <div>{children}</div>,
     SubTrigger: ({ children }: { children: React.ReactNode }) => (
-      <button type="button">{children}</button>
+      <div>{children}</div>
     ),
     SubContent: ({ children }: { children: React.ReactNode }) => (
       <div>{children}</div>
@@ -72,10 +72,10 @@ vi.mock("@radix-ui/react-dropdown-menu", () => {
       <div>{children}</div>
     ),
     RadioItem: ({ children }: { children: React.ReactNode }) => (
-      <button type="button">{children}</button>
+      <div>{children}</div>
     ),
     CheckboxItem: ({ children }: { children: React.ReactNode }) => (
-      <button type="button">{children}</button>
+      <div>{children}</div>
     ),
     Item: ({
       children,
@@ -86,13 +86,15 @@ vi.mock("@radix-ui/react-dropdown-menu", () => {
       onClick?: () => void;
       disabled?: boolean;
     }) => (
-      <button
-        type="button"
-        disabled={disabled}
+      <div
+        role="button"
+        tabIndex={0}
         onClick={onClick}
-        onKeyDown={(e) => e.key === "Enter" && onClick?.()}>
+        onKeyDown={(e) => e.key === "Enter" && onClick?.()}
+        style={{ cursor: disabled ? "not-allowed" : "pointer" }}
+        aria-disabled={disabled}>
         {children}
-      </button>
+      </div>
     ),
     Group: ({ children }: { children: React.ReactNode }) => (
       <div>{children}</div>
@@ -113,7 +115,7 @@ vi.mock("@radix-ui/react-select", () => {
       <div>{children}</div>
     ),
     Trigger: ({ children }: { children: React.ReactNode }) => (
-      <button type="button">{children}</button>
+      <div>{children}</div>
     ),
     Value: ({ children }: { children: React.ReactNode }) => (
       <div>{children}</div>
@@ -131,10 +133,10 @@ vi.mock("@radix-ui/react-select", () => {
       <div>{children}</div>
     ),
     ScrollUpButton: ({ children }: { children: React.ReactNode }) => (
-      <button type="button">{children}</button>
+      <div>{children}</div>
     ),
     ScrollDownButton: ({ children }: { children: React.ReactNode }) => (
-      <button type="button">{children}</button>
+      <div>{children}</div>
     ),
     Item: ({
       children,
@@ -145,9 +147,15 @@ vi.mock("@radix-ui/react-select", () => {
       value?: string;
       disabled?: boolean;
     }) => (
-      <button type="button" disabled={disabled} value={value}>
+      <div
+        // biome-ignore lint/a11y/useSemanticElements: <intended>
+        role="button"
+        tabIndex={0}
+        data-value={value}
+        style={{ cursor: disabled ? "not-allowed" : "pointer" }}
+        aria-disabled={disabled}>
         {children}
-      </button>
+      </div>
     ),
     Separator: () => <hr />,
     Icon: ({ children }: { children: React.ReactNode }) => (
@@ -194,7 +202,7 @@ vi.mock("@radix-ui/react-alert-dialog", () => {
       open?: boolean;
     }) => <div data-state={open ? "open" : "closed"}>{children}</div>,
     Trigger: ({ children }: { children: React.ReactNode }) => (
-      <button type="button">{children}</button>
+      <div>{children}</div>
     ),
     Portal: ({ children }: { children: React.ReactNode }) => (
       <div>{children}</div>
@@ -220,16 +228,18 @@ vi.mock("@radix-ui/react-alert-dialog", () => {
       onClick?: () => void;
       disabled?: boolean;
     }) => (
-      <button
-        type="button"
-        disabled={disabled}
+      <div
+        role="button"
+        tabIndex={0}
         onClick={onClick}
-        onKeyDown={(e) => e.key === "Enter" && onClick?.()}>
+        onKeyDown={(e) => e.key === "Enter" && onClick?.()}
+        style={{ cursor: disabled ? "not-allowed" : "pointer" }}
+        aria-disabled={disabled}>
         {children}
-      </button>
+      </div>
     ),
     Cancel: ({ children }: { children: React.ReactNode }) => (
-      <button type="button">{children}</button>
+      <div>{children}</div>
     ),
   };
 });
