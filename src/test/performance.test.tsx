@@ -35,7 +35,7 @@ describe("Performance Tests", () => {
 		onRotateEnd: vi.fn(),
 	};
 
-	it("renders 100 nodes within 2000ms", () => {
+	it("should render 100 nodes within 2000ms", () => {
 		const startTime = performance.now();
 
 		const nodes = Array.from({ length: 100 }, (_, i) => ({
@@ -60,7 +60,7 @@ describe("Performance Tests", () => {
 		);
 	});
 
-	it("handles rapid state changes efficiently", () => {
+	it("should handle rapid state changes efficiently", () => {
 		const startTime = performance.now();
 		const { rerender } = render(
 			<NodeItem {...defaultProps} isSelected={false} />,

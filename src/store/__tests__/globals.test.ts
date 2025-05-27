@@ -3,7 +3,7 @@ import { act, renderHook } from "@testing-library/react";
 import { beforeEach, describe, expect, it } from "vitest";
 import useGlobalStore from "../globals";
 
-describe("useGlobalStore", () => {
+describe("Global Store", () => {
 	beforeEach(() => {
 		const { result } = renderHook(() => useGlobalStore());
 		act(() => {

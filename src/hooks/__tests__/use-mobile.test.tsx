@@ -2,7 +2,7 @@ import { act, renderHook } from "@testing-library/react";
 import { describe, expect, it, vi } from "vitest";
 import { useIsMobile } from "../use-mobile";
 
-describe("useIsMobile", () => {
+describe("useIsMobile Hook", () => {
 	it("should return false for desktop width", () => {
 		window.innerWidth = 1024;
 		const { result } = renderHook(() => useIsMobile());
