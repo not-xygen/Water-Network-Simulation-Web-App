@@ -32,9 +32,12 @@ export const useNodeHandler = (args?: {
 
 			const startX = event.clientX;
 			const startY = event.clientY;
-			if (args?.lastMousePosRef)
+			if (args?.lastMousePosRef) {
 				args.lastMousePosRef.current = { x: startX, y: startY };
-			if (args?.setDraggedNode) args.setDraggedNode(nodeId);
+			}
+			if (args?.setDraggedNode) {
+				args.setDraggedNode(nodeId);
+			}
 
 			const clickedNode = nodes.find((n) => n.id === nodeId);
 			if (!clickedNode) return;

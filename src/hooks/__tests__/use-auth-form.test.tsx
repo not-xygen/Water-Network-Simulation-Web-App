@@ -6,7 +6,6 @@ import { type Mock, beforeEach, describe, expect, it, vi } from "vitest";
 import { useSignInForm } from "../use-auth-form";
 import { useToast } from "../use-toast";
 
-// Mock dependencies
 vi.mock("@clerk/clerk-react", () => ({
   useSignIn: vi.fn(),
 }));
@@ -60,7 +59,6 @@ describe("useSignInForm", () => {
       });
     });
 
-    // Tunggu sebentar untuk memastikan semua async operations selesai
     await new Promise((resolve) => setTimeout(resolve, 0));
 
     expect(mockSignIn.signIn.create).toHaveBeenCalledWith({
@@ -89,7 +87,6 @@ describe("useSignInForm", () => {
       });
     });
 
-    // Tunggu sebentar untuk memastikan semua async operations selesai
     await new Promise((resolve) => setTimeout(resolve, 0));
 
     expect(mockSignIn.signIn.create).toHaveBeenCalledWith({
@@ -111,7 +108,6 @@ describe("useSignInForm", () => {
       await result.current.handleGoogleSignIn();
     });
 
-    // Tunggu sebentar untuk memastikan semua async operations selesai
     await new Promise((resolve) => setTimeout(resolve, 0));
 
     expect(mockSignIn.signIn.authenticateWithRedirect).toHaveBeenCalledWith({
@@ -133,7 +129,6 @@ describe("useSignInForm", () => {
       await result.current.handleGoogleSignIn();
     });
 
-    // Tunggu sebentar untuk memastikan semua async operations selesai
     await new Promise((resolve) => setTimeout(resolve, 0));
 
     expect(mockSignIn.signIn.authenticateWithRedirect).toHaveBeenCalledWith({

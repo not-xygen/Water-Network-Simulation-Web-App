@@ -55,7 +55,6 @@ const recalculateEdge = (e: Edge, nodeMap: Map<string, Node>): Edge => {
     return { ...e, flowRate: 0, velocity: 0 };
   }
 
-  // Calculate source pressure considering elevation
   const sourcePressure =
     sourceNode.pressure + sourceNode.elevation * GRAVITY_PRESSURE;
   const targetPressure =
@@ -71,7 +70,6 @@ const recalculateEdge = (e: Edge, nodeMap: Map<string, Node>): Edge => {
   const diameterM = e.diameter / 100;
   const slope = Math.abs(pressureDiff) / lengthM;
 
-  // Use Hazen-Williams equation for flow calculation
   let flowRate = 0.2785 * e.roughness * diameterM ** 2.63 * slope ** 0.54;
   flowRate = Math.sign(pressureDiff) * flowRate;
 
@@ -82,7 +80,6 @@ const recalculateEdge = (e: Edge, nodeMap: Map<string, Node>): Edge => {
   };
 };
 
-// ───────────────────────────── Update node spesifik ───────────────────────
 const updateReservoir = (n: ReservoirNode): ReservoirNode => ({
   ...n,
   pressure: n.head * (GRAVITY_PRESSURE / 100),

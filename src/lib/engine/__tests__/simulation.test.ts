@@ -12,7 +12,6 @@ import { describe, expect, it } from "vitest";
 import { simulateStep } from "../v4";
 
 describe("Simulation Logic", () => {
-  // Test data
   const mockReservoir: ReservoirNode = {
     id: "reservoir-1",
     type: "reservoir",
@@ -350,7 +349,7 @@ describe("Simulation Logic", () => {
     it("should handle elevation changes", () => {
       const elevatedTank: TankNode = {
         ...mockTank,
-        elevation: 10, // 10 meters elevation
+        elevation: 10,
       };
 
       const nodes: Node[] = [mockReservoir, elevatedTank];
@@ -359,7 +358,6 @@ describe("Simulation Logic", () => {
       const result = simulateStep(nodes, edges);
       const updatedEdge = result.edges[0];
 
-      // Flow should be affected by elevation difference
       expect(updatedEdge.flowRate).toBeLessThan(
         simulateStep([mockReservoir, mockTank], [mockEdge]).edges[0].flowRate,
       );

@@ -18,25 +18,35 @@ export function useAccountForm() {
   });
 
   const onSubmit = async (data: AccountFormValues) => {
-    if (!user) return;
-    setError("");
+    if (!user) {
+      setError("User not available");
+      return;
+    }
+
+    if (typeof user.update !== "function") {
+      setError("User not available");
+      return;
+    }
 
     try {
       setIsLoading(true);
+      setError("");
+
       await user.update({
         firstName: data.firstName,
         lastName: data.lastName,
       });
+
       form.reset({
         firstName: data.firstName,
         lastName: data.lastName,
       });
     } catch (err: unknown) {
-      const error = err as { errors?: Array<{ message: string }> };
-      setError(
-        error.errors?.[0]?.message ||
-          "An error occurred while updating profile",
-      );
+      if (err instanceof Error) {
+        setError(err.message);
+      } else {
+        setError("Update failed");
+      }
     } finally {
       setIsLoading(false);
     }

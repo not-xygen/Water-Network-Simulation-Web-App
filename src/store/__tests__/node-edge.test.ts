@@ -53,26 +53,22 @@ describe("useNodeEdgeStore", () => {
   it("should handle node operations", () => {
     const { result } = renderHook(() => useNodeEdgeStore());
 
-    // Test addNode
     act(() => {
       result.current.addNode(mockNode);
     });
     expect(result.current.nodes).toHaveLength(1);
     expect(result.current.nodes[0]).toEqual(mockNode);
 
-    // Test updateNodePosition
     act(() => {
       result.current.updateNodePosition("node1", 10, 20);
     });
     expect(result.current.nodes[0].position).toEqual({ x: 10, y: 20 });
 
-    // Test updateNodeRotation
     act(() => {
       result.current.updateNodeRotation("node1", 45);
     });
     expect(result.current.nodes[0].rotation).toBe(45);
 
-    // Test removeNode
     act(() => {
       result.current.removeNode("node1");
     });
@@ -82,14 +78,12 @@ describe("useNodeEdgeStore", () => {
   it("should handle edge operations", () => {
     const { result } = renderHook(() => useNodeEdgeStore());
 
-    // Test addEdge
     act(() => {
       result.current.addEdge(mockEdge);
     });
     expect(result.current.edges).toHaveLength(1);
     expect(result.current.edges[0]).toEqual(mockEdge);
 
-    // Test updateEdgeConnection
     act(() => {
       result.current.updateEdgeConnection("edge1", {
         from: "source",
@@ -100,7 +94,6 @@ describe("useNodeEdgeStore", () => {
     expect(result.current.edges[0].sourceId).toBe("node3");
     expect(result.current.edges[0].sourcePosition).toBe("top");
 
-    // Test removeEdge
     act(() => {
       result.current.removeEdge("edge1");
     });
@@ -110,7 +103,6 @@ describe("useNodeEdgeStore", () => {
   it("should handle selection operations", () => {
     const { result } = renderHook(() => useNodeEdgeStore());
 
-    // Test node selection
     act(() => {
       result.current.addNode(mockNode);
       result.current.setSelectedNodes([mockNode]);
@@ -118,7 +110,6 @@ describe("useNodeEdgeStore", () => {
     expect(result.current.selectedNodes).toHaveLength(1);
     expect(result.current.selectedNodes[0]).toEqual(mockNode);
 
-    // Test edge selection
     act(() => {
       result.current.addEdge(mockEdge);
       result.current.setSelectedEdges([mockEdge]);
