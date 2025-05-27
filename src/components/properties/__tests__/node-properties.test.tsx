@@ -46,7 +46,7 @@ describe("NodeProperties", () => {
   it("handles note textarea change", () => {
     render(<NodeProperties {...defaultProps} />);
 
-    const noteTextarea = screen.getByRole("textbox");
+    const noteTextarea = screen.getByDisplayValue("Test note");
     fireEvent.change(noteTextarea, { target: { value: "New note" } });
 
     expect(defaultProps.onUpdateProperty).toHaveBeenCalledWith(
@@ -89,8 +89,9 @@ describe("NodeProperties", () => {
   it("renders editable properties in edit mode", () => {
     render(<NodeProperties {...defaultProps} />);
 
-    expect(screen.getByRole("textbox")).toBeInTheDocument();
-    expect(screen.getByDisplayValue("Test note")).toBeInTheDocument();
+    const noteTextarea = screen.getByDisplayValue("Test note");
+    expect(noteTextarea).toBeInTheDocument();
+    expect(noteTextarea).toHaveValue("Test note");
   });
 
   it("renders valve-specific properties", () => {
