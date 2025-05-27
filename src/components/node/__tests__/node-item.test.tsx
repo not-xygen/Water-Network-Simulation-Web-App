@@ -1,3 +1,4 @@
+import "@/test/setup";
 import type {
   FittingNode,
   Node,

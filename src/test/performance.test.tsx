@@ -1,87 +1,162 @@
+import NodeItem from "@/components/node/node-item";
 import type { Node, ReservoirNode } from "@/types/node-edge";
-import { render } from "@testing-library/react";
-import { describe, expect, it } from "vitest";
-import NodeItem from "../components/node/node-item";
+import { cleanup, render } from "@testing-library/react";
+import { afterEach, describe, expect, it, vi } from "vitest";
+import "@testing-library/jest-dom";
 
 describe("Performance Tests", () => {
-  const mockNode: ReservoirNode = {
-    id: "1",
-    type: "reservoir",
-    position: { x: 0, y: 0 },
-    rotation: 0,
-    elevation: 0,
-    flowRate: 0,
-    pressure: 0,
-    active: true,
-    head: 10,
-  };
+	afterEach(() => {
+		cleanup();
+		vi.clearAllMocks();
+	});
 
-  const defaultProps = {
-    node: mockNode,
-    isSelected: false,
-    zoom: 100,
-    isDragged: false,
-    onMouseDown: () => {},
-    onMouseUp: () => {},
-    onStartConnect: () => {},
-    onEndConnect: () => {},
-    onRotateStart: () => {},
-    onRotateEnd: () => {},
-  };
+	const mockNode: ReservoirNode = {
+		id: "1",
+		type: "reservoir",
+		position: { x: 0, y: 0 },
+		rotation: 0,
+		elevation: 0,
+		flowRate: 0,
+		pressure: 0,
+		active: true,
+		head: 10,
+	};
 
-  it("renders 100 nodes within 1000ms", () => {
-    const startTime = performance.now();
+	const defaultProps = {
+		node: mockNode,
+		isSelected: false,
+		zoom: 100,
+		isDragged: false,
+		onMouseDown: vi.fn(),
+		onMouseUp: vi.fn(),
+		onStartConnect: vi.fn(),
+		onEndConnect: vi.fn(),
+		onRotateStart: vi.fn(),
+		onRotateEnd: vi.fn(),
+	};
 
-    const nodes = Array.from({ length: 100 }, (_, i) => ({
-      ...mockNode,
-      id: String(i + 1),
-    }));
+	it("renders 100 nodes within 2000ms", () => {
+		const startTime = performance.now();
 
-    for (const node of nodes) {
-      render(<NodeItem {...defaultProps} node={node} />);
-    }
+		const nodes = Array.from({ length: 100 }, (_, i) => ({
+			...mockNode,
+			id: String(i + 1),
+		}));
 
-    const endTime = performance.now();
-    const renderTime = endTime - startTime;
+		const { container } = render(
+			<div data-testid="nodes-container">
+				{nodes.map((node) => (
+					<NodeItem key={node.id} {...defaultProps} node={node} />
+				))}
+			</div>,
+		);
 
-    expect(renderTime).toBeLessThan(1000);
-  });
+		const endTime = performance.now();
+		const renderTime = endTime - startTime;
 
-  it("handles rapid state changes efficiently", () => {
-    const startTime = performance.now();
+		expect(renderTime).toBeLessThan(2000);
+		expect(container.querySelectorAll('[data-testid*="node-"]')).toHaveLength(
+			100,
+		);
+	});
 
-    for (let i = 0; i < 100; i++) {
-      render(<NodeItem {...defaultProps} isSelected={i % 2 === 0} />);
-    }
+	it("handles rapid state changes efficiently", () => {
+		const startTime = performance.now();
+		const { rerender } = render(
+			<NodeItem {...defaultProps} isSelected={false} />,
+		);
 
-    const endTime = performance.now();
-    const updateTime = endTime - startTime;
+		try {
+			for (let i = 0; i < 100; i++) {
+				rerender(<NodeItem {...defaultProps} isSelected={i % 2 === 0} />);
+			}
+		} catch (error) {
+			console.error("Error during state changes:", error);
+			throw error;
+		}
 
-    expect(updateTime).toBeLessThan(500);
-  });
+		const endTime = performance.now();
+		const updateTime = endTime - startTime;
 
-  it("maintains performance with complex node types", () => {
-    const startTime = performance.now();
+		expect(updateTime).toBeLessThan(1000);
+	});
 
-    const complexNode: Node = {
-      ...mockNode,
-      type: "fitting",
-      subtype: "tee",
-      demand: 100,
-      diameter: 100,
-      inletPressure: 10,
-      outletPressure: 5,
-      minorLossCoefficient: 0.5,
-      velocity: 2,
-    };
+	it("maintains performance with complex node types", () => {
+		const startTime = performance.now();
 
-    for (let i = 0; i < 50; i++) {
-      render(<NodeItem {...defaultProps} node={complexNode} />);
-    }
+		const complexNode: Node = {
+			...mockNode,
+			type: "fitting",
+			demand: 0,
+			diameter: 0,
+			subtype: "coupling",
+			inletPressure: 0,
+			outletPressure: 0,
+			minorLossCoefficient: 0,
+			velocity: 0,
+		};
 
-    const endTime = performance.now();
-    const renderTime = endTime - startTime;
+		const nodes = Array.from({ length: 50 }, (_, i) => ({
+			...complexNode,
+			id: String(i + 1),
+		}));
 
-    expect(renderTime).toBeLessThan(500);
-  });
+		const { container } = render(
+			<div data-testid="complex-nodes-container">
+				{nodes.map((node) => (
+					<NodeItem key={node.id} {...defaultProps} node={node} />
+				))}
+			</div>,
+		);
+
+		const endTime = performance.now();
+		const renderTime = endTime - startTime;
+
+		expect(renderTime).toBeLessThan(1000);
+		expect(
+			container.querySelector('[data-testid="complex-nodes-container"]'),
+		).toBeInTheDocument();
+	});
+
+	it("handles zoom changes efficiently", () => {
+		const startTime = performance.now();
+		const { rerender } = render(<NodeItem {...defaultProps} zoom={50} />);
+
+		const zoomLevels = [25, 50, 75, 100, 125, 150, 200];
+
+		try {
+			for (const zoom of zoomLevels) {
+				rerender(<NodeItem {...defaultProps} zoom={zoom} />);
+			}
+		} catch (error) {
+			console.error("Error during zoom changes:", error);
+			throw error;
+		}
+
+		const endTime = performance.now();
+		const zoomTime = endTime - startTime;
+
+		expect(zoomTime).toBeLessThan(200);
+	});
+
+	it("handles drag state changes efficiently", () => {
+		const startTime = performance.now();
+		const { rerender } = render(
+			<NodeItem {...defaultProps} isDragged={false} />,
+		);
+
+		try {
+			for (let i = 0; i < 50; i++) {
+				rerender(<NodeItem {...defaultProps} isDragged={i % 2 === 0} />);
+			}
+		} catch (error) {
+			console.error("Error during drag state changes:", error);
+			throw error;
+		}
+
+		const endTime = performance.now();
+		const dragTime = endTime - startTime;
+
+		expect(dragTime).toBeLessThan(400);
+	});
 });

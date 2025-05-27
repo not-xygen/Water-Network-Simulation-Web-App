@@ -133,7 +133,7 @@ importers:
         specifier: ^14.2.1
         version: 14.3.1(@types/react@18.3.18)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
       '@testing-library/user-event':
-        specifier: ^14.5.2
+        specifier: ^14.6.1
         version: 14.6.1(@testing-library/dom@9.3.4)
       '@types/node':
         specifier: ^22.5.4
