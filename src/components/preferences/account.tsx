@@ -129,7 +129,7 @@ export function AccountPreferences() {
 					<p className="text-sm text-muted-foreground">
 						Please sign in to access account settings
 					</p>
-					<Button onClick={() => navigate("/login")}>Sign In</Button>
+					<Button onClick={() => navigate("/sign")}>Sign In</Button>
 				</div>
 			</SignedOut>
 		</>

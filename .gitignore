@@ -27,3 +27,7 @@ dist-ssr
 .env
 .env.development
 .env.production
+
+# Coverage
+coverage
+

@@ -96,6 +96,7 @@ const NodeItem: React.FC<NodeItemProps> = ({
 
   return (
     <div
+      data-testid={`node-${node.id}`}
       className={cn(
         "relative w-16 h-16 group select-none",
         isDragged && "pointer-events-none",
