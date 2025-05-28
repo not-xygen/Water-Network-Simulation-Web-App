@@ -6,39 +6,36 @@ export type NodeBase = {
   subtype?: string;
   label?: string;
   position: { x: number; y: number };
-  rotation: number;
-  elevation: number;
-  flowRate: number;
-  pressure: number;
+  rotation: number; // [deg]
+  elevation: number; // [m]
+  flowRate: number; // [L/s]
+  inletPressure: number; // [bar]
+  outletPressure: number; // [bar]
+  velocity: number; // [m/s]
   active: boolean;
   note?: string;
-  path?: Path2D;
 };
 
 export type FittingNode = NodeBase & {
   type: "fitting";
   subtype: "coupling" | "tee" | "cross" | "elbow";
-  demand: number;
-  diameter: number;
-  inletPressure?: number;
-  outletPressure?: number;
-  minorLossCoefficient?: number;
-  velocity?: number;
+  diameter: number; // [cm]
+  minorLossCoefficient?: number; // [C]
 };
 
 export type ReservoirNode = NodeBase & {
   type: "reservoir";
-  head: number;
+  head: number; // [m]
 };
 
 export type TankNode = NodeBase & {
   type: "tank";
-  diameter: number;
-  height: number;
-  maxVolume: number;
-  currentVolume: number;
-  currentVolumeHeight: number;
-  filledPercentage: number;
+  diameter: number; // [cm]
+  height: number; // [cm]
+  maxVolume: number; // [L]
+  currentVolume: number; // [L]
+  currentVolumeHeight: number; // [cm]
+  filledPercentage: number; // [%]
 };
 
 export type PumpNode = NodeBase & {
@@ -50,16 +47,14 @@ export type PumpNode = NodeBase & {
   curveFlow: number[];
   suctionPipeDiameter: number;
   dischargePipeDiameter: number;
-  inletPressure?: number;
-  outletPressure?: number;
   operatingHead?: number;
 };
 
 export type ValveNode = NodeBase & {
   type: "valve";
   status: "open" | "close";
-  diameter: number;
-  lossCoefficient?: number;
+  diameter: number; // [cm]
+  minorLossCoefficient?: number; // [C]
 };
 
 export type Node =
@@ -76,10 +71,9 @@ export type Edge = {
   targetId: string;
   sourcePosition: "left" | "right" | "top" | "bottom";
   targetPosition: "left" | "right" | "top" | "bottom";
-  diameter: number;
-  length: number;
-  roughness: number;
-  flowRate: number;
-  velocity: number;
-  path?: Path2D;
+  diameter: number; // [cm]
+  length: number; // [m]
+  roughness: number; // [C]
+  flowRate: number; // [L/s]
+  velocity: number; // [m/s]
 };

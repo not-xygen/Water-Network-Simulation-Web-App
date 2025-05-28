@@ -1,8 +1,4 @@
-import {
-  FITTING_COEFFICIENTS,
-  GRAVITY_PRESSURE,
-  PIXEL_TO_CM,
-} from "@/constant/globals";
+import { GRAVITY_PRESSURE, PIXEL_TO_CM } from "@/constant/globals";
 import useNodeEdgeStore from "@/store/node-edge";
 import useSimulationStore from "@/store/simulation";
 import type {
@@ -16,12 +12,14 @@ import type {
 } from "@/types/node-edge";
 
 const MIN_SLOPE = 0.00001;
+const GRAVITY = 9.81;
 let simulationInterval: NodeJS.Timeout | null = null;
+
 const SIMULATION_INTERVAL = 1000; // [ms]
+
 const calculateVelocity = (Q: number, D: number): number => {
-  // Q [L/s], D [m] → v [m/s]
   const area = Math.PI * (D / 100 / 2) ** 2; // [m²]
-  return area > 0 ? Math.abs(Q) / area : 0;
+  return area > 0 ? Math.abs(Q) / 1000 / area : 0;
 };
 
 const interpolateFromCurve = (
@@ -43,69 +41,84 @@ const interpolateFromCurve = (
   return 0;
 };
 
-const recalculateEdge = (edge: Edge, nodeMap: Map<string, Node>): Edge => {
-  const src = nodeMap.get(edge.sourceId);
-  const dst = nodeMap.get(edge.targetId);
-  if (!src || !dst) return { ...edge, flowRate: 0, velocity: 0 };
+const recalculateEdge = (e: Edge, nodeMap: Map<string, Node>): Edge => {
+  const sourceNode = nodeMap.get(e.sourceId);
+  const targetNode = nodeMap.get(e.targetId);
 
-  let pSrc =
-    src.type === "fitting" ? src.outletPressure ?? 0 : src.outletPressure ?? 0;
-  const pDst =
-    dst.type === "fitting" ? dst.outletPressure ?? 0 : dst.outletPressure ?? 0;
-
-  if (dst.type === "pump") {
-    const limit = (dst.suctionHeadMax ?? 0) * (GRAVITY_PRESSURE / 100000);
-    if (pSrc < limit) return { ...edge, flowRate: 0, velocity: 0 };
-    pSrc = Math.max(0, pSrc - 0.2);
+  if (!sourceNode?.active || !targetNode?.active) {
+    return { ...e, flowRate: 0, velocity: 0 };
   }
 
-  const dP = pSrc - pDst;
-  if (Math.abs(dP) < MIN_SLOPE) return { ...edge, flowRate: 0, velocity: 0 };
+  const sourcePressure =
+    sourceNode.type === "reservoir"
+      ? sourceNode.head * (GRAVITY_PRESSURE / 100)
+      : sourceNode.outletPressure + sourceNode.elevation * GRAVITY_PRESSURE;
+  const targetPressure =
+    targetNode.type === "reservoir"
+      ? targetNode.head * (GRAVITY_PRESSURE / 100)
+      : targetNode.inletPressure + targetNode.elevation * GRAVITY_PRESSURE;
 
-  const L = edge.length * (PIXEL_TO_CM / 100); // [m]
-  const D = edge.diameter / 100; // [cm→m]
-  const S = Math.abs(dP) / L; // [gradient]
-  let Q = 0.2785 * edge.roughness * D ** 2.63 * S ** 0.54; // L/s
-  Q *= Math.sign(dP);
+  const pressureDiff = sourcePressure - targetPressure;
 
-  if (src.type === "fitting" && src.diameter) {
-    const Dfit = Math.min(src.diameter, edge.diameter) / 100;
-    Q = Math.min(Q, 0.2785 * edge.roughness * Dfit ** 2.63 * S ** 0.54);
+  if (Math.abs(pressureDiff) <= MIN_SLOPE) {
+    return { ...e, flowRate: 0, velocity: 0 };
   }
+
+  const lengthM = (e.length * PIXEL_TO_CM) / 100;
+  const diameterM = e.diameter / 100;
+  const slope = Math.abs(pressureDiff) / lengthM;
+
+  let flowRate = 0.2785 * e.roughness * diameterM ** 2.63 * slope ** 0.54;
+  flowRate = Math.sign(pressureDiff) * flowRate;
 
   return {
-    ...edge,
-    flowRate: Q * 1000,
-    velocity: calculateVelocity(Q, edge.diameter),
+    ...e,
+    flowRate,
+    velocity: calculateVelocity(flowRate, e.diameter),
   };
 };
 
 const updateReservoir = (n: ReservoirNode): ReservoirNode => ({
   ...n,
-  inletPressure: n.head * (GRAVITY_PRESSURE / 100),
   outletPressure: n.head * (GRAVITY_PRESSURE / 100),
   flowRate: 0,
 });
 
 const updateTank = (n: TankNode, netFlow: number, dt: number): TankNode => {
-  const diamM = n.diameter / 100; // [cm→m]
-  const hM = n.height / 100;
-  const rM = diamM / 2;
-  const baseArea = Math.PI * rM ** 2; // [m²]
-  const maxVol = baseArea * hM * 1000; // [L]
-  const dV = netFlow * dt; // [L]
-  const vol = Math.min(Math.max(0, n.currentVolume + dV), maxVol);
-  const h = vol / baseArea / 1000; // [m]
-  const p = h * (GRAVITY_PRESSURE / 100); // [bar]
+  if (!n.diameter || n.diameter <= 0) {
+    return {
+      ...n,
+      flowRate: 0,
+      currentVolume: 0,
+      currentVolumeHeight: 0,
+      filledPercentage: 0,
+    };
+  }
+
+  const diameterM = n.diameter / 100;
+  const heightM = n.height / 100;
+  const radiusM = diameterM / 2;
+  const baseArea = Math.PI * radiusM ** 2;
+  const maxVolume = baseArea * heightM * 1000;
+
+  const currentVolume = Math.max(
+    0,
+    Math.min(maxVolume, (n.currentVolume || 0) + netFlow * dt),
+  );
+  const currentVolumeHeight = ((currentVolume / baseArea) * 100) / 10000;
+  const filledPercentage = (currentVolume / maxVolume) * 100;
+
+  const hydrostaticPressure = (currentVolumeHeight * GRAVITY_PRESSURE) / 100;
+  const elevationPressure = (n.elevation * GRAVITY_PRESSURE) / 100;
+  const totalPressure = hydrostaticPressure + elevationPressure;
 
   return {
     ...n,
-    maxVolume: maxVol,
-    currentVolume: vol,
-    currentVolumeHeight: h,
-    filledPercentage: (vol / maxVol) * 100,
-    inletPressure: p,
-    outletPressure: p,
+    maxVolume,
+    currentVolume,
+    currentVolumeHeight,
+    filledPercentage,
+    outletPressure: totalPressure,
     flowRate: netFlow,
   };
 };
@@ -147,42 +160,40 @@ const updateFitting = (
   nodes: Node[],
   edges: Edge[],
 ): FittingNode => {
-  if (!n.diameter || n.diameter <= 0)
+  if (!n.diameter || n.diameter <= 0) {
     return {
       ...n,
-      inletPressure: 0,
-      outletPressure: 0,
       flowRate: 0,
       velocity: 0,
+      inletPressure: 0,
+      outletPressure: 0,
     };
+  }
 
   const inletEdge = edges.find((e) => e.targetId === n.id);
-  const inletNode = inletEdge
-    ? nodes.find((x) => x.id === inletEdge.sourceId)
-    : null;
-  const inletP = inletNode?.outletPressure ?? 0;
+  const outletEdge = edges.find((e) => e.sourceId === n.id);
 
-  const D = n.diameter / 100; // [cm→m]
-  const area = Math.PI * (D / 2) ** 2; // [m²]
-  const v = area > 0 ? Math.abs(netFlow) / 1000 / area : 0; // [m/s]
+  if (!inletEdge || !outletEdge) return n;
 
-  const C =
-    FITTING_COEFFICIENTS[n.subtype as keyof typeof FITTING_COEFFICIENTS] ||
-    FITTING_COEFFICIENTS.default;
+  const inletNode = nodes.find((node) => node.id === inletEdge.sourceId);
+  if (!inletNode) return n;
 
-  const headLossM = (C * v ** 2) / (2 * 9.81); // [m]
-  const minorLoss = headLossM * (GRAVITY_PRESSURE / 100000); // [bar]
-  const elevLoss = n.elevation * (GRAVITY_PRESSURE / 100000); // [bar]
+  const inletPressure =
+    inletNode.inletPressure + (inletNode.elevation * GRAVITY_PRESSURE) / 100;
 
-  const outletP = Math.max(0, inletP - minorLoss - elevLoss);
+  const velocity = calculateVelocity(netFlow, n.diameter);
+  const lossCoefficient = n.minorLossCoefficient ?? 0.5;
+  const pressureLoss = (lossCoefficient * velocity * velocity) / (2 * GRAVITY);
+
+  // Calculate outlet pressure
+  const outletPressure = Math.max(0, inletPressure - pressureLoss);
 
   return {
     ...n,
     flowRate: netFlow,
-    velocity: v,
-    minorLossCoefficient: C,
-    inletPressure: inletP,
-    outletPressure: outletP,
+    velocity,
+    inletPressure,
+    outletPressure,
   };
 };
 
@@ -192,20 +203,21 @@ const updateValve = (n: ValveNode, netFlow: number): ValveNode =>
     : {
         ...n,
         flowRate: netFlow,
-        inletPressure: n.inletPressure || 0,
+        inletPressure: n.inletPressure,
         outletPressure: Math.max(
           0,
-          (n.inletPressure || 0) - (n.minorLossCoefficient || 0.05),
+          n.inletPressure - (n.minorLossCoefficient || 0.05),
         ),
       };
 
 export const simulateStep = (nodes: Node[], edges: Edge[]) => {
   const initNodes = nodes.map((n) => {
-    if (!n.active)
-      return { ...n, flowRate: 0, inletPressure: 0, outletPressure: 0 };
+    if (!n.active) return { ...n, flowRate: 0, pressure: 0 };
     return n.type === "reservoir" ? updateReservoir(n) : n;
   });
+
   const nodeMap = new Map<string, Node>(initNodes.map((n) => [n.id, n]));
+
   const passEdges = edges.map((e) => recalculateEdge(e, nodeMap));
 
   const pumpNodes = initNodes
@@ -288,8 +300,7 @@ export const resetSimulation = () => {
     nodes: st.nodes.map((n) => ({
       ...n,
       flowRate: 0,
-      inletPressure: 0,
-      outletPressure: 0,
+      pressure: 0,
       ...(n.type === "tank" && {
         currentVolume: 0,
         currentVolumeHeight: 0,

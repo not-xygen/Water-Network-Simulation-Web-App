@@ -72,7 +72,7 @@ describe("Sign In Form Hook", () => {
 		expect(mockNavigate).toHaveBeenCalledWith("/");
 	});
 
-	it("handles failed sign in", async () => {
+	it("should handles failed sign in", async () => {
 		const errorMessage = "Invalid email or password.";
 		mockSignIn.signIn.create.mockRejectedValueOnce({
 			errors: [{ message: errorMessage }],
@@ -101,7 +101,7 @@ describe("Sign In Form Hook", () => {
 		});
 	});
 
-	it("handles Google sign in", async () => {
+	it("should handles Google sign in", async () => {
 		const { result } = renderHook(() => useSignInForm());
 
 		await act(async () => {
@@ -117,7 +117,7 @@ describe("Sign In Form Hook", () => {
 		});
 	});
 
-	it("handles Google sign in error", async () => {
+	it("should handles Google sign in error", async () => {
 		const errorMessage = "Failed to sign in with Google.";
 		mockSignIn.signIn.authenticateWithRedirect.mockRejectedValueOnce({
 			errors: [{ message: errorMessage }],

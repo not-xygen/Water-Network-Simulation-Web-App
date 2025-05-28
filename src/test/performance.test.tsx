@@ -17,7 +17,9 @@ describe("Performance Tests", () => {
 		rotation: 0,
 		elevation: 0,
 		flowRate: 0,
-		pressure: 0,
+		inletPressure: 0,
+		outletPressure: 0,
+		velocity: 0,
 		active: true,
 		head: 10,
 	};
@@ -81,13 +83,12 @@ describe("Performance Tests", () => {
 		expect(updateTime).toBeLessThan(1000);
 	});
 
-	it("maintains performance with complex node types", () => {
+	it("should maintain performance with complex node types", () => {
 		const startTime = performance.now();
 
 		const complexNode: Node = {
 			...mockNode,
 			type: "fitting",
-			demand: 0,
 			diameter: 0,
 			subtype: "coupling",
 			inletPressure: 0,
@@ -118,7 +119,7 @@ describe("Performance Tests", () => {
 		).toBeInTheDocument();
 	});
 
-	it("handles zoom changes efficiently", () => {
+	it("should handle zoom changes efficiently", () => {
 		const startTime = performance.now();
 		const { rerender } = render(<NodeItem {...defaultProps} zoom={50} />);
 
@@ -139,7 +140,7 @@ describe("Performance Tests", () => {
 		expect(zoomTime).toBeLessThan(200);
 	});
 
-	it("handles drag state changes efficiently", () => {
+	it("should handle drag state changes efficiently", () => {
 		const startTime = performance.now();
 		const { rerender } = render(
 			<NodeItem {...defaultProps} isDragged={false} />,

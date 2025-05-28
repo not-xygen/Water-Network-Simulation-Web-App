@@ -9,7 +9,7 @@ import type {
 	ValveNode,
 } from "@/types/node-edge";
 import { describe, expect, it } from "vitest";
-import { simulateStep } from "../v4";
+import { simulateStep } from "../v5";
 
 describe("Simulation Engine", () => {
 	const mockReservoir: ReservoirNode = {
@@ -19,7 +19,9 @@ describe("Simulation Engine", () => {
 		rotation: 0,
 		elevation: 0,
 		flowRate: 0,
-		pressure: 0,
+		inletPressure: 0,
+		outletPressure: 0,
+		velocity: 0,
 		active: true,
 		head: 10,
 	};
@@ -31,7 +33,9 @@ describe("Simulation Engine", () => {
 		rotation: 0,
 		elevation: 0,
 		flowRate: 0,
-		pressure: 0,
+		inletPressure: 0,
+		outletPressure: 0,
+		velocity: 0,
 		active: true,
 		diameter: 100,
 		height: 100,
@@ -48,7 +52,9 @@ describe("Simulation Engine", () => {
 		rotation: 0,
 		elevation: 0,
 		flowRate: 0,
-		pressure: 0,
+		inletPressure: 0,
+		outletPressure: 0,
+		velocity: 0,
 		active: true,
 		suctionHeadMax: 7,
 		totalHeadMax: 20,
@@ -66,10 +72,11 @@ describe("Simulation Engine", () => {
 		rotation: 0,
 		elevation: 0,
 		flowRate: 0,
-		pressure: 0,
+		inletPressure: 0,
+		outletPressure: 0,
+		velocity: 0,
 		active: true,
 		subtype: "tee",
-		demand: 0,
 		diameter: 100,
 	};
 
@@ -94,7 +101,9 @@ describe("Simulation Engine", () => {
 		rotation: 0,
 		elevation: 0,
 		flowRate: 0,
-		pressure: 0,
+		inletPressure: 0,
+		outletPressure: 0,
+		velocity: 0,
 		active: true,
 		head: 10,
 	};
@@ -106,10 +115,11 @@ describe("Simulation Engine", () => {
 		rotation: 0,
 		elevation: 0,
 		flowRate: 0,
-		pressure: 0,
+		inletPressure: 0,
+		outletPressure: 0,
+		velocity: 0,
 		active: true,
 		subtype: "tee",
-		demand: 0,
 		diameter: 100,
 	};
 
@@ -121,7 +131,7 @@ describe("Simulation Engine", () => {
 			const result = simulateStep(nodes, edges);
 			const updatedReservoir = result.nodes[0] as ReservoirNode;
 
-			expect(updatedReservoir.pressure).toBe(
+			expect(updatedReservoir.outletPressure).toBe(
 				(mockReservoir.head * GRAVITY_PRESSURE) / 100,
 			);
 		});
@@ -139,7 +149,7 @@ describe("Simulation Engine", () => {
 			expect(updatedTank.currentVolume).toBeLessThanOrEqual(
 				updatedTank.maxVolume,
 			);
-			expect(updatedTank.pressure).toBeGreaterThanOrEqual(0);
+			expect(updatedTank.outletPressure).toBeGreaterThanOrEqual(0);
 		});
 
 		it("should handle zero diameter tank", () => {
@@ -154,7 +164,7 @@ describe("Simulation Engine", () => {
 			const result = simulateStep(nodes, edges);
 			const updatedTank = result.nodes[1] as TankNode;
 
-			expect(updatedTank.pressure).toBe(0);
+			expect(updatedTank.outletPressure).toBe(0);
 			expect(updatedTank.flowRate).toBe(0);
 			expect(updatedTank.currentVolume).toBe(0);
 			expect(updatedTank.currentVolumeHeight).toBe(0);
@@ -174,7 +184,7 @@ describe("Simulation Engine", () => {
 			const result = simulateStep(nodes, [pumpEdge]);
 			const updatedPump = result.nodes[1] as PumpNode;
 
-			expect(updatedPump.pressure).toBeLessThanOrEqual(
+			expect(updatedPump.outletPressure).toBeLessThanOrEqual(
 				(mockPump.totalHeadMax * GRAVITY_PRESSURE) / 100,
 			);
 		});
@@ -206,8 +216,8 @@ describe("Simulation Engine", () => {
 			const result = simulateStep(nodes, [fittingEdge]);
 			const updatedFitting = result.nodes[1] as FittingNode;
 
-			expect(updatedFitting.pressure).toBeLessThanOrEqual(
-				mockReservoir.pressure,
+			expect(updatedFitting.outletPressure).toBeLessThanOrEqual(
+				mockReservoir.outletPressure,
 			);
 		});
 
@@ -227,7 +237,7 @@ describe("Simulation Engine", () => {
 			const result = simulateStep(nodes, [fittingEdge]);
 			const updatedFitting = result.nodes[1] as FittingNode;
 
-			expect(updatedFitting.pressure).toBe(0);
+			expect(updatedFitting.outletPressure).toBe(0);
 			expect(updatedFitting.flowRate).toBe(0);
 			expect(updatedFitting.velocity).toBe(0);
 		});
@@ -301,7 +311,9 @@ describe("Simulation Engine", () => {
 				rotation: 0,
 				elevation: 0,
 				flowRate: 0,
-				pressure: 0,
+				inletPressure: 0,
+				outletPressure: 0,
+				velocity: 0,
 				active: true,
 				status: "close",
 				diameter: 100,
@@ -340,8 +352,8 @@ describe("Simulation Engine", () => {
 			const result = simulateStep(nodes, [pumpEdge]);
 			const updatedPump = result.nodes[1] as PumpNode;
 
-			expect(updatedPump.pressure).toBeGreaterThanOrEqual(0);
-			expect(updatedPump.pressure).toBeLessThanOrEqual(
+			expect(updatedPump.outletPressure).toBeGreaterThanOrEqual(0);
+			expect(updatedPump.outletPressure).toBeLessThanOrEqual(
 				(20 * GRAVITY_PRESSURE) / 100,
 			);
 		});
