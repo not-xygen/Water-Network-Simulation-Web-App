@@ -27,6 +27,7 @@ export default defineConfig({
         "src/lib/engine/v1.ts",
         "src/lib/engine/v2.ts",
         "src/lib/engine/v3.ts",
+        "src/lib/engine/v4.ts",
         "src/main.tsx",
       ],
     },

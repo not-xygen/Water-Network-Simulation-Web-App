@@ -1,4 +1,11 @@
-import { GRAVITY_PRESSURE, PIXEL_TO_CM } from "@/constant/globals";
+import {
+  GRAVITY_PRESSURE,
+  MIN_PRESSURE_DIFF,
+  PIXEL_TO_CM,
+  PRESSURE_CONVERSION,
+  SIMULATION_INTERVAL,
+  WATER_DENSITY,
+} from "@/constant/globals";
 import useGlobalStore from "@/store/globals";
 import useNodeEdgeStore from "@/store/node-edge";
 import useSimulationStore from "@/store/simulation";
@@ -12,12 +19,6 @@ import type {
   ValveNode,
 } from "@/types/node-edge";
 
-// Constants
-const MIN_PRESSURE_DIFF = 0.001; // Minimum pressure difference [bar]
-const WATER_DENSITY = 997; // [kg/m³]
-const PRESSURE_CONVERSION = 0.00001; // Pa to bar
-const SIMULATION_INTERVAL = 1000; // [ms]
-
 let simulationInterval: NodeJS.Timeout | null = null;
 const dev = useGlobalStore.getState().developerMode;
 
@@ -26,8 +27,8 @@ const dev = useGlobalStore.getState().developerMode;
  */
 const calculateVelocity = (flowRate: number, diameter: number): number => {
   if (diameter <= 0) return 0;
-  const area = Math.PI * (diameter / 100 / 2) ** 2; // [m²]
-  return area > 0 ? Math.abs(flowRate) / 1000 / area : 0;
+  const area = Math.PI * (diameter / 100 / 2) ** 2;
+  return area > 0 ? Math.abs(flowRate) / 10 / area : 0;
 };
 
 /**
@@ -136,6 +137,24 @@ const updateTank = (
   dt: number,
   connectedEdges: Edge[],
 ): TankNode => {
+  if (
+    !node.diameter ||
+    node.diameter <= 0 ||
+    !node.height ||
+    node.height <= 0
+  ) {
+    return {
+      ...node,
+      flowRate: 0,
+      currentVolume: 0,
+      currentVolumeHeight: 0,
+      filledPercentage: 0,
+      outletPressure: 0,
+      inletPressure: 0,
+      velocity: 0,
+    };
+  }
+
   const diameterM = node.diameter / 100;
   const baseArea = Math.PI * (diameterM / 2) ** 2;
   const maxVolume = baseArea * (node.height / 100) * 1000; // [L]
