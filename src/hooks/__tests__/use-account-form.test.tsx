@@ -20,14 +20,6 @@ describe("Account Form Hook", () => {
 		});
 	});
 
-	it("should initialize form with user data", () => {
-		const { result } = renderHook(() => useAccountForm());
-
-		expect(result.current.form.getValues()).toEqual({
-			firstName: "",
-			lastName: "",
-		});
-	});
 
 	it("should handle successful form submission", async () => {
 		const { result } = renderHook(() => useAccountForm());

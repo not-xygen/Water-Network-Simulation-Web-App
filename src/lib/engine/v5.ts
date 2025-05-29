@@ -63,7 +63,6 @@ const getNodePressure = (node: Node): number => {
     return node.head * WATER_DENSITY * GRAVITY_PRESSURE * PRESSURE_CONVERSION;
   }
 
-  // For other nodes, use outlet pressure + elevation pressure
   const elevationPressure =
     node.elevation * WATER_DENSITY * GRAVITY_PRESSURE * PRESSURE_CONVERSION;
   return (node.outletPressure || 0) + elevationPressure;
@@ -86,7 +85,6 @@ const calculateEdgeFlow = (
   const targetPressure = getNodePressure(targetNode);
   const pressureDiff = sourcePressure - targetPressure; // [bar]
 
-  // No flow if pressure difference is too small
   if (Math.abs(pressureDiff) <= MIN_PRESSURE_DIFF) {
     return { ...edge, flowRate: 0, velocity: 0 };
   }
@@ -94,14 +92,12 @@ const calculateEdgeFlow = (
   const lengthM = (edge.length * PIXEL_TO_CM) / 100; // [m]
   const diameterM = edge.diameter / 100; // [m]
 
-  // Simplified flow calculation using Hazen-Williams equation
   let flowRate =
     0.2785 *
     edge.roughness *
     diameterM ** 2.63 *
     (Math.abs(pressureDiff) / lengthM) ** 0.54;
 
-  // Apply flow direction based on pressure difference
   flowRate = Math.sign(pressureDiff) * flowRate; // [L/s]
 
   if (dev) {
@@ -130,7 +126,7 @@ const updateReservoir = (node: ReservoirNode): ReservoirNode => ({
 });
 
 /**
- * Update tank node - SIMPLIFIED VERSION
+ * Update tank node
  */
 const updateTank = (
   node: TankNode,
@@ -159,25 +155,22 @@ const updateTank = (
   const baseArea = Math.PI * (diameterM / 2) ** 2;
   const maxVolume = baseArea * (node.height / 100) * 1000; // [L]
 
-  // Calculate total inflow and outflow
   let totalInflow = 0;
   let totalOutflow = 0;
 
   for (const edge of connectedEdges) {
     const flowRate = edge.flowRate || 0;
     if (edge.targetId === node.id && flowRate > 0) {
-      totalInflow += flowRate; // Flow coming into tank
+      totalInflow += flowRate;
     } else if (edge.sourceId === node.id && flowRate > 0) {
-      totalOutflow += flowRate; // Flow going out of tank
+      totalOutflow += flowRate;
     }
   }
 
-  // Update volume
   const netFlow = totalInflow - totalOutflow;
   let newVolume = (node.currentVolume || 0) + netFlow * dt;
   newVolume = Math.max(0, Math.min(maxVolume, newVolume));
 
-  // Calculate water height and pressure
   const currentVolumeHeight = newVolume / 1000 / baseArea; // [m]
   const outletPressure =
     currentVolumeHeight *
@@ -200,7 +193,7 @@ const updateTank = (
     currentVolume: newVolume,
     currentVolumeHeight,
     filledPercentage: (newVolume / maxVolume) * 100,
-    inletPressure: 0, // Not really used for tanks
+    inletPressure: 0,
     outletPressure,
     flowRate: netFlow,
     velocity: calculateVelocity(Math.abs(netFlow), node.diameter),
@@ -235,7 +228,6 @@ const updatePump = (
   const flowRate = Math.abs(inflowEdge.flowRate || 0);
   const head = interpolateFromCurve(node.curveFlow, node.curveHead, flowRate);
 
-  // Convert head to pressure and add to inlet pressure
   const pressureGain =
     head * WATER_DENSITY * GRAVITY_PRESSURE * PRESSURE_CONVERSION;
   const outletPressure = inletPressure + pressureGain;
@@ -269,7 +261,6 @@ const updateFitting = (
   const velocity = calculateVelocity(Math.abs(flowRate), node.diameter);
   const lossCoefficient = node.minorLossCoefficient ?? 0.3;
 
-  // Calculate pressure loss
   const pressureLoss =
     ((lossCoefficient * WATER_DENSITY * velocity ** 2) / 2) *
     PRESSURE_CONVERSION;
@@ -287,14 +278,13 @@ const updateFitting = (
 };
 
 /**
- * Update valve node - FIXED VERSION
+ * Update valve node
  */
 const updateValve = (
   node: ValveNode,
   connectedEdges: Edge[],
   allNodes: Node[],
 ): ValveNode => {
-  // If valve is closed, no flow
   if (node.status === "close") {
     return {
       ...node,
@@ -315,7 +305,6 @@ const updateValve = (
   const flowRate = inletEdge.flowRate || 0;
   const velocity = calculateVelocity(Math.abs(flowRate), node.diameter);
 
-  // Valve loss coefficient based on status
   const lossCoefficient =
     node.minorLossCoefficient || (node.status === "open" ? 0.1 : 0.5);
 

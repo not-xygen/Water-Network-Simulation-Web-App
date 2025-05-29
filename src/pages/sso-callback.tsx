@@ -3,38 +3,51 @@ import { useEffect } from "react";
 import { useNavigate } from "react-router";
 
 export default function SSOCallback() {
-  const { handleRedirectCallback } = useClerk();
-  const { user } = useUser();
-  const navigate = useNavigate();
+	const { handleRedirectCallback } = useClerk();
+	const { user } = useUser();
+	const navigate = useNavigate();
 
-  useEffect(() => {
-    async function handleCallback() {
-      try {
-        await handleRedirectCallback({
-          redirectUrl: window.location.href,
-          afterSignInUrl: "/",
-          afterSignUpUrl: "/",
-        });
+	useEffect(() => {
+		async function handleCallback() {
+			try {
+				const customNavigate = async (to: string) => {
+					await navigate(to, { replace: true });
+					setTimeout(() => {
+						window.location.reload();
+					}, 100);
+				};
 
-        if (user) {
-          navigate("/", { replace: true });
-        } else {
-          navigate("/sign-in");
-        }
-      } catch {
-        navigate("/sign-in");
-      }
-    }
+				await handleRedirectCallback(
+					{
+						redirectUrl: window.location.href,
+						afterSignInUrl: "/",
+						afterSignUpUrl: "/sign-in",
+					},
+					customNavigate,
+				);
 
-    handleCallback();
-  }, [handleRedirectCallback, navigate, user]);
+				if (user) {
+					await navigate("/", { replace: true });
+					setTimeout(() => {
+						window.location.reload();
+					}, 100);
+				} else {
+					navigate("/sign-in");
+				}
+			} catch {
+				navigate("/sign-in");
+			}
+		}
 
-  return (
-    <div className="flex items-center justify-center min-h-screen">
-      <div className="text-center">
-        <h1 className="text-2xl font-semibold">Processing authentication...</h1>
-        <p className="mt-2 text-gray-600">Please wait a moment</p>
-      </div>
-    </div>
-  );
+		handleCallback();
+	}, [handleRedirectCallback, navigate, user]);
+
+	return (
+		<div className="flex items-center justify-center min-h-screen">
+			<div className="text-center">
+				<h1 className="text-2xl font-semibold">Processing authentication...</h1>
+				<p className="mt-2 text-gray-600">Please wait a moment</p>
+			</div>
+		</div>
+	);
 }

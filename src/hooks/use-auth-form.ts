@@ -44,7 +44,8 @@ export function useSignInForm() {
           title: "Success",
           description: "Successfully signed in!",
         });
-        navigate("/");
+        await navigate("/");
+        window.location.reload();
       } else {
         setError("Authentication failed. Please try again.");
       }
@@ -75,6 +76,7 @@ export function useSignInForm() {
         redirectUrl: `${window.location.origin}/sso-callback`,
         redirectUrlComplete: "/",
       });
+      window.location.reload();
     } catch (error: unknown) {
       console.error("Google sign in error:", error);
       const err = error as { errors?: Array<{ message: string }> };
@@ -145,7 +147,8 @@ export function useSignUpForm() {
           title: "Success",
           description: "Successfully signed up!",
         });
-        navigate("/");
+        await navigate("/");
+        window.location.reload();
       } else {
         setVerificationPending(true);
         setEmailAddress(data.email);
@@ -185,7 +188,8 @@ export function useSignUpForm() {
           title: "Success",
           description: "Email verified successfully!",
         });
-        navigate("/");
+        await navigate("/");
+        window.location.reload();
       } else {
         setError("Verification failed. Please try again.");
       }
@@ -242,6 +246,7 @@ export function useSignUpForm() {
         redirectUrl: `${window.location.origin}/sso-callback`,
         redirectUrlComplete: "/",
       });
+      window.location.reload();
     } catch (error: unknown) {
       console.error("Google sign up error:", error);
       const err = error as { errors?: Array<{ message: string }> };
