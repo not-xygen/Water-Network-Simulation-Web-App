@@ -85,9 +85,7 @@ export const renderEditableProperties = <T extends object>(
               <span className="font-mono text-xs text-gray-400 lowercase">
                 (L/s)
               </span>
-            ) : key === "pressure" ||
-              key === "inletPressure" ||
-              key === "outletPressure" ? (
+            ) : key === "inletPressure" || key === "outletPressure" ? (
               <span className="font-mono text-xs text-gray-400 lowercase">
                 (bar)
               </span>
@@ -167,9 +165,7 @@ export const renderReadonlyProperties = <T extends object>(
       }
 
       if (
-        (key === "pressure" ||
-          key === "inletPressure" ||
-          key === "outletPressure") &&
+        (key === "inletPressure" || key === "outletPressure") &&
         typeof value === "number"
       ) {
         displayValue = `${value.toFixed(4)} bar`;

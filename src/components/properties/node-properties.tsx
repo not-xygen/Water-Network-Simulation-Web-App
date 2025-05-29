@@ -116,7 +116,7 @@ export const NodeProperties = ({
 							...(node.type === "reservoir"
 								? ["flowRate"]
 								: node.type === "valve"
-									? ["pressure", "status"]
+									? ["status"]
 									: node.type === "pump"
 										? []
 										: node.type === "fitting"
@@ -132,7 +132,6 @@ export const NodeProperties = ({
 								"position",
 								"rotation",
 								"active",
-								"pressure",
 								"flowRate",
 								"note",
 								"maxVolume",

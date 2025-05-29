@@ -14,7 +14,7 @@ import {
   resetSimulation,
   startSimulation,
   stopSimulation,
-} from "@/lib/engine/v4";
+} from "@/lib/engine/v5";
 
 export const SidebarRight = () => {
   const { zoom, resetZoom, zoomIn, zoomOut, offset, setOffset } =
