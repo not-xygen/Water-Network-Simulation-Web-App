@@ -192,12 +192,11 @@ export const SidebarLeft = () => {
                     Export
                   </DropdownMenuItem>
                 }
-                title="Export Data & Reset Simulation?"
-                description="All data will be exported and the simulation will be reset. Are you sure you want to continue?"
-                actionText="Export & Reset"
+                title="Export Data"
+                description="All data will be exported. Are you sure you want to continue?"
+                actionText="Export"
                 onAction={() => {
                   exportData();
-                  resetSimulation();
                 }}
               />
               <DropdownMenuSeparator />
