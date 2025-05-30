@@ -161,14 +161,14 @@ export const renderReadonlyProperties = <T extends object>(
       }
 
       if (key === "flowRate" && typeof value === "number") {
-        displayValue = `${Math.abs(value).toFixed(4)} L/s`;
+        displayValue = `${Math.abs(value).toFixed(6)} L/s`;
       }
 
       if (
         (key === "inletPressure" || key === "outletPressure") &&
         typeof value === "number"
       ) {
-        displayValue = `${value.toFixed(4)} bar`;
+        displayValue = `${value.toFixed(6)} bar`;
       }
 
       if (key === "currentVolume" && typeof value === "number") {
@@ -176,7 +176,7 @@ export const renderReadonlyProperties = <T extends object>(
       }
 
       if (key === "currentVolumeHeight" && typeof value === "number") {
-        displayValue = `${value.toFixed(4)} m`;
+        displayValue = `${value.toFixed(6)} m`;
       }
 
       if (key === "maxVolume" && typeof value === "number") {
@@ -195,7 +195,7 @@ export const renderReadonlyProperties = <T extends object>(
       }
 
       if (key === "velocity" && typeof value === "number") {
-        displayValue = `${value.toFixed(4)} m/s`;
+        displayValue = `${value.toFixed(6)} m/s`;
       }
 
       if (key === "suctionHeadMax" && typeof value === "number") {
