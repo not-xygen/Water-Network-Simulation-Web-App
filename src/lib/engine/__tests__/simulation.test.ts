@@ -13,7 +13,7 @@ import type {
   ValveNode,
 } from "@/types/node-edge";
 import { describe, expect, it } from "vitest";
-import { simulateStep } from "../v5";
+import { simulateStep } from "../v2";
 
 describe("Simulation Engine", () => {
   const mockReservoir: ReservoirNode = {

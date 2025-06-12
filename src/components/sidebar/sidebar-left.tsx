@@ -1,5 +1,5 @@
 import { useImportExportHandler } from "@/hooks/use-import-export";
-import { resetSimulation } from "@/lib/engine/v2";
+import { resetSimulation } from "@/lib/engine/v1-beta";
 import useNodeEdgeStore from "@/store/node-edge";
 import type { Edge, Node } from "@/types/node-edge";
 import { SignedIn, SignedOut, useClerk, useUser } from "@clerk/clerk-react";

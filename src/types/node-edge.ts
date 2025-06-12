@@ -21,6 +21,7 @@ export type FittingNode = NodeBase & {
   subtype: "coupling" | "tee" | "cross" | "elbow";
   diameter: number; // [cm]
   minorLossCoefficient?: number; // [C]
+  demand?: number; // [L/s]
 };
 
 export type ReservoirNode = NodeBase & {
