@@ -57,7 +57,7 @@ const calculateEdgeFlow = (
     return { ...edge, flowRate: 0, velocity: 0 };
   }
 
-  // 1) Hitung head (m) di masing-masing node
+  // 1) helper untuk dapatkan head (m) di node
   const getHead = (n: Node): number => {
     if (n.type === "reservoir") return n.head;
     const pBar = n.inletPressure ?? 0;
@@ -65,6 +65,8 @@ const calculateEdgeFlow = (
       (pBar * PRESSURE_CONVERSION) / (WATER_DENSITY * GRAVITY_PRESSURE);
     return n.elevation + pressureHead;
   };
+
+  // 2) hitung head upstream & downstream
   const sourceHead = getHead(sourceNode);
   const targetHead = getHead(targetNode);
   const headDiff = sourceHead - targetHead;
@@ -72,28 +74,32 @@ const calculateEdgeFlow = (
     return { ...edge, flowRate: 0, velocity: 0 };
   }
 
-  // 2) Konversi panjang & diameter
+  // 3) konversi ukuran
   const L = (edge.length * PIXEL_TO_CM) / 100; // m
   const D = edge.diameter / 100; // m
   const C = edge.roughness;
 
-  // 3) Hitung Q (m³/s) via Hazen–Williams invers:
-  //    Q = ((hf·C^1.852·D^4.871)/(10.67·L))^(1/1.852)
+  // 4) hitung Q dengan Hazen–Williams invers
   const hf = Math.abs(headDiff);
-  const numerator = hf * Math.pow(C, 1.852) * Math.pow(D, 4.871);
-  const Q_m3s =
-    Math.sign(headDiff) * Math.pow(numerator / (10.67 * L), 1 / 1.852);
-
-  // 4) Konversi ke L/s dan hitung head loss eksplisit
+  const num = hf * Math.pow(C, 1.852) * Math.pow(D, 4.871);
+  const Q_m3s = Math.sign(headDiff) * Math.pow(num / (10.67 * L), 1 / 1.852);
   const flowRate = Q_m3s * 1000; // L/s
-  const headLoss = hf; // sudah headDiff, sama dengan hf
-  const velocity = calculateVelocity(flowRate, D); // diameter dalam cm
+
+  // 5) propagasikan head loss ke node tujuan
+  const newTargetHead = sourceHead - hf;
+  const newPbar =
+    (newTargetHead * WATER_DENSITY * GRAVITY_PRESSURE) / PRESSURE_CONVERSION;
+  targetNode.inletPressure = newPbar;
+  targetNode.outletPressure = newPbar;
+
+  // 6) hitung velocity
+  const velocity = calculateVelocity(flowRate, D);
 
   if (dev) {
     console.log(
-      `Edge ${edge.id}: sourceHead=${sourceHead.toFixed(3)}m, ` +
-        `headLoss=${headLoss.toFixed(3)}m, Q=${flowRate.toFixed(3)}L/s, ` +
-        `V=${velocity.toFixed(3)}m/s`,
+      `Edge ${edge.id}: sourceHead=${sourceHead.toFixed(2)}m, ` +
+        `hf=${hf.toFixed(2)}m → newHead=${newTargetHead.toFixed(2)}m, ` +
+        `Q=${flowRate.toFixed(3)}L/s, V=${velocity.toFixed(3)}m/s`,
     );
   }
 
