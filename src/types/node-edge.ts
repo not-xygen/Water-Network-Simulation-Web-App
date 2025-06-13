@@ -1,3 +1,5 @@
+import { FITTING_COEFFICIENTS } from "@/constant/globals";
+
 export type NodeType = "fitting" | "reservoir" | "tank" | "pump" | "valve";
 
 export type NodeBase = {
@@ -18,7 +20,7 @@ export type NodeBase = {
 
 export type FittingNode = NodeBase & {
   type: "fitting";
-  subtype: "coupling" | "tee" | "cross" | "elbow";
+  subtype: keyof typeof FITTING_COEFFICIENTS;
   diameter: number; // [cm]
   minorLossCoefficient?: number; // [C]
   demand?: number; // [L/s]
