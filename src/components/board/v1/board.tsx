@@ -83,7 +83,7 @@ export const Board = ({ isSpacePressed }: BoardProps) => {
   return (
     <div
       id="board"
-      className="relative z-40 w-full h-full overflow-hidden bg-gray-100"
+      className="overflow-hidden relative z-40 w-full h-full bg-gray-100"
       onWheel={handleBoardMouseWheel}
       onMouseDown={handleBoardMouseDown}
       onMouseUp={handleBoardMouseUp}
@@ -92,7 +92,7 @@ export const Board = ({ isSpacePressed }: BoardProps) => {
       <button
         type="button"
         onClick={handleScreenshot}
-        className="absolute z-50 p-2 text-white bg-blue-500 rounded-full top-4 right-4 hover:bg-blue-600">
+        className="absolute top-4 right-4 z-50 p-2 text-white bg-blue-500 rounded-full hover:bg-blue-600">
         <CameraIcon className="w-5 h-5" />
       </button>
       <BoardGrid
@@ -112,6 +112,7 @@ export const Board = ({ isSpacePressed }: BoardProps) => {
         connecting={connecting}
         mousePos={mousePos}
         draggingEdgeHandle={draggingEdgeHandle}
+        draggedNode={draggedNode}
         onEdgeReconnection={handleEdgeReconnection}
       />
 

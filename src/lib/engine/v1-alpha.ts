@@ -33,7 +33,7 @@ export const startSimulation = () => {
         }
 
         if (node.type === "tank") {
-          if (node.diameter <= 0) {
+          if (node.tankDiameter <= 0) {
             return {
               ...node,
               pressure: 0,
@@ -44,8 +44,8 @@ export const startSimulation = () => {
             };
           }
 
-          const radiusM = node.diameter / 200;
-          const heightM = node.height / 100;
+          const radiusM = node.tankDiameter / 200;
+          const heightM = node.tankHeight / 100;
           const baseArea = Math.PI * radiusM ** 2;
 
           const volumeM3 = Math.PI * radiusM ** 2 * heightM;
@@ -255,7 +255,7 @@ export const startSimulation = () => {
         }
 
         if (node.type === "tank") {
-          if (node.diameter <= 0) {
+          if (node.tankDiameter <= 0) {
             return {
               ...node,
               pressure: 0,
@@ -266,8 +266,8 @@ export const startSimulation = () => {
             };
           }
 
-          const radiusM = node.diameter / 200;
-          const heightM = node.height / 100;
+          const radiusM = node.tankDiameter / 200;
+          const heightM = node.tankHeight / 100;
           const baseArea = Math.PI * radiusM ** 2;
 
           const volumeM3 = Math.PI * radiusM ** 2 * heightM;

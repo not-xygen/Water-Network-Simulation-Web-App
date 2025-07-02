@@ -22,7 +22,7 @@ export const createNode = (
     ...(type === "fitting" && {
       subtype,
       demand: 0,
-      diameter: 2,
+      diameter: 17.1,
       minorLossCoefficient:
         FITTING_COEFFICIENTS[subtype as keyof typeof FITTING_COEFFICIENTS] ||
         FITTING_COEFFICIENTS.default,
@@ -31,8 +31,10 @@ export const createNode = (
     ...(type === "reservoir" && { head: 10 }),
     ...(type === "tank" && {
       currentVolumeHeight: 0,
-      diameter: 83,
-      height: 110,
+      inletDiameter: 17.1,
+      outletDiameter: 17.1,
+      tankDiameter: 83,
+      tankHeight: 110,
       maxVolume: Math.PI * (83 / 100 / 2) ** 2 * (110 / 100) * 1000,
       currentVolume: 0,
       filledPercentage: 0,
@@ -48,7 +50,7 @@ export const createNode = (
     }),
     ...(type === "valve" && {
       status: "close",
-      diameter: 2,
+      diameter: 17.1,
       lossCoefficient: 0,
     }),
 
@@ -75,7 +77,7 @@ export const createEdge = (
     sourcePosition,
     targetPosition,
     label: options?.label ?? "Pipe",
-    diameter: options?.diameter ?? 2,
+    diameter: options?.diameter ?? 17.1,
     length: options?.length ?? 0,
     roughness: options?.roughness ?? 140,
     flowRate: 0,

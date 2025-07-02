@@ -1,9 +1,16 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 /* eslint-disable no-unused-vars */
-import { PIXEL_TO_CM } from "@/constant/globals";
+import { IMPERIAL_PIPE_SIZES, PIXEL_TO_CM } from "@/constant/globals";
 import { Input } from "../ui/input";
 import { Switch } from "../ui/switch";
 import { Textarea } from "../ui/textarea";
+import {
+  Select,
+  SelectValue,
+  SelectTrigger,
+  SelectContent,
+  SelectItem,
+} from "../ui/select";
 
 export const renderEditableProperty = <T,>(
   key: string,
@@ -21,6 +28,32 @@ export const renderEditableProperty = <T,>(
           className="h-4"
         />
       </div>
+    );
+  }
+
+  if (
+    key === "inletDiameter" ||
+    key === "outletDiameter" ||
+    key === "diameter"
+  ) {
+    return (
+      <Select
+        value={String(value)}
+        onValueChange={(val) => onChange(parseFloat(val) as T)}>
+        <SelectTrigger className="py-0.5 text-xs w-max h-max">
+          <SelectValue placeholder="Pilih diameter" />
+        </SelectTrigger>
+        <SelectContent>
+          {IMPERIAL_PIPE_SIZES.map((opt) => (
+            <SelectItem
+              key={opt.value}
+              value={String(opt.value)}
+              className="text-xs">
+              {opt.label} ({opt.value} mm)
+            </SelectItem>
+          ))}
+        </SelectContent>
+      </Select>
     );
   }
 
@@ -69,17 +102,23 @@ export const renderEditableProperties = <T extends object>(
         <div
           key={key}
           className={`flex ${
-            isNote ? "flex-col" : "items-center justify-between"
+            isNote ? "flex-col" : "justify-between items-center"
           } gap-2 w-full`}>
           <span className="w-1/2 flex gap-0.5 capitalize">
             {label}
-            {key === "diameter" || key === "height" ? (
+            {key === "inletDiameter" ||
+            key === "outletDiameter" ||
+            key === "diameter" ? (
               <span className="font-mono text-xs text-gray-400 lowercase">
-                (cm)
+                (inch)
               </span>
             ) : key === "elevation" || key === "head" ? (
               <span className="font-mono text-xs text-gray-400 lowercase">
                 (m)
+              </span>
+            ) : key === "tankHeight" || key === "tankDiameter" ? (
+              <span className="font-mono text-xs text-gray-400 lowercase">
+                (cm)
               </span>
             ) : key === "flowRate" ? (
               <span className="font-mono text-xs text-gray-400 lowercase">
@@ -143,6 +182,19 @@ export const renderReadonlyProperties = <T extends object>(
       let displayValue: React.ReactNode = String(value);
 
       if (
+        key === "inletDiameter" ||
+        key === "outletDiameter" ||
+        key === "diameter"
+      ) {
+        const imperial = IMPERIAL_PIPE_SIZES.find(
+          (opt) => Number(opt.value) === Number(value),
+        );
+        displayValue = imperial
+          ? `${imperial.label} | ${value} mm`
+          : `${value} mm`;
+      }
+
+      if (
         (key === "elevation" || key === "head") &&
         typeof value === "number"
       ) {
@@ -154,7 +206,7 @@ export const renderReadonlyProperties = <T extends object>(
       }
 
       if (
-        (key === "diameter" || key === "height") &&
+        (key === "tankHeight" || key === "tankDiameter") &&
         typeof value === "number"
       ) {
         displayValue = `${value} cm`;
@@ -217,7 +269,7 @@ export const renderReadonlyProperties = <T extends object>(
       return (
         <div
           key={key}
-          className="flex items-center justify-between w-full gap-2">
+          className="flex gap-2 justify-between items-center w-full">
           <span className="w-1/2 flex gap-0.5 capitalize">{key}</span>
           <span className="w-1/2 font-mono text-xs">{displayValue}</span>
         </div>

@@ -33,8 +33,10 @@ export type ReservoirNode = NodeBase & {
 
 export type TankNode = NodeBase & {
   type: "tank";
-  diameter: number; // [cm]
-  height: number; // [cm]
+  inletDiameter: number; // [cm]
+  outletDiameter: number; // [cm]
+  tankDiameter: number; // [cm]
+  tankHeight: number; // [cm]
   maxVolume: number; // [L]
   currentVolume: number; // [L]
   currentVolumeHeight: number; // [cm]

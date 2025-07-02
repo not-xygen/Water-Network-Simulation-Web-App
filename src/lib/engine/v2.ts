@@ -76,7 +76,6 @@ const calculateEdgeFlow = (
   sourceNode: Node,
   targetNode: Node,
 ): Edge => {
-  // Skip if nodes are inactive
   if (!sourceNode?.active || !targetNode?.active) {
     return { ...edge, flowRate: 0, velocity: 0 };
   }
@@ -134,10 +133,10 @@ const updateTank = (
   connectedEdges: Edge[],
 ): TankNode => {
   if (
-    !node.diameter ||
-    node.diameter <= 0 ||
-    !node.height ||
-    node.height <= 0
+    !node.tankDiameter ||
+    node.tankDiameter <= 0 ||
+    !node.tankHeight ||
+    node.tankHeight <= 0
   ) {
     return {
       ...node,
@@ -151,9 +150,9 @@ const updateTank = (
     };
   }
 
-  const diameterM = node.diameter / 100;
+  const diameterM = node.tankDiameter / 100;
   const baseArea = Math.PI * (diameterM / 2) ** 2;
-  const maxVolume = baseArea * (node.height / 100) * 1000; // [L]
+  const maxVolume = baseArea * (node.tankHeight / 100) * 1000; // [L]
 
   let totalInflow = 0;
   let totalOutflow = 0;
@@ -196,7 +195,7 @@ const updateTank = (
     inletPressure: 0,
     outletPressure,
     flowRate: netFlow,
-    velocity: calculateVelocity(Math.abs(netFlow), node.diameter),
+    velocity: calculateVelocity(Math.abs(netFlow), node.outletDiameter),
   };
 };
 

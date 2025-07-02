@@ -39,9 +39,10 @@ const getNodePressure = (node: Node): number => {
   if (node.type === "reservoir") {
     return (node.head * WATER_DENSITY * GRAVITY_PRESSURE) / PRESSURE_CONVERSION;
   }
+  const pressure = node.outletPressure ?? node.inletPressure ?? 0;
   return (
     (node.elevation * WATER_DENSITY * GRAVITY_PRESSURE) / PRESSURE_CONVERSION +
-    (node.outletPressure || 0)
+    pressure
   );
 };
 
@@ -53,12 +54,28 @@ const calculateEdgeFlow = (
   sourceNode: Node,
   targetNode: Node,
 ): Edge => {
-  if (!sourceNode.active || !targetNode.active) {
+  if (
+    !sourceNode.active ||
+    !targetNode.active ||
+    (sourceNode.type === "valve" && sourceNode.status === "close") ||
+    (sourceNode.type === "tank" &&
+      "currentVolume" in sourceNode &&
+      (sourceNode.currentVolume ?? 0) <= 0)
+  ) {
     return { ...edge, flowRate: 0, velocity: 0 };
   }
 
-  // 1) helper untuk dapatkan head (m) di node
-  const getHead = (n: Node): number => {
+  // 1) helper untuk dapatkan head (m) di node source dan target
+  const getHeadForSource = (n: Node): number => {
+    if (n.type === "reservoir") return n.head;
+    const pBar =
+      n.type === "tank" ? n.outletPressure ?? 0 : n.outletPressure ?? 0;
+    const pressureHead =
+      (pBar * PRESSURE_CONVERSION) / (WATER_DENSITY * GRAVITY_PRESSURE);
+    return n.elevation + pressureHead;
+  };
+
+  const getHeadForTarget = (n: Node): number => {
     if (n.type === "reservoir") return n.head;
     const pBar = n.inletPressure ?? 0;
     const pressureHead =
@@ -67,8 +84,8 @@ const calculateEdgeFlow = (
   };
 
   // 2) hitung head upstream & downstream
-  const sourceHead = getHead(sourceNode);
-  const targetHead = getHead(targetNode);
+  const sourceHead = getHeadForSource(sourceNode);
+  const targetHead = getHeadForTarget(targetNode);
   const headDiff = sourceHead - targetHead;
   if (Math.abs(headDiff) < 1e-6) {
     return { ...edge, flowRate: 0, velocity: 0 };
@@ -76,21 +93,26 @@ const calculateEdgeFlow = (
 
   // 3) konversi ukuran
   const L = (edge.length * PIXEL_TO_CM) / 100; // m
-  const D = edge.diameter / 100; // m
+  const D = edge.diameter / 1000; // mm->m
   const C = edge.roughness;
 
   // 4) hitung Q dengan Hazen–Williams invers
   const hf = Math.abs(headDiff);
   const num = hf * Math.pow(C, 1.852) * Math.pow(D, 4.871);
-  const Q_m3s = Math.sign(headDiff) * Math.pow(num / (10.67 * L), 1 / 1.852);
+  const Q_m3s =
+    Math.sign(headDiff) * Math.pow(num / (10.67 * L), 0.918 / 1.852);
   const flowRate = Q_m3s * 1000; // L/s
 
   // 5) propagasikan head loss ke node tujuan
   const newTargetHead = sourceHead - hf;
   const newPbar =
     (newTargetHead * WATER_DENSITY * GRAVITY_PRESSURE) / PRESSURE_CONVERSION;
-  targetNode.inletPressure = newPbar;
-  targetNode.outletPressure = newPbar;
+  if (targetNode.type !== "tank") {
+    targetNode.inletPressure = newPbar;
+    targetNode.outletPressure = newPbar;
+  } else {
+    targetNode.inletPressure = newPbar;
+  }
 
   // 6) hitung velocity
   const velocity = calculateVelocity(flowRate, D);
@@ -126,10 +148,10 @@ const updateTank = (
   allNodes: Node[],
 ): TankNode => {
   if (
-    !node.diameter ||
-    node.diameter <= 0 ||
-    !node.height ||
-    node.height <= 0
+    !node.tankDiameter ||
+    node.tankDiameter <= 0 ||
+    !node.tankHeight ||
+    node.tankHeight <= 0
   ) {
     return {
       ...node,
@@ -151,9 +173,9 @@ const updateTank = (
     if (src) inletPressure = getNodePressure(src);
   }
 
-  const diameterM = node.diameter / 100;
+  const diameterM = node.tankDiameter / 100; // [cm]->[m]
   const baseArea = Math.PI * (diameterM / 2) ** 2;
-  const maxVolume = baseArea * (node.height / 100) * 1000; // [L]
+  const maxVolume = baseArea * (node.tankHeight / 100) * 1000; // [L]
 
   let totalInflow = 0;
   let totalOutflow = 0;
@@ -168,19 +190,9 @@ const updateTank = (
     }
 
     if (edge.targetId === node.id) {
-      if (flowRate > 0) {
-        totalInflow += flowRate;
-      } else if (flowRate < 0) {
-        totalOutflow += Math.abs(flowRate);
-      }
-    }
-
-    if (edge.sourceId === node.id) {
-      if (flowRate > 0) {
-        totalOutflow += flowRate;
-      } else if (flowRate < 0) {
-        totalInflow += Math.abs(flowRate);
-      }
+      totalInflow += Math.abs(flowRate);
+    } else if (edge.sourceId === node.id) {
+      totalOutflow += Math.abs(flowRate);
     }
   }
 
@@ -222,7 +234,7 @@ const updateTank = (
     inletPressure: inletPressure,
     outletPressure,
     flowRate: netFlow,
-    velocity: calculateVelocity(Math.abs(netFlow), node.diameter),
+    velocity: calculateVelocity(Math.abs(netFlow), node.outletDiameter / 1000),
   };
 };
 
@@ -250,13 +262,12 @@ const updatePump = (
   const inletPressure = getNodePressure(src);
   const Q = Math.abs(inletEdge.flowRate || 0); // [L/s]
 
-  const h0 = node.totalHeadMax; // shut-off head [m]
-  const Qmax = node.capacityMax; // max flow [L/s]
+  const h0 = node.totalHeadMax; // [m]
+  const Qmax = node.capacityMax; // [L/s]
   const n = 2;
   const r = h0 / Math.pow(Qmax, n);
   const w = 1;
 
-  // Pers. 2.2: h_Lij = –w³ (h₀ – r·(Qij/w)ⁿ)
   const headLoss = -Math.pow(w, 3) * (h0 - r * Math.pow(Q / w, n));
   const operatingHead = -headLoss;
   const pressureGain =
@@ -284,15 +295,13 @@ const updateFitting = (
 
   const inletNode = allNodes.find((n) => n.id === inletEdge.sourceId)!;
   const flowRate = inletEdge.flowRate || 0;
-  const velocity = calculateVelocity(Math.abs(flowRate), node.diameter);
+  const velocity = calculateVelocity(Math.abs(flowRate), inletEdge.diameter / 1000);
 
-  // Pastikan minor loss coefficient ada nilainya
   const kL =
     node.minorLossCoefficient ||
     FITTING_COEFFICIENTS[node.subtype || "default"] ||
     0.5;
 
-  // Hitung pressure loss yang benar (dalam bar)
   const pressureLoss =
     (kL * WATER_DENSITY * velocity ** 2) / 2 / PRESSURE_CONVERSION;
 
@@ -333,7 +342,10 @@ const updateValve = (
   const inletNode = allNodes.find((n) => n.id === inletEdge.sourceId)!;
   const inletPressure = getNodePressure(inletNode);
   const flowRate = inletEdge.flowRate || 0;
-  const velocity = calculateVelocity(Math.abs(flowRate), node.diameter);
+  const velocity = calculateVelocity(
+    Math.abs(flowRate) / 1000,
+    node.diameter / 1000,
+  );
 
   let outletPressure: number;
   if (!outletEdge) {
