@@ -88,8 +88,8 @@ const updateReservoir = (n: ReservoirNode): ReservoirNode => ({
 });
 
 const updateTank = (n: TankNode, netFlow: number, dt: number): TankNode => {
-  const diamM = n.diameter / 100; // [cm→m]
-  const hM = n.height / 100;
+  const diamM = n.tankDiameter / 100; // [cm→m]
+  const hM = n.tankHeight / 100;
   const rM = diamM / 2;
   const baseArea = Math.PI * rM ** 2; // [m²]
   const maxVol = baseArea * hM * 1000; // [L]

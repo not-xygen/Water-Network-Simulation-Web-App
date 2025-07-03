@@ -50,8 +50,8 @@ const updateTank = (
   netFlow: number,
   timeStep: number,
 ): TankNode => {
-  const diameterM = node.diameter / 100;
-  const heightM = node.height / 100;
+  const diameterM = node.tankDiameter / 100;
+  const heightM = node.tankHeight / 100;
   const radiusM = diameterM / 2;
   const baseArea = Math.PI * radiusM ** 2;
   const maxVolume = baseArea * heightM * 1000;
@@ -170,8 +170,8 @@ const simulateStep = (
       case "reservoir":
         return { ...node, pressure: node.head * GRAVITY_PRESSURE_DIV_100 };
       case "tank": {
-        const diameterM = node.diameter / 100;
-        const heightM = node.height / 100;
+        const diameterM = node.tankDiameter / 100;
+        const heightM = node.tankHeight / 100;
         const radiusM = diameterM / 2;
         const baseArea = Math.PI * radiusM ** 2;
         const maxVolume = baseArea * heightM;
