@@ -65,37 +65,63 @@ const calculateEdgeFlow = (
     return { ...edge, flowRate: 0, velocity: 0 };
   }
 
+  // 1) helper untuk dapatkan head (m) di node source dan target
+  const getHeadForSource = (n: Node): number => {
+    if (n.type === "reservoir") return n.head;
+    const pBar =
+      n.type === "tank" ? n.outletPressure ?? 0 : n.outletPressure ?? 0;
+    const pressureHead =
+      (pBar * PRESSURE_CONVERSION) / (WATER_DENSITY * GRAVITY_PRESSURE);
+    return n.elevation + pressureHead;
+  };
+
+  const getHeadForTarget = (n: Node): number => {
+    if (n.type === "reservoir") return n.head;
+    const pBar = n.inletPressure ?? 0;
+    const pressureHead =
+      (pBar * PRESSURE_CONVERSION) / (WATER_DENSITY * GRAVITY_PRESSURE);
+    return n.elevation + pressureHead;
+  };
+
+  // 2) hitung head upstream & downstream
   const sourceHead = getHeadForSource(sourceNode);
   const targetHead = getHeadForTarget(targetNode);
-  let headDiff = sourceHead - targetHead;
-
-  // batasi headDiff
-  headDiff = Math.max(-50, Math.min(50, headDiff));
+  const headDiff = sourceHead - targetHead;
   if (Math.abs(headDiff) < 1e-6) {
     return { ...edge, flowRate: 0, velocity: 0 };
   }
 
+  // 3) konversi ukuran
   const L = (edge.length * PIXEL_TO_CM) / 100; // m
-  const D = edge.diameter / 1000; // m
+  const D = edge.diameter / 1000; // mm->m
   const C = edge.roughness;
 
+  // 4) hitung Q dengan Hazen–Williams invers
   const hf = Math.abs(headDiff);
   const num = hf * Math.pow(C, 1.852) * Math.pow(D, 4.871);
   const Q_m3s =
     Math.sign(headDiff) * Math.pow(num / (10.67 * L), 0.918 / 1.852);
-  let flowRate = Q_m3s * 1000; // L/s
+  const flowRate = Q_m3s * 1000; // L/s
 
-  // jangan lebih besar dari kemampuan sumber
-  const sourceAvailable = sourceNode.flowRate ?? Infinity;
-  flowRate = Math.min(flowRate, sourceAvailable);
+  // 5) propagasikan head loss ke node tujuan
+  const newTargetHead = sourceHead - hf;
+  const newPbar =
+    (newTargetHead * WATER_DENSITY * GRAVITY_PRESSURE) / PRESSURE_CONVERSION;
+  if (targetNode.type !== "tank") {
+    targetNode.inletPressure = newPbar;
+    targetNode.outletPressure = newPbar;
+  } else {
+    targetNode.inletPressure = newPbar;
+  }
 
+  // 6) hitung velocity
   const velocity = calculateVelocity(flowRate, D);
 
   if (dev) {
     console.log(
-      `Edge ${edge.id}: headDiff=${headDiff.toFixed(2)}m, Q=${flowRate.toFixed(
-        3,
-      )}L/s, V=${velocity.toFixed(3)}m/s`,
+      `Edge ${edge.id}: sourceHead=${sourceHead.toFixed(2)}m, ` +
+        `hf=${hf.toFixed(2)}m → newHead=${newTargetHead.toFixed(2)}m, ` +
+        `Q=${flowRate.toFixed(3)}L/s, V=${velocity.toFixed(3)}m/s`,
     );
   }
 
