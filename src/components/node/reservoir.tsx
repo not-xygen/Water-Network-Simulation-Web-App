@@ -13,6 +13,7 @@ interface ReservoirNodeProps {
     e: React.MouseEvent,
     position: "left" | "right" | "top" | "bottom",
   ) => void;
+  rotation: number;
 }
 
 export const ReservoirNode = ({
@@ -20,6 +21,7 @@ export const ReservoirNode = ({
   nodeId,
   onStartConnect,
   onEndConnect,
+  rotation,
 }: ReservoirNodeProps) => {
   return (
     <div className="relative w-16 h-16">
@@ -33,6 +35,7 @@ export const ReservoirNode = ({
           alt="Reservoir"
           className="w-8 h-8 pointer-events-none select-none"
           draggable={false}
+          style={{ transform: `rotate(-${rotation}deg)` }}
         />
       </div>
       <ConnectionHandles

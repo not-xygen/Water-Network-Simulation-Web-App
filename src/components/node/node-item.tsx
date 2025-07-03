@@ -47,6 +47,7 @@ const NodeItem: React.FC<NodeItemProps> = ({
           <ReservoirNode
             nodeId={node.id}
             isSelected={isSelected}
+            rotation={node.rotation ?? 0}
             onStartConnect={onStartConnect}
             onEndConnect={onEndConnect}
           />
@@ -56,6 +57,7 @@ const NodeItem: React.FC<NodeItemProps> = ({
           <TankNode
             nodeId={node.id}
             isSelected={isSelected}
+            rotation={node.rotation ?? 0}
             onStartConnect={onStartConnect}
             onEndConnect={onEndConnect}
           />
@@ -65,6 +67,7 @@ const NodeItem: React.FC<NodeItemProps> = ({
           <PumpNode
             nodeId={node.id}
             isSelected={isSelected}
+            rotation={node.rotation ?? 0}
             onStartConnect={onStartConnect}
             onEndConnect={onEndConnect}
           />
@@ -74,6 +77,7 @@ const NodeItem: React.FC<NodeItemProps> = ({
           <ValveNode
             nodeId={node.id}
             isSelected={isSelected}
+            rotation={node.rotation ?? 0}
             onStartConnect={onStartConnect}
             onEndConnect={onEndConnect}
           />

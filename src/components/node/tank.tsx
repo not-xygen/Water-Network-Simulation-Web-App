@@ -13,6 +13,7 @@ interface TankNodeProps {
 		e: React.MouseEvent,
 		position: "left" | "right" | "top" | "bottom",
 	) => void;
+	rotation: number;
 }
 
 export const TankNode = ({
@@ -20,6 +21,7 @@ export const TankNode = ({
 	nodeId,
 	onStartConnect,
 	onEndConnect,
+	rotation,
 }: TankNodeProps) => {
 	return (
 		<div className="relative w-16 h-16">
@@ -34,6 +36,7 @@ export const TankNode = ({
 					alt="Tank"
 					className="w-8 h-8 pointer-events-none select-none"
 					draggable={false}
+					style={{ transform: `rotate(-${rotation}deg)` }}
 				/>
 			</div>
 			<ConnectionHandles
